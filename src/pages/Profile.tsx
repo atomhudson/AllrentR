@@ -1,0 +1,161 @@
+import { useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Navbar } from '@/components/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useListings } from '@/hooks/useListings';
+import { Eye, Star, Package, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const Profile = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { listings } = useListings(undefined, user?.id);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
+
+  const totalViews = listings.reduce((sum, listing) => sum + (listing.views || 0), 0);
+  const avgRating = listings.length > 0
+    ? listings.reduce((sum, listing) => sum + (listing.rating || 0), 0) / listings.length
+    : 0;
+  const approvedListings = listings.filter(l => l.listing_status === 'approved').length;
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="w-5 h-5 text-accent" />;
+      case 'pending':
+        return <Clock className="w-5 h-5 text-primary" />;
+      case 'rejected':
+        return <XCircle className="w-5 h-5 text-destructive" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const styles = {
+      approved: 'bg-accent/10 text-accent border-accent',
+      pending: 'bg-primary/10 text-primary border-primary',
+      rejected: 'bg-destructive/10 text-destructive border-destructive',
+    };
+    return styles[status as keyof typeof styles] || '';
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="container mx-auto px-4 pt-32 pb-20">
+        {/* User Info */}
+        <div className="mb-12 animate-fade-in">
+          <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
+            Welcome Back!
+          </h1>
+          <p className="text-muted-foreground">
+            {user.email}
+          </p>
+        </div>
+
+        {/* Analytics Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-12">
+          <Card className="p-6 shadow-card hover:shadow-elegant transition-all duration-300 animate-fade-in-up">
+            <div className="flex items-center justify-between mb-2">
+              <Package className="w-8 h-8 text-primary" />
+              <span className="text-3xl font-bold text-foreground">{listings.length}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">Total Listings</p>
+          </Card>
+
+          <Card className="p-6 shadow-card hover:shadow-elegant transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="flex items-center justify-between mb-2">
+              <CheckCircle className="w-8 h-8 text-accent" />
+              <span className="text-3xl font-bold text-foreground">{approvedListings}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">Approved & Live</p>
+          </Card>
+
+          <Card className="p-6 shadow-card hover:shadow-elegant transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center justify-between mb-2">
+              <Eye className="w-8 h-8 text-primary" />
+              <span className="text-3xl font-bold text-foreground">{totalViews}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">Total Views</p>
+          </Card>
+
+          <Card className="p-6 shadow-card hover:shadow-elegant transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="flex items-center justify-between mb-2">
+              <Star className="w-8 h-8 text-accent fill-current" />
+              <span className="text-3xl font-bold text-foreground">{avgRating.toFixed(1)}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">Average Rating</p>
+          </Card>
+        </div>
+
+        {/* Listings Table */}
+        <Card className="p-8 shadow-elegant animate-fade-in">
+          <h2 className="text-2xl font-serif font-bold text-foreground mb-6">
+            Your Listings
+          </h2>
+
+          {listings.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">
+                You haven't listed any items yet. Start listing to earn!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {listings.map((listing, index) => (
+                <div
+                  key={listing.id}
+                  className="border border-border rounded-lg p-4 hover:shadow-card transition-all duration-300 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {listing.product_name}
+                        </h3>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(listing.listing_status)}`}>
+                          {getStatusIcon(listing.listing_status)}
+                          <span className="ml-1 capitalize">{listing.listing_status}</span>
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {listing.description}
+                      </p>
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="flex items-center gap-1 text-accent font-medium">
+                          ₹{listing.rent_price}/day
+                        </div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Eye className="w-4 h-4" />
+                          {listing.views || 0} views
+                        </div>
+                        <div className="flex items-center gap-1 text-accent">
+                          <Star className="w-4 h-4 fill-current" />
+                          {listing.rating?.toFixed(1) || '5.0'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;

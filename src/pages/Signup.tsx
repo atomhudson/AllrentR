@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Navbar } from '@/components/Navbar';
+import { TermsDialog } from '@/components/TermsDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +29,7 @@ const Signup = () => {
     phone: '',
     pinCode: '',
   });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const validatePhone = (phone: string): boolean => {
     // Indian phone number validation: exactly 10 digits
@@ -59,6 +62,15 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms Required",
+        description: "Please agree to the terms and conditions to continue",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validate phone number
     if (!validatePhone(formData.phone)) {
@@ -248,6 +260,31 @@ const Signup = () => {
                   placeholder="Re-enter your password"
                   className="transition-all duration-300 focus:shadow-card"
                 />
+              </div>
+
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                  required
+                />
+                <div className="flex-1">
+                  <label
+                    htmlFor="terms"
+                    className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I agree to the{' '}
+                    <TermsDialog>
+                      <button
+                        type="button"
+                        className="text-primary hover:text-accent font-medium underline"
+                      >
+                        Terms and Conditions
+                      </button>
+                    </TermsDialog>
+                  </label>
+                </div>
               </div>
 
               <Button

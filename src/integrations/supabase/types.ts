@@ -14,16 +14,374 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_activity_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      ads: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          description: string | null
+          display_duration: number
+          id: string
+          image_url: string | null
+          link_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          description?: string | null
+          display_duration?: number
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          display_duration?: number
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          display_order: number
+          id: string
+          image_url: string
+          link_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          display_order?: number
+          id?: string
+          image_url: string
+          link_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          link_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blogs: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category: string
+          content: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          address: string
+          availability: boolean
+          category: string
+          created_at: string
+          description: string
+          id: string
+          images: string[] | null
+          listing_status: string
+          owner_user_id: string
+          payment_transaction: string
+          payment_verified: boolean
+          phone: string
+          pin_code: string
+          product_name: string
+          product_type: Database["public"]["Enums"]["product_type"]
+          rating: number | null
+          rent_price: number
+          views: number
+        }
+        Insert: {
+          address?: string
+          availability?: boolean
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          images?: string[] | null
+          listing_status?: string
+          owner_user_id: string
+          payment_transaction: string
+          payment_verified?: boolean
+          phone?: string
+          pin_code: string
+          product_name: string
+          product_type?: Database["public"]["Enums"]["product_type"]
+          rating?: number | null
+          rent_price: number
+          views?: number
+        }
+        Update: {
+          address?: string
+          availability?: boolean
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[] | null
+          listing_status?: string
+          owner_user_id?: string
+          payment_transaction?: string
+          payment_verified?: boolean
+          phone?: string
+          pin_code?: string
+          product_name?: string
+          product_type?: Database["public"]["Enums"]["product_type"]
+          rating?: number | null
+          rent_price?: number
+          views?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          pin_code: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name: string
+          phone: string
+          pin_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          pin_code?: string
+        }
+        Relationships: []
+      }
+      ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          listing_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terms_and_conditions: {
+        Row: {
+          active: boolean
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      user_activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_listing_rating: {
+        Args: { listing_id_param: string }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_listing_views: {
+        Args: { listing_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      product_type: "rent" | "sale" | "both"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +508,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      product_type: ["rent", "sale", "both"],
+    },
   },
 } as const

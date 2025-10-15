@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Blog from "./pages/Blog";
 import BlogManagement from "./pages/BlogManagement";
 import AdEditor from "./pages/AdEditor";
+import TermsManagement from "./pages/TermsManagement";
 import NotFound from "./pages/NotFound";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/blogs" element={<BlogManagement />} />
             <Route path="/admin/ad-editor" element={<AdEditor />} />
+            <Route path="/admin/terms" element={<TermsManagement />} />
             <Route path="/blog" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListings, approveListing, rejectListing } from '@/hooks/useListings';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -265,6 +265,14 @@ const AdminDashboard = () => {
             </p>
           </div>
           <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin/terms')}
+              className="gap-2"
+            >
+              <ScrollText className="w-4 h-4" />
+              Manage Terms
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/admin/ad-editor')}

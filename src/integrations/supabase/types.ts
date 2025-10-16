@@ -161,6 +161,51 @@ export type Database = {
         }
         Relationships: []
       }
+      influencer_partners: {
+        Row: {
+          active: boolean
+          avatar_url: string
+          bio: string | null
+          created_at: string
+          created_by: string
+          display_order: number
+          followers_count: number | null
+          id: string
+          name: string
+          platform: string
+          profile_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url: string
+          bio?: string | null
+          created_at?: string
+          created_by: string
+          display_order?: number
+          followers_count?: number | null
+          id?: string
+          name: string
+          platform: string
+          profile_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string
+          bio?: string | null
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          followers_count?: number | null
+          id?: string
+          name?: string
+          platform?: string
+          profile_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           address: string
@@ -283,6 +328,30 @@ export type Database = {
           },
         ]
       }
+      section_visibility: {
+        Row: {
+          id: string
+          is_visible: boolean
+          section_name: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          id?: string
+          is_visible?: boolean
+          section_name: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          id?: string
+          is_visible?: boolean
+          section_name?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
       terms_and_conditions: {
         Row: {
           active: boolean
@@ -310,6 +379,45 @@ export type Database = {
           id?: string
           updated_at?: string
           version?: number
+        }
+        Relationships: []
+      }
+      top_profiles: {
+        Row: {
+          active: boolean
+          avatar_url: string
+          created_at: string
+          created_by: string
+          display_order: number
+          id: string
+          name: string
+          streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url: string
+          created_at?: string
+          created_by: string
+          display_order?: number
+          id?: string
+          name: string
+          streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          id?: string
+          name?: string
+          streak?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

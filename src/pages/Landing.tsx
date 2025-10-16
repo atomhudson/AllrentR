@@ -4,6 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { Shield, Zap, Users, TrendingUp } from 'lucide-react';
 import heroImage from '@/assets/hero-image.jpg';
+import { AdPopup } from '@/components/AdPopup';
+import TopProfilesSection from '@/components/TopProfilesSection';
+import InfluencerPartnersSection from '@/components/InfluencerPartnersSection';
 
 const Landing = () => {
   const features = [
@@ -31,6 +34,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AdPopup />
       <Navbar />
       
       {/* Hero Section */}
@@ -87,6 +91,12 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Top Profiles Section */}
+      <TopProfilesSection />
+
+      {/* Influencer Partners Section */}
+      <InfluencerPartnersSection />
 
       {/* Features Section */}
       <section className="py-20 bg-secondary/30">

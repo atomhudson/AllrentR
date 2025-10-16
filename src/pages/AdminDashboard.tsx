@@ -291,6 +291,22 @@ const AdminDashboard = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={() => navigate('/admin/top-profiles')}
+              className="gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Top Profiles
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin/influencer-partners')}
+              className="gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Influencers
+            </Button>
+            <Button
+              variant="outline"
               onClick={downloadReport}
               className="gap-2"
             >

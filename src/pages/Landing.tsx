@@ -45,8 +45,8 @@ const Landing = () => {
             <div className="space-y-8 animate-fade-in-up">
               <h1 className="text-5xl lg:text-6xl font-serif font-bold text-foreground leading-tight">
                 Rent Anything,
-                <span className="text-primary"> Anytime</span>,
-                <span className="text-accent"> Anywhere</span>
+                <span className="text-primary"> Earn  From</span>,
+                <span className="text-accent"> Everything</span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 India's most trusted P2P rental marketplace. List your unused items or rent what you need from verified owners in your neighborhood.

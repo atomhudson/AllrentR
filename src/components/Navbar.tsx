@@ -71,7 +71,7 @@ export const Navbar = () => {
         <>
           <Link to="/login" onClick={() => setOpen(false)}>
             <Button variant="ghost" className="font-medium w-full justify-start">
-              Login
+              LogIn
             </Button>
           </Link>
           <Link to="/signup" onClick={() => setOpen(false)}>

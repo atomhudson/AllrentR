@@ -156,9 +156,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Logged in successfully`,
       });
 
-      // Log user activity
+      // Log user activity and update streak
       if (data.user) {
         setTimeout(async () => {
+          // Update user activity and streak
+          await supabase.rpc('update_user_activity');
+          
+          // Log user login
           await supabase.from('user_activity_logs').insert({
             user_id: data.user!.id,
             action: 'USER_LOGIN',
@@ -167,6 +171,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               timestamp: new Date().toISOString()
             }
           });
+          
+          // Sync top profiles with leaderboard
+          await supabase.rpc('sync_top_profiles');
         }, 100);
       }
       

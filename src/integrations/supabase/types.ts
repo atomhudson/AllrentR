@@ -272,21 +272,30 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          current_streak: number | null
           id: string
+          last_active_at: string | null
+          longest_streak: number | null
           name: string
           phone: string
           pin_code: string
         }
         Insert: {
           created_at?: string
+          current_streak?: number | null
           id: string
+          last_active_at?: string | null
+          longest_streak?: number | null
           name: string
           phone: string
           pin_code: string
         }
         Update: {
           created_at?: string
+          current_streak?: number | null
           id?: string
+          last_active_at?: string | null
+          longest_streak?: number | null
           name?: string
           phone?: string
           pin_code?: string
@@ -468,7 +477,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          current_streak: number | null
+          id: string | null
+          last_active_at: string | null
+          longest_streak: number | null
+          name: string | null
+          rank: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_listing_rating: {
@@ -484,6 +503,14 @@ export type Database = {
       }
       increment_listing_views: {
         Args: { listing_id: string }
+        Returns: undefined
+      }
+      sync_top_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_user_activity: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }

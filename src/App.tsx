@@ -17,6 +17,7 @@ import AdEditor from "./pages/AdEditor";
 import TermsManagement from "./pages/TermsManagement";
 import TopProfilesManagement from "./pages/TopProfilesManagement";
 import InfluencerPartnersManagement from "./pages/InfluencerPartnersManagement";
+import LeaderboardManagement from "./pages/LeaderboardManagement";
 import NotFound from "./pages/NotFound";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/admin/terms" element={<TermsManagement />} />
             <Route path="/admin/top-profiles" element={<TopProfilesManagement />} />
             <Route path="/admin/influencer-partners" element={<InfluencerPartnersManagement />} />
+            <Route path="/admin/leaderboard" element={<LeaderboardManagement />} />
             <Route path="/blog" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

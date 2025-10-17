@@ -116,7 +116,7 @@ export const Navbar = () => {
 
               <Link to="/blog">
                 <Button variant="ghost" className="font-medium">
-                  Blog
+                  Blogs
                 </Button>
               </Link>
 

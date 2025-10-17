@@ -130,7 +130,7 @@ export const Navbar = () => {
                 <>
                   <Link to="/submit-listing">
                     <Button variant="outline" className="font-medium">
-                      List an Item
+                      List a Item
                     </Button>
                   </Link>
                   

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useLeaderboard = (limit: number = 50, offset: number = 0) => {
+export const useLeaderboard = (limit = 50, offset = 0) => {
   return useQuery({
     queryKey: ['leaderboard', limit, offset],
     queryFn: async () => {
@@ -15,21 +15,21 @@ export const useLeaderboard = (limit: number = 50, offset: number = 0) => {
 
       if (error) throw error;
       
-      // Add rank to each user
-      return data?.map((user, index) => ({
-        ...user,
-        rank: offset + index + 1
-      }));
+      return {
+        data: data?.map((user, index) => ({
+          ...user,
+          rank: offset + index + 1
+        })) || [],
+        total: data?.length || 0
+      };
     },
   });
 };
 
-export const useUserStreak = (userId: string | undefined) => {
+export const useUserStreak = (userId: string) => {
   return useQuery({
     queryKey: ['user-streak', userId],
     queryFn: async () => {
-      if (!userId) return null;
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('current_streak, longest_streak, last_active_at')
@@ -41,14 +41,4 @@ export const useUserStreak = (userId: string | undefined) => {
     },
     enabled: !!userId,
   });
-};
-
-export const updateUserActivity = async () => {
-  const { error } = await supabase.rpc('update_user_activity');
-  if (error) throw error;
-};
-
-export const syncTopProfiles = async () => {
-  const { error } = await supabase.rpc('sync_top_profiles');
-  if (error) throw error;
 };

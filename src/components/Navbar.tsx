@@ -32,6 +32,12 @@ export const Navbar = () => {
         </Button>
       </Link>
 
+      <Link to="/leaderboard" onClick={() => setOpen(false)}>
+        <Button variant="ghost" className="font-medium w-full justify-start">
+          🏆 Leaderboard
+        </Button>
+      </Link>
+
       {user ? (
         <>
           <Link to="/submit-listing" onClick={() => setOpen(false)}>
@@ -111,6 +117,12 @@ export const Navbar = () => {
               <Link to="/blog">
                 <Button variant="ghost" className="font-medium">
                   Blog
+                </Button>
+              </Link>
+
+              <Link to="/leaderboard">
+                <Button variant="ghost" className="font-medium">
+                  🏆 Leaderboard
                 </Button>
               </Link>
 

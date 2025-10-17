@@ -7,7 +7,6 @@ import heroImage from '@/assets/hero-image.jpg';
 import { AdPopup } from '@/components/AdPopup';
 import TopProfilesSection from '@/components/TopProfilesSection';
 import InfluencerPartnersSection from '@/components/InfluencerPartnersSection';
-import Leaderboard from '@/components/Leaderboard';
 
 const Landing = () => {
   const features = [
@@ -95,9 +94,6 @@ const Landing = () => {
 
       {/* Top Profiles Section */}
       <TopProfilesSection />
-
-      {/* Leaderboard Section */}
-      <Leaderboard />
 
       {/* Influencer Partners Section */}
       <InfluencerPartnersSection />

@@ -3,13 +3,15 @@ import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListings } from '@/hooks/useListings';
-import { Eye, Star, Package, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Eye, Star, Package, CheckCircle, Clock, XCircle, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUserStreak } from '@/hooks/useLeaderboard';
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { listings } = useListings(undefined, user?.id);
+  const { data: streakData } = useUserStreak(user?.id || '');
 
   useEffect(() => {
     if (!user) {
@@ -55,12 +57,34 @@ const Profile = () => {
       <div className="container mx-auto px-4 pt-32 pb-20">
         {/* User Info */}
         <div className="mb-12 animate-fade-in">
-          <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-            Welcome Back!
-          </h1>
-          <p className="text-muted-foreground">
-            {user.email}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
+                Welcome Back!
+              </h1>
+              <p className="text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+            {streakData && streakData.current_streak > 0 && (
+              <Card className="p-4 bg-gradient-primary">
+                <div className="flex items-center gap-3">
+                  <Flame className="w-8 h-8 text-accent" />
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">
+                      {streakData.current_streak} Days
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Current Streak 🔥
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Best: {streakData.longest_streak} days
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
 
         {/* Analytics Cards */}

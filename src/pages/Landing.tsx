@@ -44,7 +44,7 @@ const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8 animate-fade-in-up">
               <h1 className="text-5xl lg:text-6xl font-serif font-bold text-foreground leading-tight">
-                Rent Everywhere,
+                Rent where,
                 <span className="text-primary"> Anytime</span>,
                 <span className="text-accent"> Anywhere</span>
               </h1>

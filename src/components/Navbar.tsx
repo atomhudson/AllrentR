@@ -156,7 +156,7 @@ export const Navbar = () => {
                 <>
                   <Link to="/login">
                     <Button variant="ghost" className="font-medium">
-                      Login
+                      LogIn
                     </Button>
                   </Link>
                   <Link to="/signup">

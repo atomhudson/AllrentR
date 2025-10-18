@@ -21,8 +21,8 @@ import InfluencerPartnersManagement from "./pages/InfluencerPartnersManagement";
 import Leaderboard from "./pages/Leaderboard";
 import LeaderboardManagement from "./pages/LeaderboardManagement";
 import NotificationManagement from "./pages/NotificationManagement";
-import CouponManagement from "./pages/CouponManagement";
 import NotFound from "./pages/NotFound";
+import CouponManagement from "./pages/CouponManagement";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 
 const queryClient = new QueryClient();

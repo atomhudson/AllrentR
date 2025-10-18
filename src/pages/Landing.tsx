@@ -160,11 +160,70 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-8">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm opacity-90">
-            © 2025 RentKaro. Empowering India's sharing economy.
-          </p>
+      <footer className="bg-gradient-to-b from-background to-primary/5 border-t border-border py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="text-xl font-serif font-bold text-primary mb-4">RentKaro</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                India's most trusted P2P rental marketplace. Empowering the sharing economy.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/listings" className="hover:text-primary transition-colors">Browse Listings</Link></li>
+                <li><Link to="/submit-listing" className="hover:text-primary transition-colors">List Your Item</Link></li>
+                <li><Link to="/leaderboard" className="hover:text-primary transition-colors">Leaderboard</Link></li>
+                <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Refund Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Community Guidelines</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Contact Us</h4>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">📧</span>
+                  <a href="mailto:support@rentkaro.com" className="hover:text-primary transition-colors">
+                    support@rentkaro.com
+                  </a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">📞</span>
+                  <a href="tel:+919876543210" className="hover:text-primary transition-colors">
+                    +91 98765 43210
+                  </a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">📍</span>
+                  <span>Mumbai, Maharashtra, India</span>
+                </li>
+                <li className="flex gap-3 mt-4">
+                  <a href="#" className="hover:text-primary transition-colors text-xl">📘</a>
+                  <a href="#" className="hover:text-primary transition-colors text-xl">📷</a>
+                  <a href="#" className="hover:text-primary transition-colors text-xl">🐦</a>
+                  <a href="#" className="hover:text-primary transition-colors text-xl">💼</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-border pt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              © 2025 RentKaro. All rights reserved. Made with ❤️ in India.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

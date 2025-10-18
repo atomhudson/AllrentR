@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { NotificationBanner } from "./components/NotificationBanner";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -19,6 +20,7 @@ import TopProfilesManagement from "./pages/TopProfilesManagement";
 import InfluencerPartnersManagement from "./pages/InfluencerPartnersManagement";
 import Leaderboard from "./pages/Leaderboard";
 import LeaderboardManagement from "./pages/LeaderboardManagement";
+import NotificationManagement from "./pages/NotificationManagement";
 import NotFound from "./pages/NotFound";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 
@@ -31,6 +33,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <NotificationBanner />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<Signup />} />
@@ -45,6 +48,7 @@ const App = () => (
             <Route path="/admin/top-profiles" element={<TopProfilesManagement />} />
             <Route path="/admin/influencer-partners" element={<InfluencerPartnersManagement />} />
             <Route path="/admin/leaderboard" element={<LeaderboardManagement />} />
+            <Route path="/admin/notifications" element={<NotificationManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/blog" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

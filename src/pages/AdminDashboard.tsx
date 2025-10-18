@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListings, approveListing, rejectListing } from '@/hooks/useListings';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -312,6 +312,14 @@ const AdminDashboard = () => {
             >
               <Trophy className="w-4 h-4" />
               Leaderboard
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin/notifications')}
+              className="gap-2"
+            >
+              <Bell className="w-4 h-4" />
+              Notifications
             </Button>
             <Button
               variant="outline"

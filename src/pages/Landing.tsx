@@ -7,6 +7,7 @@ import heroImage from '@/assets/hero-image.jpg';
 import { AdPopup } from '@/components/AdPopup';
 import TopProfilesSection from '@/components/TopProfilesSection';
 import InfluencerPartnersSection from '@/components/InfluencerPartnersSection';
+import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 
 const Landing = () => {
   const features = [
@@ -44,12 +45,13 @@ const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8 animate-fade-in-up">
               <h1 className="text-5xl lg:text-6xl font-serif font-bold text-foreground leading-tight">
-                Rent where,
+                Rent Anything,
                 <span className="text-primary"> Anytime</span>,
                 <span className="text-accent"> Anywhere</span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                India's most trusted P2P rental marketplace. List your unused items or rent what you need from verified owners in your neighborhood.
+                Near You – India's #1 Peer-to-Peer Rental Marketplace
+Turn your unused items into income. List your product in 30 seconds and connect with verified renters in your area.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/signup">
@@ -103,7 +105,7 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl font-serif font-bold text-foreground mb-4">
-              Why Choose RentKaro?
+              Why Thousands Choose RentKaro for Renting & Earning
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We make renting and lending simple, secure, and rewarding for everyone.
@@ -151,7 +153,7 @@ const Landing = () => {
               </Link>
               <Link to="/submit-listing">
                 <Button variant="accent" size="lg" className="text-lg px-10">
-                  List Your First Item
+                  List Your First Item 
                 </Button>
               </Link>
             </div>
@@ -164,9 +166,9 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-serif font-bold text-primary mb-4">RentKaro</h3>
+              <h3 className="text-xl font-serif font-bold text-primary mb-4">AllRentr</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                India's most trusted P2P rental marketplace. Empowering the sharing economy.
+               AllRentr is a peer-to-peer rental platform in India where users can rent household items, camera gear, bikes, tools, furniture and more at affordable prices.
               </p>
             </div>
             
@@ -196,25 +198,33 @@ const Landing = () => {
                 <li className="flex items-center gap-2">
                   <span className="text-primary">📧</span>
                   <a href="mailto:support@rentkaro.com" className="hover:text-primary transition-colors">
-                    support@rentkaro.com
+                    allrentr15@gmail.com
                   </a>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-primary">📞</span>
-                  <a href="tel:+919876543210" className="hover:text-primary transition-colors">
-                    +91 98765 43210
+                  <a href="tel:+917906744723" className="hover:text-primary transition-colors">
+                    +91 79067 44723
                   </a>
                 </li>
-                <li className="flex items-center gap-2">
+                {/* <li className="flex items-center gap-2">
                   <span className="text-primary">📍</span>
                   <span>Mumbai, Maharashtra, India</span>
-                </li>
-                <li className="flex gap-3 mt-4">
-                  <a href="#" className="hover:text-primary transition-colors text-xl">📘</a>
-                  <a href="#" className="hover:text-primary transition-colors text-xl">📷</a>
-                  <a href="#" className="hover:text-primary transition-colors text-xl">🐦</a>
-                  <a href="#" className="hover:text-primary transition-colors text-xl">💼</a>
-                </li>
+                </li> */}
+               <li className="flex gap-3 mt-4 text-xl">
+  <a href="https://youtube.com/@allrentr?si=Su67ymW9sOrkSygF" className="hover:text-primary transition-colors">
+    <FaYoutube />
+  </a>
+  <a href="https://www.instagram.com/allrentr/" className="hover:text-primary transition-colors">
+    <FaInstagram />
+  </a>
+  <a href="https://www.facebook.com/profile.php?id=61581953741666" className="hover:text-primary transition-colors">
+    <FaFacebookF />
+  </a>
+  <a href="https://x.com/heyrenter86" className="hover:text-primary transition-colors">
+    <FaTwitter />
+  </a>
+</li>
               </ul>
             </div>
           </div>

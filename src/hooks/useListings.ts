@@ -20,6 +20,11 @@ export interface Listing {
   phone: string;
   address: string;
   created_at: string;
+  listing_type?: string | null;
+  coupon_code?: string;
+  original_price?: number;
+  discount_amount?: number;
+  final_price?: number;
 }
 
 export const useListings = (status?: string, userId?: string) => {

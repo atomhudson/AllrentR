@@ -133,8 +133,8 @@ const Listings = () => {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="left-2" />
-                      <CarouselNext className="right-2" />
+                      <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2" />
+                      <CarouselNext className="right-2 top-1/2 -translate-y-1/2" />
                     </Carousel>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-primary">
@@ -152,6 +152,13 @@ const Listings = () => {
                       </div>
                     )}
                   </div>
+                  {listing.listing_type === 'paid' && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-card animate-pulse">
+                        PAID
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6 space-y-4">

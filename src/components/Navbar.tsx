@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Package, User, LogOut, LayoutDashboard, Menu } from 'lucide-react';
+import heroImage from '@/assets/Logo.png';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
@@ -88,9 +89,18 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2 group">
+          {/* <Link to="/" className="flex items-center space-x-2 group">
             <Package className="w-8 h-8 text-primary group-hover:text-accent transition-colors" />
             <span className="text-2xl font-serif font-bold text-primary">RentKaro</span>
+          </Link> */}
+          <Link to="/" className="flex items-center space-x-2 group">
+          <img
+  src={heroImage} // yaha aap apna logo ka path dalen
+  alt="AllRentr Logo"
+  className="w-20 h-20 object-contain" // same width & height, logo ke liye
+
+/>
+           
           </Link>
 
           {isMobile ? (

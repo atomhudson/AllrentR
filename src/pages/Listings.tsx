@@ -154,9 +154,18 @@ const Listings = () => {
                   </div>
                   {listing.listing_type === 'paid' && (
                     <div className="absolute top-2 left-2 z-10">
-                      <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-card animate-pulse">
-                        PAID
-                      </div>
+                     <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md flex items-center justify-center">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-2 w-2 mr-1"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+  >
+    <path d="M22.25 12c0 5.65-4.6 10.25-10.25 10.25S1.75 17.65 1.75 12 6.35 1.75 12 1.75 22.25 6.35 22.25 12zm-5.97-3.53l-5.33 5.34-2.83-2.83 1.06-1.06 1.77 1.77 4.27-4.27 1.06 1.06z" />
+  </svg>
+  👑
+</div>
+
                     </div>
                   )}
                 </div>

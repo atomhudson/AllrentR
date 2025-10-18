@@ -161,6 +161,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string
+          discount_amount: number
+          discount_percentage: number
+          id: string
+          is_percentage: boolean
+          updated_at: string
+          usage_limit: number | null
+          used_count: number
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by: string
+          discount_amount?: number
+          discount_percentage: number
+          id?: string
+          is_percentage?: boolean
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string
+          discount_amount?: number
+          discount_percentage?: number
+          id?: string
+          is_percentage?: boolean
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       influencer_partners: {
         Row: {
           active: boolean
@@ -211,11 +259,16 @@ export type Database = {
           address: string
           availability: boolean
           category: string
+          coupon_code: string | null
           created_at: string
           description: string
+          discount_amount: number
+          final_price: number
           id: string
           images: string[] | null
           listing_status: string
+          listing_type: string
+          original_price: number
           owner_user_id: string
           payment_transaction: string
           payment_verified: boolean
@@ -231,11 +284,16 @@ export type Database = {
           address?: string
           availability?: boolean
           category?: string
+          coupon_code?: string | null
           created_at?: string
           description: string
+          discount_amount?: number
+          final_price?: number
           id?: string
           images?: string[] | null
           listing_status?: string
+          listing_type?: string
+          original_price?: number
           owner_user_id: string
           payment_transaction: string
           payment_verified?: boolean
@@ -251,11 +309,16 @@ export type Database = {
           address?: string
           availability?: boolean
           category?: string
+          coupon_code?: string | null
           created_at?: string
           description?: string
+          discount_amount?: number
+          final_price?: number
           id?: string
           images?: string[] | null
           listing_status?: string
+          listing_type?: string
+          original_price?: number
           owner_user_id?: string
           payment_transaction?: string
           payment_verified?: boolean
@@ -527,6 +590,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_coupon_usage: {
+        Args: { coupon_code: string }
+        Returns: undefined
       }
       increment_listing_views: {
         Args: { listing_id: string }

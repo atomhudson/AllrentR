@@ -9,9 +9,11 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Upload, Loader2, CheckCircle } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { validateCoupon } from '@/hooks/useCoupons';
 
 const SubmitListing = () => {
   const navigate = useNavigate();
@@ -19,6 +21,11 @@ const SubmitListing = () => {
   const [loading, setLoading] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  const [listingType, setListingType] = useState<'free' | 'paid'>('paid');
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [formData, setFormData] = useState({
     product_name: '',
     description: '',
@@ -71,6 +78,45 @@ const SubmitListing = () => {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode) {
+      toast({
+        title: 'Coupon code required',
+        description: 'Please enter a coupon code',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setValidatingCoupon(true);
+    const result = await validateCoupon(couponCode);
+    
+    if (result.valid && result.coupon) {
+      const originalPrice = 20;
+      let discountAmount = 0;
+      
+      if (result.coupon.is_percentage) {
+        discountAmount = (originalPrice * result.coupon.discount_percentage) / 100;
+      } else {
+        discountAmount = result.coupon.discount_amount;
+      }
+      
+      setDiscount(Math.min(discountAmount, originalPrice));
+      setCouponApplied(true);
+      toast({
+        title: 'Coupon applied!',
+        description: `You saved ₹${Math.min(discountAmount, originalPrice)}`,
+      });
+    } else {
+      toast({
+        title: 'Invalid coupon',
+        description: result.error || 'This coupon code is not valid',
+        variant: 'destructive',
+      });
+    }
+    setValidatingCoupon(false);
+  };
+
   const handleSubmitPayment = async () => {
     if (!formData.payment_transaction) {
       toast({
@@ -84,6 +130,9 @@ const SubmitListing = () => {
     setLoading(true);
 
     try {
+      const originalPrice = 20;
+      const finalPrice = originalPrice - discount;
+      
       const { error } = await supabase.from('listings').insert({
         owner_user_id: user.id,
         product_name: formData.product_name,
@@ -96,9 +145,19 @@ const SubmitListing = () => {
         category: formData.category,
         phone: formData.phone,
         address: formData.address,
+        listing_type: 'paid',
+        coupon_code: couponApplied ? couponCode : null,
+        original_price: originalPrice,
+        discount_amount: discount,
+        final_price: finalPrice,
       });
 
       if (error) throw error;
+
+      // Increment coupon usage if applied
+      if (couponApplied && couponCode) {
+        await supabase.rpc('increment_coupon_usage', { coupon_code: couponCode.toUpperCase() });
+      }
 
       // Log user activity
       await supabase.from('user_activity_logs').insert({
@@ -132,10 +191,61 @@ const SubmitListing = () => {
     }
   };
 
+  const handleDirectSubmit = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('listings').insert({
+        owner_user_id: user.id,
+        product_name: formData.product_name,
+        description: formData.description,
+        images: formData.images,
+        rent_price: parseFloat(formData.rent_price),
+        pin_code: formData.pin_code,
+        payment_transaction: 'FREE_LISTING',
+        product_type: formData.product_type,
+        category: formData.category,
+        phone: formData.phone,
+        address: formData.address,
+        listing_type: 'free',
+        original_price: 0,
+        discount_amount: 0,
+        final_price: 0,
+      });
+
+      if (error) throw error;
+
+      await supabase.from('user_activity_logs').insert({
+        user_id: user.id,
+        action: 'SUBMIT_FREE_LISTING',
+        details: {
+          product_name: formData.product_name,
+          category: formData.category,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      toast({
+        title: "Free listing submitted!",
+        description: "Your listing is pending admin approval.",
+      });
+
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "Unable to create listing. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate phone number
     if (!validatePhone(formData.phone)) {
       setErrors(prev => ({ 
         ...prev, 
@@ -149,7 +259,6 @@ const SubmitListing = () => {
       return;
     }
 
-    // Validate PIN code
     if (!validatePinCode(formData.pin_code)) {
       setErrors(prev => ({ 
         ...prev, 
@@ -163,7 +272,6 @@ const SubmitListing = () => {
       return;
     }
 
-    // Validate images
     if (formData.images.length < 5) {
       toast({
         title: "More images required",
@@ -173,7 +281,11 @@ const SubmitListing = () => {
       return;
     }
 
-    setShowPaymentDialog(true);
+    if (listingType === 'free') {
+      handleDirectSubmit();
+    } else {
+      setShowPaymentDialog(true);
+    }
   };
 
   return (
@@ -338,10 +450,24 @@ const SubmitListing = () => {
                 />
               </div>
 
-              <div className="bg-accent/10 border-2 border-accent rounded-lg p-4">
-                <p className="text-sm text-foreground font-medium">
-                  ℹ️ A one-time listing fee of <span className="text-accent font-bold">₹10</span> is required. Your listing will go live after admin approval.
-                </p>
+              <div className="space-y-4 bg-accent/5 border border-accent/20 rounded-lg p-6">
+                <Label className="text-base font-semibold">Listing Type</Label>
+                <RadioGroup value={listingType} onValueChange={(value: 'free' | 'paid') => setListingType(value)}>
+                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
+                    <RadioGroupItem value="free" id="free" />
+                    <Label htmlFor="free" className="flex-1 cursor-pointer">
+                      <div className="font-semibold">Free Listing</div>
+                      <div className="text-sm text-muted-foreground">No payment required</div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
+                    <RadioGroupItem value="paid" id="paid" />
+                    <Label htmlFor="paid" className="flex-1 cursor-pointer">
+                      <div className="font-semibold">Paid Listing - ₹20</div>
+                      <div className="text-sm text-muted-foreground">Priority listing with more visibility</div>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <Button
@@ -349,8 +475,18 @@ const SubmitListing = () => {
                 variant="hero"
                 size="lg"
                 className="w-full"
+                disabled={loading}
               >
-                Continue to Payment
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : listingType === 'free' ? (
+                  'Submit Free Listing'
+                ) : (
+                  'Continue to Payment'
+                )}
               </Button>
             </form>
           </Card>
@@ -384,10 +520,58 @@ const SubmitListing = () => {
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2">
                 <p className="text-sm font-medium text-foreground">UPI Payment Details:</p>
                 <p className="text-xs text-muted-foreground">UPI ID: rentkaro@paytm</p>
-                <p className="text-xs text-muted-foreground">Amount: ₹10</p>
+                <p className="text-xs text-muted-foreground">
+                  Original Amount: <span className="line-through">₹20</span>
+                  {discount > 0 && (
+                    <span className="ml-2 text-accent font-bold">
+                      Final Amount: ₹{(20 - discount).toFixed(2)}
+                    </span>
+                  )}
+                  {discount === 0 && <span className="ml-2 font-bold">₹20</span>}
+                </p>
                 <p className="text-xs text-accent font-medium mt-2">
                   After payment, enter your transaction ID below
                 </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="coupon_code">Have a Coupon Code?</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="coupon_code"
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Enter coupon code"
+                      disabled={couponApplied}
+                      className="font-mono"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={couponApplied || validatingCoupon}
+                      variant="outline"
+                    >
+                      {validatingCoupon ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : couponApplied ? (
+                        'Applied'
+                      ) : (
+                        <>
+                          <Tag className="mr-2 h-4 w-4" />
+                          Apply
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  {couponApplied && (
+                    <p className="text-sm text-accent flex items-center gap-1">
+                      <CheckCircle className="h-4 w-4" />
+                      Coupon applied! You saved ₹{discount.toFixed(2)}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -419,7 +603,7 @@ const SubmitListing = () => {
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Submit Listing
+                    Submit Listing - Pay ₹{(20 - discount).toFixed(2)}
                   </>
                 )}
               </Button>

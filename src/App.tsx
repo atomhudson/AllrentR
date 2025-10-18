@@ -21,6 +21,7 @@ import InfluencerPartnersManagement from "./pages/InfluencerPartnersManagement";
 import Leaderboard from "./pages/Leaderboard";
 import LeaderboardManagement from "./pages/LeaderboardManagement";
 import NotificationManagement from "./pages/NotificationManagement";
+import CouponManagement from "./pages/CouponManagement";
 import NotFound from "./pages/NotFound";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/admin/influencer-partners" element={<InfluencerPartnersManagement />} />
             <Route path="/admin/leaderboard" element={<LeaderboardManagement />} />
             <Route path="/admin/notifications" element={<NotificationManagement />} />
+            <Route path="/admin/coupons" element={<CouponManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/blog" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

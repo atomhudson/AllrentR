@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,16 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { validateCoupon } from '@/hooks/useCoupons';
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 const SubmitListing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [listingType, setListingType] = useState<'free' | 'paid'>('paid');
   const [couponCode, setCouponCode] = useState('');
@@ -32,7 +37,6 @@ const SubmitListing = () => {
     images: [] as string[],
     rent_price: '',
     pin_code: '',
-    payment_transaction: '',
     product_type: 'rent' as 'rent' | 'sale' | 'both',
     category: 'other',
     phone: '',
@@ -117,76 +121,130 @@ const SubmitListing = () => {
     setValidatingCoupon(false);
   };
 
-  const handleSubmitPayment = async () => {
-    if (!formData.payment_transaction) {
-      toast({
-        title: "Payment details required",
-        description: "Please enter your transaction ID or upload payment screenshot",
-        variant: "destructive",
-      });
-      return;
-    }
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
 
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleRazorpayPayment = async () => {
     setLoading(true);
-
     try {
       const originalPrice = 20;
       const finalPrice = originalPrice - discount;
-      
-      const { error } = await supabase.from('listings').insert({
-        owner_user_id: user.id,
-        product_name: formData.product_name,
-        description: formData.description,
-        images: formData.images,
-        rent_price: parseFloat(formData.rent_price),
-        pin_code: formData.pin_code,
-        payment_transaction: formData.payment_transaction,
-        product_type: formData.product_type,
-        category: formData.category,
-        phone: formData.phone,
-        address: formData.address,
-        listing_type: 'paid',
-        coupon_code: couponApplied ? couponCode : null,
-        original_price: originalPrice,
-        discount_amount: discount,
-        final_price: finalPrice,
-      });
 
-      if (error) throw error;
-
-      // Increment coupon usage if applied
-      if (couponApplied && couponCode) {
-        await supabase.rpc('increment_coupon_usage', { coupon_code: couponCode.toUpperCase() });
-      }
-
-      // Log user activity
-      await supabase.from('user_activity_logs').insert({
-        user_id: user.id,
-        action: 'SUBMIT_LISTING',
-        details: {
-          product_name: formData.product_name,
-          category: formData.category,
-          rent_price: formData.rent_price,
-          timestamp: new Date().toISOString()
+      // Create Razorpay order via edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
+        body: { 
+          amount: finalPrice,
+          currency: 'INR',
+          receipt: `listing_${Date.now()}`
         }
       });
 
-      setPaymentSubmitted(true);
-      toast({
-        title: "Listing submitted!",
-        description: "Your listing is pending admin approval. You'll be notified once it's live.",
-      });
+      if (orderError) throw orderError;
 
-      setTimeout(() => {
-        navigate('/profile');
-      }, 2000);
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Product Listing Payment',
+        description: `Payment for listing: ${formData.product_name}`,
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          // Payment successful
+          try {
+            const { error } = await supabase.from('listings').insert({
+              owner_user_id: user.id,
+              product_name: formData.product_name,
+              description: formData.description,
+              images: formData.images,
+              rent_price: parseFloat(formData.rent_price),
+              pin_code: formData.pin_code,
+              payment_transaction: response.razorpay_payment_id,
+              product_type: formData.product_type,
+              category: formData.category,
+              phone: formData.phone,
+              address: formData.address,
+              listing_type: 'paid',
+              coupon_code: couponApplied ? couponCode : null,
+              original_price: originalPrice,
+              discount_amount: discount,
+              final_price: finalPrice,
+              payment_verified: true,
+            });
+
+            if (error) throw error;
+
+            // Increment coupon usage if applied
+            if (couponApplied && couponCode) {
+              await supabase.rpc('increment_coupon_usage', { coupon_code: couponCode.toUpperCase() });
+            }
+
+            // Log user activity
+            await supabase.from('user_activity_logs').insert({
+              user_id: user.id,
+              action: 'SUBMIT_LISTING',
+              details: {
+                product_name: formData.product_name,
+                category: formData.category,
+                rent_price: formData.rent_price,
+                payment_id: response.razorpay_payment_id,
+                timestamp: new Date().toISOString()
+              }
+            });
+
+            setPaymentSubmitted(true);
+            toast({
+              title: "Payment successful!",
+              description: "Your listing is pending admin approval.",
+            });
+
+            setTimeout(() => {
+              navigate('/profile');
+            }, 2000);
+          } catch (error) {
+            toast({
+              title: "Submission failed",
+              description: "Payment successful but listing creation failed. Please contact support.",
+              variant: "destructive",
+            });
+          }
+        },
+        prefill: {
+          contact: formData.phone,
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+            toast({
+              title: "Payment cancelled",
+              description: "You cancelled the payment process",
+              variant: "destructive",
+            });
+          }
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+      setLoading(false);
     } catch (error) {
+      console.error('Payment error:', error);
       toast({
-        title: "Submission failed",
-        description: "Unable to create listing. Please try again.",
+        title: "Payment failed",
+        description: "Unable to process payment. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -284,7 +342,7 @@ const SubmitListing = () => {
     if (listingType === 'free') {
       handleDirectSubmit();
     } else {
-      setShowPaymentDialog(true);
+      handleRazorpayPayment();
     }
   };
 
@@ -470,73 +528,9 @@ const SubmitListing = () => {
                 </RadioGroup>
               </div>
 
-              <Button
-                type="submit"
-                variant="hero"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : listingType === 'free' ? (
-                  'Submit Free Listing'
-                ) : (
-                  'Continue to Payment'
-                )}
-              </Button>
-            </form>
-          </Card>
-        </div>
-      </div>
-
-      {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-serif">
-              {paymentSubmitted ? 'Listing Submitted!' : 'Payment Verification'}
-            </DialogTitle>
-            <DialogDescription>
-              {paymentSubmitted 
-                ? 'Your listing is pending admin approval. You will be notified once it goes live.'
-                : 'Pay ₹10 listing fee to submit your item for approval'
-              }
-            </DialogDescription>
-          </DialogHeader>
-
-          {paymentSubmitted ? (
-            <div className="text-center py-8 space-y-4">
-              <CheckCircle className="w-16 h-16 text-accent mx-auto animate-scale-in" />
-              <p className="text-muted-foreground">
-                Redirecting to your profile...
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6 py-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2">
-                <p className="text-sm font-medium text-foreground">UPI Payment Details:</p>
-                <p className="text-xs text-muted-foreground">UPI ID: rentkaro@paytm</p>
-                <p className="text-xs text-muted-foreground">
-                  Original Amount: <span className="line-through">₹20</span>
-                  {discount > 0 && (
-                    <span className="ml-2 text-accent font-bold">
-                      Final Amount: ₹{(20 - discount).toFixed(2)}
-                    </span>
-                  )}
-                  {discount === 0 && <span className="ml-2 font-bold">₹20</span>}
-                </p>
-                <p className="text-xs text-accent font-medium mt-2">
-                  After payment, enter your transaction ID below
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="coupon_code">Have a Coupon Code?</Label>
+              {listingType === 'paid' && (
+                <div className="space-y-4 bg-primary/5 border border-primary/20 rounded-lg p-6">
+                  <Label className="text-base font-semibold">Have a Coupon Code?</Label>
                   <div className="flex gap-2">
                     <Input
                       id="coupon_code"
@@ -571,28 +565,20 @@ const SubmitListing = () => {
                       Coupon applied! You saved ₹{discount.toFixed(2)}
                     </p>
                   )}
+                  <div className="text-sm text-muted-foreground">
+                    <p>Original Amount: <span className="line-through">₹20</span></p>
+                    <p className="text-lg font-bold text-foreground">
+                      Final Amount: ₹{(20 - discount).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="payment_transaction">Transaction ID / Screenshot URL</Label>
-                <Input
-                  id="payment_transaction"
-                  name="payment_transaction"
-                  type="text"
-                  required
-                  value={formData.payment_transaction}
-                  onChange={handleChange}
-                  placeholder="Enter transaction ID or upload screenshot URL"
-                  className="transition-all duration-300 focus:shadow-card"
-                />
-              </div>
+              )}
 
               <Button
+                type="submit"
                 variant="hero"
                 size="lg"
                 className="w-full"
-                onClick={handleSubmitPayment}
                 disabled={loading}
               >
                 {loading ? (
@@ -600,17 +586,16 @@ const SubmitListing = () => {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Submitting...
                   </>
+                ) : listingType === 'free' ? (
+                  'Submit Free Listing'
                 ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Submit Listing - Pay ₹{(20 - discount).toFixed(2)}
-                  </>
+                  'Continue to Payment'
                 )}
               </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            </form>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

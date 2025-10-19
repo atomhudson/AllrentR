@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { influencerPartnerSchema } from '@/lib/validation';
 
 const InfluencerPartnersManagement = () => {
   const queryClient = useQueryClient();
@@ -74,6 +75,9 @@ const InfluencerPartnersManagement = () => {
 
   const savePartner = useMutation({
     mutationFn: async (partner: any) => {
+      // Validate the partner data
+      influencerPartnerSchema.parse(partner);
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (editingPartner) {
@@ -94,6 +98,16 @@ const InfluencerPartnersManagement = () => {
       toast.success(editingPartner ? 'Partner updated' : 'Partner added');
       setIsDialogOpen(false);
       resetForm();
+    },
+    onError: (error: any) => {
+      if (error.errors) {
+        // Zod validation errors
+        error.errors.forEach((err: any) => {
+          toast.error(`${err.path.join('.')}: ${err.message}`);
+        });
+      } else {
+        toast.error('Failed to save partner');
+      }
     },
   });
 

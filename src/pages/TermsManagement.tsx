@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { termsSchema } from '@/lib/validation';
 
 const TermsManagement = () => {
   const navigate = useNavigate();
@@ -52,6 +53,9 @@ const TermsManagement = () => {
     setLoading(true);
 
     try {
+      // Validate content
+      const validatedData = termsSchema.parse({ content });
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -75,7 +79,7 @@ const TermsManagement = () => {
       const { error } = await supabase
         .from('terms_and_conditions')
         .insert({
-          content,
+          content: validatedData.content,
           version: newVersion,
           active: true,
           created_by: user.id,
@@ -89,13 +93,24 @@ const TermsManagement = () => {
       });
 
       navigate('/admin');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating terms:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update terms and conditions',
-        variant: 'destructive',
-      });
+      if (error.errors) {
+        // Zod validation errors
+        error.errors.forEach((err: any) => {
+          toast({
+            title: 'Validation Error',
+            description: `${err.path.join('.')}: ${err.message}`,
+            variant: 'destructive',
+          });
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to update terms and conditions',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }

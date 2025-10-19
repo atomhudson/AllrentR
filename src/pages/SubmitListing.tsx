@@ -55,6 +55,11 @@ const SubmitListing = () => {
     }
   }, [user, navigate]);
 
+  // Return null while redirecting if no user
+  if (!user) {
+    return null;
+  }
+
   const validatePhone = (phone: string): boolean => {
     // Indian phone number validation: 10 digits, optionally starting with +91 or 91
     const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;

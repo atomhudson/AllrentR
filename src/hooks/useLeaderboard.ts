@@ -5,12 +5,11 @@ export const useLeaderboard = (limit = 50, offset = 0) => {
   return useQuery({
     queryKey: ['leaderboard', limit, offset],
     queryFn: async () => {
+      // Query from the leaderboard view instead of profiles table directly
+      // This view only exposes non-sensitive columns (no phone/pin_code)
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, current_streak, longest_streak, last_active_at')
-        .gt('current_streak', 0)
-        .order('current_streak', { ascending: false })
-        .order('last_active_at', { ascending: false })
+        .from('leaderboard')
+        .select('*')
         .range(offset, offset + limit - 1);
 
       if (error) throw error;

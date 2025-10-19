@@ -48,10 +48,12 @@ const SubmitListing = () => {
     pinCode: '',
   });
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  // Check authentication in useEffect to avoid early return before hooks
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   const validatePhone = (phone: string): boolean => {
     // Indian phone number validation: 10 digits, optionally starting with +91 or 91
@@ -122,16 +124,20 @@ const SubmitListing = () => {
   };
 
   useEffect(() => {
-    // Load Razorpay script
+    // Load Razorpay script only if user is authenticated
+    if (!user) return;
+    
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
-  }, []);
+  }, [user]);
 
   const handleRazorpayPayment = async () => {
     setLoading(true);

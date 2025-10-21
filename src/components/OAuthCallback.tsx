@@ -9,8 +9,13 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        console.log('OAuth callback triggered');
+        
         // Get the session from the URL hash
         const { data, error } = await supabase.auth.getSession();
+        
+        console.log('Session data:', data);
+        console.log('Session error:', error);
         
         if (error) {
           console.error('Auth callback error:', error);
@@ -24,6 +29,7 @@ const OAuthCallback = () => {
         }
 
         if (data.session) {
+          console.log('Session found, redirecting to listings');
           toast({
             title: "Welcome!",
             description: "Successfully logged in with Google",
@@ -55,6 +61,7 @@ const OAuthCallback = () => {
           
           navigate('/listings');
         } else {
+          console.log('No session found, redirecting to login');
           // No session found, redirect to login
           navigate('/login');
         }

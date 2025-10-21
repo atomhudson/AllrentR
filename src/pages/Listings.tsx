@@ -199,7 +199,7 @@ const Listings = () => {
                     </div>
                   </div>
 
-                  <Button variant="hero" className="w-full">
+                  <Button variant="premium" className="w-full">
                     Contact Owner
                   </Button>
                 </div>

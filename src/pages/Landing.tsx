@@ -39,67 +39,68 @@ const Landing = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-overlay" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(215_45%_25%_/_0.03),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(38_70%_55%_/_0.05),transparent_50%)]" />
+      <section className="relative pt-32 pb-28 overflow-hidden bg-secondary/20">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--primary)) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }} />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div className="space-y-8 animate-fade-in-up">
-              <div className="inline-block">
-                <span className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold text-sm tracking-wide border border-accent/20">
-                  🎯 India's Most Trusted Rental Platform
+              <div className="inline-block animate-slide-up">
+                <span className="px-5 py-2.5 rounded-full bg-accent text-accent-foreground font-bold text-xs uppercase tracking-widest shadow-card border-2 border-accent/20">
+                  🎯 India's #1 Rental Platform
                 </span>
               </div>
-              <h1 className="text-5xl lg:text-7xl font-serif font-bold text-foreground leading-[1.1] tracking-tight">
+              <h1 className="text-5xl lg:text-7xl font-serif font-bold text-foreground leading-[1.05] tracking-tight">
                 Rent Anything,
                 <br />
                 <span className="text-primary">Anytime</span>,
                 <br />
-                <span className="bg-gradient-accent bg-clip-text text-transparent">Anywhere</span>
+                <span className="text-accent">Anywhere</span>
               </h1>
-              <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed font-light">
-                Transform your unused items into steady income. List in 30 seconds, connect with verified renters nearby.
+              <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed">
+                Transform unused items into steady income. List in 30 seconds, connect with verified renters near you.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2">
+              <div className="flex flex-wrap gap-5 pt-4">
                 <Link to="/signup">
-                  <Button variant="premium" size="xl">
+                  <Button variant="luxury" size="xl" className="animate-reveal">
                     Get Started Free →
                   </Button>
                 </Link>
                 <Link to="/listings">
-                  <Button variant="outline" size="xl">
+                  <Button variant="outline" size="xl" className="animate-reveal" style={{ animationDelay: '0.1s' }}>
                     Browse Listings
                   </Button>
                 </Link>
               </div>
-              <div className="flex items-center gap-8 pt-6 border-t border-border/50">
-                <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">10K+</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Active Users</div>
+              <div className="grid grid-cols-3 gap-6 pt-8 border-t-2 border-primary/10">
+                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.2s' }}>
+                  <div className="text-4xl font-bold text-primary">10K+</div>
+                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Active Users</div>
                 </div>
-                <div className="w-px h-16 bg-gradient-to-b from-transparent via-border to-transparent" />
-                <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-accent bg-clip-text text-transparent">5K+</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Items Listed</div>
+                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.3s' }}>
+                  <div className="text-4xl font-bold text-accent">5K+</div>
+                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Items Listed</div>
                 </div>
-                <div className="w-px h-16 bg-gradient-to-b from-transparent via-border to-transparent" />
-                <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">15K+</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Rentals</div>
+                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.4s' }}>
+                  <div className="text-4xl font-bold text-primary">15K+</div>
+                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Happy Rentals</div>
                 </div>
               </div>
             </div>
-            <div className="relative animate-scale-in">
-              <div className="absolute -inset-8 bg-gradient-primary opacity-15 blur-3xl rounded-full animate-pulse" />
-              <div className="absolute -inset-4 bg-gradient-accent opacity-10 blur-2xl rounded-full" />
-              <div className="relative rounded-2xl overflow-hidden shadow-elegant border-4 border-white/50">
+            <div className="relative animate-scale-in lg:animate-float">
+              <div className="absolute -inset-12 bg-primary/5 rounded-3xl" />
+              <div className="absolute -inset-6 bg-accent/5 rounded-2xl" />
+              <div className="relative rounded-2xl overflow-hidden shadow-luxury border-4 border-white/80">
                 <img
                   src={heroImage}
                   alt="P2P Rental Marketplace"
                   className="w-full object-cover"
                 />
               </div>
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-accent rounded-full opacity-20 blur-3xl animate-pulse-subtle" />
+              <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary rounded-full opacity-20 blur-3xl animate-pulse-subtle" style={{ animationDelay: '1s' }} />
             </div>
           </div>
         </div>
@@ -112,37 +113,37 @@ const Landing = () => {
       <InfluencerPartnersSection />
 
       {/* Features Section */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-secondary/40 to-background" />
+      <section className="py-28 relative bg-white">
         <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-20 animate-fade-in max-w-3xl mx-auto">
-            <span className="text-accent font-semibold tracking-wider uppercase text-sm mb-3 block">
+          <div className="text-center mb-20 animate-fade-in max-w-4xl mx-auto">
+            <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest mb-4">
               Premium Features
             </span>
-            <h2 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-6 leading-tight">
-              Why Thousands Choose Us for <span className="text-primary">Renting & Earning</span>
+            <h2 className="text-4xl lg:text-6xl font-serif font-bold text-foreground mb-6 leading-tight">
+              Why Thousands Choose Us for <br /><span className="text-primary">Renting & Earning</span>
             </h2>
-            <p className="text-xl text-muted-foreground font-light">
-              Experience seamless, secure, and rewarding transactions with our platform.
+            <div className="w-24 h-1.5 bg-accent mx-auto mb-6" />
+            <p className="text-xl text-muted-foreground">
+              Experience seamless, secure, and rewarding transactions with our premium platform.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="group p-8 hover:shadow-elegant transition-all duration-500 hover:-translate-y-3 bg-card animate-fade-in-up border border-border/50 hover:border-primary/30 relative overflow-hidden"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group p-10 hover:shadow-luxury transition-all duration-700 hover:-translate-y-4 bg-card animate-reveal border-2 border-border/30 hover:border-accent/50 relative"
+                style={{ animationDelay: `${index * 0.15}s` }}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-primary opacity-0 group-hover:opacity-10 blur-3xl transition-opacity duration-500" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 shadow-card group-hover:shadow-glow group-hover:scale-110 transition-all duration-300">
-                    <feature.icon className="w-7 h-7 text-primary-foreground" />
+                  <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6 shadow-card group-hover:shadow-elegant group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    <feature.icon className="w-8 h-8 text-primary-foreground" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors duration-300">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed text-sm">
                     {feature.description}
                   </p>
                 </div>
@@ -153,38 +154,52 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-95" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+      <section className="py-32 relative overflow-hidden bg-primary">
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, hsl(var(--accent)) 35px, hsl(var(--accent)) 70px)`
+        }} />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
-            <span className="inline-block px-4 py-2 rounded-full bg-white/10 text-primary-foreground font-semibold text-sm tracking-wide border border-white/20 backdrop-blur-sm">
-              ✨ Join Our Growing Community
+          <div className="max-w-5xl mx-auto text-center space-y-10 animate-fade-in">
+            <span className="inline-block px-6 py-3 rounded-full bg-accent text-accent-foreground font-bold text-xs uppercase tracking-widest shadow-luxury border-2 border-accent/30 animate-reveal">
+              ✨ Join 10,000+ Happy Users
             </span>
-            <h2 className="text-4xl lg:text-6xl font-serif font-bold text-primary-foreground leading-tight">
-              Ready to Start Your <br />Rental Journey?
+            <h2 className="text-5xl lg:text-7xl font-serif font-bold text-primary-foreground leading-tight animate-slide-up">
+              Ready to Start Your<br />Rental Journey?
             </h2>
-            <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-2xl mx-auto font-light">
-              Join thousands earning from unused items or finding exactly what they need at affordable prices.
+            <div className="w-32 h-2 bg-accent mx-auto animate-scale-in" />
+            <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              Join thousands earning from unused items or finding exactly what they need at unbeatable prices.
             </p>
-            <div className="flex flex-wrap justify-center gap-5 pt-4">
+            <div className="flex flex-wrap justify-center gap-6 pt-6">
               <Link to="/signup">
-                <Button variant="accent" size="xl" className="shadow-2xl">
-                  Create Free Account
+                <Button variant="accent" size="xl" className="shadow-luxury animate-reveal" style={{ animationDelay: '0.3s' }}>
+                  Create Free Account →
                 </Button>
               </Link>
               <Link to="/submit-listing">
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="xl"
-                  className="bg-white/10 backdrop-blur-sm text-primary-foreground border-white/30 hover:bg-white hover:text-primary shadow-xl"
+                  className="bg-white/10 backdrop-blur-sm text-primary-foreground border-2 border-white/30 hover:bg-white hover:text-primary shadow-luxury animate-reveal"
+                  style={{ animationDelay: '0.4s' }}
                 >
-                  List Your First Item →
+                  List Your First Item
                 </Button>
               </Link>
             </div>
-            <div className="pt-8 text-primary-foreground/70 text-sm">
-              🔒 100% Secure • ⚡ Instant Setup • 💰 Zero Listing Fees
+            <div className="pt-10 flex flex-wrap justify-center gap-8 text-primary-foreground/80 text-sm font-medium animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">🔒</div>
+                <span>100% Secure</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">⚡</div>
+                <span>Instant Setup</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">💰</div>
+                <span>Zero Listing Fees</span>
+              </div>
             </div>
           </div>
         </div>

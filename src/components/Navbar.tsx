@@ -76,7 +76,7 @@ export const Navbar = () => {
             </Button>
           </Link>
           <Link to="/signup" onClick={() => setOpen(false)}>
-            <Button variant="hero" size="lg" className="w-full">
+            <Button variant="premium" size="lg" className="w-full">
               Sign Up
             </Button>
           </Link>
@@ -170,7 +170,7 @@ export const Navbar = () => {
                     </Button>
                   </Link>
                   <Link to="/signup">
-                    <Button variant="hero" size="lg">
+                    <Button variant="premium" size="lg">
                       Sign Up
                     </Button>
                   </Link>

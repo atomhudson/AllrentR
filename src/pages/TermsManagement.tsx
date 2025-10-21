@@ -171,7 +171,7 @@ const TermsManagement = () => {
               <div className="flex gap-4">
                 <Button
                   type="submit"
-                  variant="hero"
+                  variant="premium"
                   disabled={loading}
                   className="flex-1"
                 >

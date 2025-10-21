@@ -294,7 +294,7 @@ const Signup = () => {
 
               <Button
                 type="submit"
-                variant="hero"
+                variant="premium"
                 size="lg"
                 className="w-full"
                 disabled={loading}

@@ -345,7 +345,7 @@ const AdminDashboard = () => {
               Download Report
             </Button>
             <Button
-              variant="hero"
+              variant="premium"
               onClick={syncToGoogleSheets}
               disabled={syncing}
               className="gap-2"
@@ -608,7 +608,7 @@ const AdminDashboard = () => {
 
                       <div className="flex gap-3 pt-2">
                         <Button
-                          variant="hero"
+                          variant="premium"
                           className="flex-1"
                           onClick={() => handleApprove(listing.id)}
                           disabled={loading === listing.id}

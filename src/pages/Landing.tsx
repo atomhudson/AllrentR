@@ -67,18 +67,18 @@ Turn your unused items into income. List your product in 30 seconds and connect 
               </div>
               <div className="flex items-center gap-8 pt-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">10K+</div>
-                  <div className="text-sm text-muted-foreground">Active Users</div>
+                  {/* <div className="text-3xl font-bold text-primary">10K+</div> */}
+                  {/* <div className="text-sm text-muted-foreground">Active Users</div> */}
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-accent">5K+</div>
-                  <div className="text-sm text-muted-foreground">Items Listed</div>
+                  {/* <div className="text-3xl font-bold text-accent">5K+</div> */}
+                  {/* <div className="text-sm text-muted-foreground">Items Listed</div> */}
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">15K+</div>
-                  <div className="text-sm text-muted-foreground">Rentals</div>
+                  {/* <div className="text-3xl font-bold text-primary">15K+</div> */}
+                  {/* <div className="text-sm text-muted-foreground">Rentals</div> */}
                 </div>
               </div>
             </div>

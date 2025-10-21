@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ["allrentr.onrender.com"], // <- yaha add karo
+    allowedHosts: ["allrent-r.vercel.app"], // <- yaha add karo
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

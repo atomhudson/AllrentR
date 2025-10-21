@@ -128,7 +128,7 @@ export const AdPopup = () => {
               )}
               {currentAd.link_url && (
                 <Button 
-                  variant="hero" 
+                  variant="premium" 
                   className="w-full"
                   onClick={handleAdClick}
                 >

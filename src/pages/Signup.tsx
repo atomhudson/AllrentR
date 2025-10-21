@@ -131,7 +131,7 @@ const Signup = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/listings`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -156,18 +156,23 @@ const Signup = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-32 pb-20">
+      <div className="container mx-auto px-4 pt-28 pb-20">
         <div className="max-w-md mx-auto">
-          <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-              Create Account
+          <div className="text-center mb-10 animate-fade-in">
+            <div className="inline-block mb-4">
+              <span className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold text-sm tracking-wide border border-accent/20">
+                ✨ Join Our Community
+              </span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-3">
+              Create Your Account
             </h1>
-            <p className="text-muted-foreground">
-              Join RentKaro and start your rental journey
+            <p className="text-lg text-muted-foreground">
+              Start your rental journey with AllRentr today
             </p>
           </div>
 
-          <Card className="p-8 shadow-elegant animate-scale-in">
+          <Card className="p-10 shadow-elegant animate-scale-in border-border/50">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -289,7 +294,7 @@ const Signup = () => {
 
               <Button
                 type="submit"
-                variant="hero"
+                variant="premium"
                 size="lg"
                 className="w-full"
                 disabled={loading}

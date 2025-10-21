@@ -9,6 +9,8 @@ import { useAdminBlogs, useCreateBlog, useUpdateBlog, useDeleteBlog, uploadBlogI
 import { useState } from 'react';
 import { Pencil, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { blogSchema } from '@/lib/validation';
+import { toast } from 'sonner';
 
 const BlogManagement = () => {
   const { data: blogs, isLoading } = useAdminBlogs();
@@ -49,14 +51,28 @@ const BlogManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingBlog) {
-      await updateBlog.mutateAsync({ id: editingBlog.id, ...formData });
-    } else {
-      await createBlog.mutateAsync(formData);
-    }
+    try {
+      // Validate form data
+      blogSchema.parse(formData);
 
-    setIsDialogOpen(false);
-    resetForm();
+      if (editingBlog) {
+        await updateBlog.mutateAsync({ id: editingBlog.id, ...formData });
+      } else {
+        await createBlog.mutateAsync(formData);
+      }
+
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error: any) {
+      if (error.errors) {
+        // Zod validation errors
+        error.errors.forEach((err: any) => {
+          toast.error(`${err.path.join('.')}: ${err.message}`);
+        });
+      } else {
+        toast.error('Failed to save blog post');
+      }
+    }
   };
 
   const resetForm = () => {

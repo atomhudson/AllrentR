@@ -76,7 +76,7 @@ export const Navbar = () => {
             </Button>
           </Link>
           <Link to="/signup" onClick={() => setOpen(false)}>
-            <Button variant="hero" size="lg" className="w-full">
+            <Button variant="premium" size="lg" className="w-full">
               Sign Up
             </Button>
           </Link>
@@ -86,9 +86,9 @@ export const Navbar = () => {
   );
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-soft">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* <Link to="/" className="flex items-center space-x-2 group">
             <Package className="w-8 h-8 text-primary group-hover:text-accent transition-colors" />
             <span className="text-2xl font-serif font-bold text-primary">RentKaro</span>
@@ -170,7 +170,7 @@ export const Navbar = () => {
                     </Button>
                   </Link>
                   <Link to="/signup">
-                    <Button variant="hero" size="lg">
+                    <Button variant="premium" size="lg">
                       Sign Up
                     </Button>
                   </Link>

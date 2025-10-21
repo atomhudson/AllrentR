@@ -17,14 +17,88 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Missing Authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Authentication required' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Validate user session
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('Invalid user session:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid session' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const { type, data }: SheetData = await req.json();
+
+    // Validate input
+    if (!type || !['listing', 'user', 'admin_activity'].includes(type)) {
+      console.error('Invalid type parameter:', type);
+      return new Response(
+        JSON.stringify({ error: 'Invalid type parameter' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (!data || typeof data !== 'object') {
+      console.error('Invalid data parameter');
+      return new Response(
+        JSON.stringify({ error: 'Invalid data parameter' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Verify admin role for admin_activity syncs
+    if (type === 'admin_activity') {
+      const { data: hasAdminRole } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
+
+      if (!hasAdminRole) {
+        console.error('Non-admin user attempted admin_activity sync:', user.id);
+        return new Response(
+          JSON.stringify({ error: 'Admin access required for admin_activity syncs' }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
     const GOOGLE_SHEETS_API_KEY = Deno.env.get('GOOGLE_SHEETS_API_KEY');
     const SPREADSHEET_ID = Deno.env.get('GOOGLE_SPREADSHEET_ID');
 
     if (!GOOGLE_SHEETS_API_KEY || !SPREADSHEET_ID) {
       throw new Error('Missing Google Sheets credentials');
     }
-
-    const { type, data }: SheetData = await req.json();
 
     // Format data based on type
     let values: any[][];
@@ -83,7 +157,7 @@ serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log('Successfully synced to Google Sheets:', result);
+    console.log('Successfully synced to Google Sheets for user:', user.id, 'type:', type);
 
     return new Response(
       JSON.stringify({ success: true, message: 'Data synced to Google Sheets' }),

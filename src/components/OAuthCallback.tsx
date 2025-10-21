@@ -29,37 +29,54 @@ const OAuthCallback = () => {
         }
 
         if (data.session) {
-          console.log('Session found, redirecting to listings');
-          toast({
-            title: "Welcome!",
-            description: "Successfully logged in with Google",
-          });
+          console.log('Session found, ensuring user setup');
           
-          // Log user activity for OAuth login
-          setTimeout(async () => {
-            try {
-              // Update user activity and streak
-              await supabase.rpc('update_user_activity');
-              
-              // Log user login
-              await supabase.from('user_activity_logs').insert({
-                user_id: data.session!.user.id,
-                action: 'USER_LOGIN',
-                details: {
-                  email: data.session!.user.email,
-                  provider: 'google',
-                  timestamp: new Date().toISOString()
-                }
-              });
-              
-              // Sync top profiles with leaderboard
-              await supabase.rpc('sync_top_profiles');
-            } catch (logError) {
-              console.error('Error logging OAuth login:', logError);
-            }
-          }, 100);
-          
-          navigate('/listings');
+          try {
+            // Ensure user has proper profile and role setup
+            await supabase.rpc('ensure_user_setup', {
+              user_id: data.session.user.id
+            });
+            
+            console.log('User setup ensured, redirecting to listings');
+            toast({
+              title: "Welcome!",
+              description: "Successfully logged in with Google",
+            });
+            
+            // Log user activity for OAuth login
+            setTimeout(async () => {
+              try {
+                // Update user activity and streak
+                await supabase.rpc('update_user_activity');
+                
+                // Log user login
+                await supabase.from('user_activity_logs').insert({
+                  user_id: data.session!.user.id,
+                  action: 'USER_LOGIN',
+                  details: {
+                    email: data.session!.user.email,
+                    provider: 'google',
+                    timestamp: new Date().toISOString()
+                  }
+                });
+                
+                // Sync top profiles with leaderboard
+                await supabase.rpc('sync_top_profiles');
+              } catch (logError) {
+                console.error('Error logging OAuth login:', logError);
+              }
+            }, 100);
+            
+            navigate('/listings');
+          } catch (setupError) {
+            console.error('Error ensuring user setup:', setupError);
+            // Still redirect to listings even if setup fails
+            toast({
+              title: "Welcome!",
+              description: "Successfully logged in with Google",
+            });
+            navigate('/listings');
+          }
         } else {
           console.log('No session found, redirecting to login');
           // No session found, redirect to login

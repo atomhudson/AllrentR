@@ -9,14 +9,8 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        console.log('OAuth callback triggered');
-        
         // Get the session from the URL hash
         const { data, error } = await supabase.auth.getSession();
-        
-        console.log('Session data:', data);
-        console.log('Session error:', error);
-        
         if (error) {
           console.error('Auth callback error:', error);
           toast({
@@ -29,27 +23,19 @@ const OAuthCallback = () => {
         }
 
         if (data.session) {
-          console.log('Session found, ensuring user setup');
-          
           try {
             // Ensure user has proper profile and role setup
+            // @ts-expect-error: 'ensure_user_setup' is a custom Postgres function not yet in TypeScript types
             await supabase.rpc('ensure_user_setup', {
               user_id: data.session.user.id
             });
-            
-            console.log('User setup ensured, redirecting to listings');
             toast({
               title: "Welcome!",
               description: "Successfully logged in with Google",
             });
-            
-            // Log user activity for OAuth login
             setTimeout(async () => {
               try {
-                // Update user activity and streak
                 await supabase.rpc('update_user_activity');
-                
-                // Log user login
                 await supabase.from('user_activity_logs').insert({
                   user_id: data.session!.user.id,
                   action: 'USER_LOGIN',
@@ -59,8 +45,6 @@ const OAuthCallback = () => {
                     timestamp: new Date().toISOString()
                   }
                 });
-                
-                // Sync top profiles with leaderboard
                 await supabase.rpc('sync_top_profiles');
               } catch (logError) {
                 console.error('Error logging OAuth login:', logError);
@@ -70,7 +54,6 @@ const OAuthCallback = () => {
             navigate('/listings');
           } catch (setupError) {
             console.error('Error ensuring user setup:', setupError);
-            // Still redirect to listings even if setup fails
             toast({
               title: "Welcome!",
               description: "Successfully logged in with Google",
@@ -78,8 +61,6 @@ const OAuthCallback = () => {
             navigate('/listings');
           }
         } else {
-          console.log('No session found, redirecting to login');
-          // No session found, redirect to login
           navigate('/login');
         }
       } catch (error) {
@@ -92,7 +73,6 @@ const OAuthCallback = () => {
         navigate('/login');
       }
     };
-
     handleAuthCallback();
   }, [navigate]);
 
@@ -105,5 +85,4 @@ const OAuthCallback = () => {
     </div>
   );
 };
-
 export default OAuthCallback;

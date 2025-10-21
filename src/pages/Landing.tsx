@@ -74,20 +74,22 @@ const Landing = () => {
                   </Button>
                 </Link>
               </div>
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t-2 border-primary/10">
-                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.2s' }}>
-                  <div className="text-4xl font-bold text-primary">10K+</div>
-                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Active Users</div>
-                </div>
-                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.3s' }}>
-                  <div className="text-4xl font-bold text-accent">5K+</div>
-                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Items Listed</div>
-                </div>
-                <div className="text-center space-y-1 animate-reveal" style={{ animationDelay: '0.4s' }}>
-                  <div className="text-4xl font-bold text-primary">15K+</div>
-                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Happy Rentals</div>
-                </div>
-              </div>
+              {/* <div className="flex items-center gap-8 pt-4"> */}
+                {/* <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">10K+</div>
+                  <div className="text-sm text-muted-foreground">Active Users</div>
+                </div> */}
+                {/* <div className="w-px h-12 bg-border" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-accent">5K+</div>
+                  <div className="text-sm text-muted-foreground">Items Listed</div>
+                </div> */}
+                {/* <div className="w-px h-12 bg-border" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">15K+</div>
+                  <div className="text-sm text-muted-foreground">Rentals</div>
+                </div> */}
+              {/* </div> */}
             </div>
             <div className="relative animate-scale-in lg:animate-float">
               <div className="absolute -inset-12 bg-primary/5 rounded-3xl" />

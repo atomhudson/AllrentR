@@ -5,24 +5,26 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-350 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-card hover:shadow-elegant hover:scale-105",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-card",
-        outline: "border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground shadow-sm hover:shadow-card",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-gradient-primary text-primary-foreground shadow-elegant hover:shadow-glow hover:scale-105 font-semibold",
-        accent: "bg-gradient-accent text-accent-foreground shadow-card hover:shadow-glow hover:scale-105 font-semibold",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-card hover:shadow-elegant hover:scale-[1.02] active:scale-[0.98]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-card hover:shadow-elegant",
+        outline: "border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground shadow-soft hover:shadow-card transition-all",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-soft hover:shadow-card",
+        ghost: "hover:bg-muted hover:text-foreground transition-colors",
+        link: "text-primary underline-offset-4 hover:underline hover:text-accent",
+        hero: "bg-gradient-primary text-primary-foreground shadow-elegant hover:shadow-glow hover:scale-[1.03] active:scale-[0.98] font-semibold tracking-wide",
+        accent: "bg-gradient-accent text-accent-foreground shadow-card hover:shadow-glow hover:scale-[1.03] active:scale-[0.98] font-semibold",
+        premium: "relative bg-gradient-hero text-primary-foreground shadow-elegant hover:shadow-glow hover:scale-[1.03] active:scale-[0.98] font-bold tracking-wide overflow-hidden before:absolute before:inset-0 before:bg-white/10 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-12 rounded-lg px-8 text-base",
-        icon: "h-10 w-10",
+        default: "h-11 px-5 py-2.5",
+        sm: "h-9 rounded-md px-3 text-xs",
+        lg: "h-13 rounded-lg px-10 py-3 text-base",
+        xl: "h-14 rounded-lg px-12 py-4 text-lg",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

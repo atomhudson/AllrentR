@@ -8,78 +8,82 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 217 68% 20%;
+    /* Classic Elegant Color Scheme - Navy, Gold, Cream */
+    --background: 40 20% 97%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 217 68% 20%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 217 68% 20%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 217 68% 31%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 215 45% 25%;
+    --primary-foreground: 40 30% 95%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 217 68% 31%;
+    --secondary: 38 40% 88%;
+    --secondary-foreground: 215 45% 25%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 217 20% 50%;
+    --muted: 40 15% 92%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 45 93% 58%;
-    --accent-foreground: 217 68% 20%;
+    --accent: 38 70% 55%;
+    --accent-foreground: 215 25% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 217 68% 31%;
+    --border: 40 20% 85%;
+    --input: 40 20% 88%;
+    --ring: 215 45% 25%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Premium gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 68% 31%) 0%, hsl(217 68% 45%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45 93% 58%) 0%, hsl(45 93% 70%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(217 68% 31%) 0%, hsl(217 68% 40%) 50%, hsl(45 93% 58%) 100%);
+    /* Premium gradients - Sophisticated Navy to Gold */
+    --gradient-primary: linear-gradient(135deg, hsl(215 45% 25%) 0%, hsl(215 40% 35%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(38 70% 55%) 0%, hsl(42 75% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(215 45% 25%) 0%, hsl(215 40% 32%) 40%, hsl(38 60% 50%) 100%);
+    --gradient-overlay: linear-gradient(180deg, hsl(215 45% 25% / 0.05) 0%, hsl(38 60% 50% / 0.08) 100%);
     
-    /* Shadows */
-    --shadow-elegant: 0 10px 40px -10px hsl(217 68% 31% / 0.3);
-    --shadow-card: 0 4px 20px -4px hsl(217 68% 31% / 0.15);
-    --shadow-glow: 0 0 30px hsl(45 93% 58% / 0.4);
+    /* Elegant shadows with subtle warmth */
+    --shadow-elegant: 0 20px 60px -15px hsl(215 45% 25% / 0.25);
+    --shadow-card: 0 4px 24px -4px hsl(215 45% 25% / 0.12);
+    --shadow-glow: 0 0 40px hsl(38 70% 55% / 0.35);
+    --shadow-soft: 0 2px 12px hsl(215 20% 50% / 0.08);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Refined transitions */
+    --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 217 68% 12%;
-    --foreground: 210 20% 98%;
+    --background: 215 30% 12%;
+    --foreground: 40 20% 95%;
 
-    --card: 217 68% 15%;
-    --card-foreground: 210 20% 98%;
+    --card: 215 28% 16%;
+    --card-foreground: 40 20% 95%;
 
-    --popover: 217 68% 15%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 215 28% 16%;
+    --popover-foreground: 40 20% 95%;
 
-    --primary: 45 93% 58%;
-    --primary-foreground: 217 68% 20%;
+    --primary: 38 70% 55%;
+    --primary-foreground: 215 30% 12%;
 
-    --secondary: 217 40% 20%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 215 25% 22%;
+    --secondary-foreground: 40 20% 95%;
 
-    --muted: 217 40% 20%;
-    --muted-foreground: 220 20% 65%;
+    --muted: 215 25% 20%;
+    --muted-foreground: 215 15% 65%;
 
-    --accent: 45 93% 58%;
-    --accent-foreground: 217 68% 20%;
+    --accent: 38 70% 55%;
+    --accent-foreground: 215 30% 12%;
 
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 40 20% 95%;
 
-    --border: 217 40% 25%;
-    --input: 217 40% 25%;
-    --ring: 45 93% 58%;
+    --border: 215 25% 25%;
+    --input: 215 25% 22%;
+    --ring: 38 70% 55%;
   }
 }
 

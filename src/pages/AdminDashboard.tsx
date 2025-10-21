@@ -254,17 +254,24 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-32 pb-20">
-        <div className="mb-8 animate-fade-in flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground">
-              Complete overview of RentKaro platform
-            </p>
+      <div className="container mx-auto px-4 pt-28 pb-20">
+        <div className="mb-12 animate-fade-in">
+          <div className="bg-gradient-overlay p-8 rounded-2xl border border-border/50 shadow-card mb-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent font-semibold text-xs tracking-wide border border-accent/20 mb-3">
+                  👑 ADMIN PANEL
+                </span>
+                <h1 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-2">
+                  Admin Dashboard
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Complete platform overview and management
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
               onClick={() => navigate('/admin/terms')}

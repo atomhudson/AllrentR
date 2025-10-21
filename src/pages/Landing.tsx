@@ -39,56 +39,67 @@ const Landing = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-10" />
+      <section className="relative pt-32 pb-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-overlay" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(215_45%_25%_/_0.03),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(38_70%_55%_/_0.05),transparent_50%)]" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8 animate-fade-in-up">
-              <h1 className="text-5xl lg:text-6xl font-serif font-bold text-foreground leading-tight">
+              <div className="inline-block">
+                <span className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold text-sm tracking-wide border border-accent/20">
+                  🎯 India's Most Trusted Rental Platform
+                </span>
+              </div>
+              <h1 className="text-5xl lg:text-7xl font-serif font-bold text-foreground leading-[1.1] tracking-tight">
                 Rent Anything,
-                <span className="text-primary"> Anytime</span>,
-                <span className="text-accent"> Anywhere</span>
+                <br />
+                <span className="text-primary">Anytime</span>,
+                <br />
+                <span className="bg-gradient-accent bg-clip-text text-transparent">Anywhere</span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Near You – India's #1 Peer-to-Peer Rental Marketplace
-Turn your unused items into income. List your product in 30 seconds and connect with verified renters in your area.
+              <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed font-light">
+                Transform your unused items into steady income. List in 30 seconds, connect with verified renters nearby.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 pt-2">
                 <Link to="/signup">
-                  <Button variant="hero" size="lg" className="text-lg px-8">
-                    Get Started Free
+                  <Button variant="premium" size="xl">
+                    Get Started Free →
                   </Button>
                 </Link>
                 <Link to="/listings">
-                  <Button variant="outline" size="lg" className="text-lg px-8">
+                  <Button variant="outline" size="xl">
                     Browse Listings
                   </Button>
                 </Link>
               </div>
-              <div className="flex items-center gap-8 pt-4">
+              <div className="flex items-center gap-8 pt-6 border-t border-border/50">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">10K+</div>
-                  <div className="text-sm text-muted-foreground">Active Users</div>
+                  <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">10K+</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Active Users</div>
                 </div>
-                <div className="w-px h-12 bg-border" />
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-border to-transparent" />
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-accent">5K+</div>
-                  <div className="text-sm text-muted-foreground">Items Listed</div>
+                  <div className="text-4xl font-bold bg-gradient-accent bg-clip-text text-transparent">5K+</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Items Listed</div>
                 </div>
-                <div className="w-px h-12 bg-border" />
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-border to-transparent" />
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">15K+</div>
-                  <div className="text-sm text-muted-foreground">Rentals</div>
+                  <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">15K+</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Rentals</div>
                 </div>
               </div>
             </div>
             <div className="relative animate-scale-in">
-              <div className="absolute -inset-4 bg-gradient-primary opacity-20 blur-3xl rounded-full" />
-              <img
-                src={heroImage}
-                alt="P2P Rental Marketplace"
-                className="relative rounded-2xl shadow-elegant w-full object-cover"
-              />
+              <div className="absolute -inset-8 bg-gradient-primary opacity-15 blur-3xl rounded-full animate-pulse" />
+              <div className="absolute -inset-4 bg-gradient-accent opacity-10 blur-2xl rounded-full" />
+              <div className="relative rounded-2xl overflow-hidden shadow-elegant border-4 border-white/50">
+                <img
+                  src={heroImage}
+                  alt="P2P Rental Marketplace"
+                  className="w-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -101,33 +112,40 @@ Turn your unused items into income. List your product in 30 seconds and connect 
       <InfluencerPartnersSection />
 
       {/* Features Section */}
-      <section className="py-20 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl font-serif font-bold text-foreground mb-4">
-              Why Thousands Choose RentKaro for Renting & Earning
+      <section className="py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/40 to-background" />
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-20 animate-fade-in max-w-3xl mx-auto">
+            <span className="text-accent font-semibold tracking-wider uppercase text-sm mb-3 block">
+              Premium Features
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-6 leading-tight">
+              Why Thousands Choose Us for <span className="text-primary">Renting & Earning</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We make renting and lending simple, secure, and rewarding for everyone.
+            <p className="text-xl text-muted-foreground font-light">
+              Experience seamless, secure, and rewarding transactions with our platform.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="p-6 hover:shadow-card transition-all duration-300 hover:-translate-y-2 bg-card animate-fade-in-up border-border"
+                className="group p-8 hover:shadow-elegant transition-all duration-500 hover:-translate-y-3 bg-card animate-fade-in-up border border-border/50 hover:border-primary/30 relative overflow-hidden"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center mb-4 shadow-card">
-                  <feature.icon className="w-6 h-6 text-primary-foreground" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-primary opacity-0 group-hover:opacity-10 blur-3xl transition-opacity duration-500" />
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 shadow-card group-hover:shadow-glow group-hover:scale-110 transition-all duration-300">
+                    <feature.icon className="w-7 h-7 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
               </Card>
             ))}
           </div>
@@ -135,36 +153,47 @@ Turn your unused items into income. List your product in 30 seconds and connect 
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-10" />
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-hero opacity-95" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in">
-            <h2 className="text-4xl lg:text-5xl font-serif font-bold text-foreground">
-              Ready to Start Renting?
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
+            <span className="inline-block px-4 py-2 rounded-full bg-white/10 text-primary-foreground font-semibold text-sm tracking-wide border border-white/20 backdrop-blur-sm">
+              ✨ Join Our Growing Community
+            </span>
+            <h2 className="text-4xl lg:text-6xl font-serif font-bold text-primary-foreground leading-tight">
+              Ready to Start Your <br />Rental Journey?
             </h2>
-            <p className="text-xl text-muted-foreground">
-              Join thousands of Indians earning from their unused items or finding what they need at affordable prices.
+            <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-2xl mx-auto font-light">
+              Join thousands earning from unused items or finding exactly what they need at affordable prices.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-5 pt-4">
               <Link to="/signup">
-                <Button variant="hero" size="lg" className="text-lg px-10">
+                <Button variant="accent" size="xl" className="shadow-2xl">
                   Create Free Account
                 </Button>
               </Link>
               <Link to="/submit-listing">
-                <Button variant="accent" size="lg" className="text-lg px-10">
-                  List Your First Item 
+                <Button 
+                  variant="outline" 
+                  size="xl"
+                  className="bg-white/10 backdrop-blur-sm text-primary-foreground border-white/30 hover:bg-white hover:text-primary shadow-xl"
+                >
+                  List Your First Item →
                 </Button>
               </Link>
+            </div>
+            <div className="pt-8 text-primary-foreground/70 text-sm">
+              🔒 100% Secure • ⚡ Instant Setup • 💰 Zero Listing Fees
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-background to-primary/5 border-t border-border py-12">
+      <footer className="bg-gradient-to-b from-muted/30 to-background border-t border-border/50 py-16">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div>
               <h3 className="text-xl font-serif font-bold text-primary mb-4">AllRentr</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">

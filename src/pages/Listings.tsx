@@ -56,42 +56,44 @@ const Listings = () => {
       <Navbar />
       <AdPopup />
       
-      <div className="container mx-auto px-4 pt-32 pb-20">
-        {/* Banner Carousel */}
-        <BannerCarousel />
-        
+      <div className="container mx-auto px-4 pt-28 pb-20">
         <div className="mb-12 animate-fade-in">
-          <h1 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-4">
-            Browse Available Items
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8">
-            Find what you need from verified owners near you
-          </p>
-
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4 max-w-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-3">
+                Browse Premium Items
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Discover verified rentals from trusted owners in your area
+              </p>
+            </div>
+          </div>
+          <BannerCarousel />
+          
+          <div className="space-y-6 mt-8">
+            <div className="grid md:grid-cols-2 gap-4">
               <Input
-                placeholder="Search for items..."
+                placeholder="🔍 Search for items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="transition-all duration-300 focus:shadow-card"
+                className="h-12 text-base shadow-soft focus:shadow-card transition-all"
               />
               <Input
-                placeholder="Filter by pin code..."
+                placeholder="📍 Filter by pin code..."
                 value={pinCodeFilter}
                 onChange={(e) => setPinCodeFilter(e.target.value)}
-                className="transition-all duration-300 focus:shadow-card"
+                className="h-12 text-base shadow-soft focus:shadow-card transition-all"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {categories.map((cat) => (
                 <Button
                   key={cat.value}
-                  variant={categoryFilter === cat.value ? "default" : "outline"}
-                  size="sm"
+                  variant={categoryFilter === cat.value ? "default" : "secondary"}
+                  size="default"
                   onClick={() => setCategoryFilter(cat.value)}
-                  className="transition-all duration-300"
+                  className="transition-all"
                 >
                   {cat.label}
                 </Button>
@@ -115,11 +117,11 @@ const Listings = () => {
             {filteredListings.map((listing, index) => (
               <Card
                 key={listing.id}
-                className="overflow-hidden hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 animate-fade-in-up cursor-pointer"
+                className="group overflow-hidden hover:shadow-elegant transition-all duration-500 hover:-translate-y-3 animate-fade-in-up cursor-pointer border-border/50 hover:border-primary/30 bg-card"
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleViewListing(listing)}
               >
-                <div className="relative h-48 bg-muted overflow-hidden">
+                <div className="relative h-56 bg-muted overflow-hidden">
                   {listing.images && listing.images.length > 0 ? (
                     <Carousel className="w-full h-full">
                       <CarouselContent>

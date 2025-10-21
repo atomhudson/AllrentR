@@ -24,6 +24,7 @@ import NotificationManagement from "./pages/NotificationManagement";
 import NotFound from "./pages/NotFound";
 import CouponManagement from "./pages/CouponManagement";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
+import OAuthCallback from "./components/OAuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/admin/coupons" element={<CouponManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

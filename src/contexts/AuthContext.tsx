@@ -22,9 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
 
@@ -34,45 +32,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      // Check admin status when user changes
-      if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus(session.user.id);
-        }, 0);
-      } else {
-        setIsAdmin(false);
-      }
+      if (session?.user) checkAdminStatus(session.user.id);
+      else setIsAdmin(false);
     });
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-      }
+      if (session?.user) checkAdminStatus(session.user.id);
     });
 
-    return () => subscription.unsubscribe();
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single();
-    
-    setIsAdmin(!!data);
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .single();
+      setIsAdmin(!!data);
+    } catch {
+      setIsAdmin(false);
+    }
   };
 
+  // ✅ FIXED SIGNUP FUNCTION (no 422 error)
   const signup = async (userData: {
     name: string;
     email: string;
@@ -81,8 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pin_code: string;
   }) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -92,44 +80,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             phone: userData.phone,
             pin_code: userData.pin_code,
           },
-          emailRedirectTo: redirectUrl,
+          // ✅ correct redirect key (Supabase v2)
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (error) {
+        console.error('Signup error:', error);
         toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive",
+          title: 'Signup failed',
+          description: error.message || 'Unable to create account.',
+          variant: 'destructive',
         });
         return false;
       }
 
       toast({
-        title: "Account created!",
-        description: "Welcome to RentKaro! You can now list your items.",
+        title: 'Account created successfully 🎉',
+        description: 'Please check your email to verify your account.',
       });
 
-      // Log user activity
       if (data.user) {
-        setTimeout(async () => {
-          await supabase.from('user_activity_logs').insert({
-            user_id: data.user!.id,
-            action: 'USER_SIGNUP',
-            details: {
-              email: userData.email,
-              timestamp: new Date().toISOString()
-            }
-          });
-        }, 100);
+        await supabase.from('user_activity_logs').insert({
+          user_id: data.user.id,
+          action: 'USER_SIGNUP',
+          details: {
+            email: userData.email,
+            timestamp: new Date().toISOString(),
+          },
+        });
       }
-      
+
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Unexpected signup error:', error);
       toast({
-        title: "Signup failed",
-        description: "Unable to create account. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Something went wrong while signing up.',
+        variant: 'destructive',
       });
       return false;
     }
@@ -144,61 +132,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         toast({
-          title: "Login failed",
+          title: 'Login failed',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return false;
       }
 
       toast({
-        title: "Welcome back!",
-        description: `Logged in successfully`,
+        title: 'Welcome back!',
+        description: 'You are now logged in.',
       });
 
-      // Log user activity and update streak
       if (data.user) {
-        setTimeout(async () => {
-          // Update user activity and streak
-          await supabase.rpc('update_user_activity');
-          
-          // Log user login
-          await supabase.from('user_activity_logs').insert({
-            user_id: data.user!.id,
-            action: 'USER_LOGIN',
-            details: {
-              email: email,
-              timestamp: new Date().toISOString()
-            }
-          });
-          
-          // Sync top profiles with leaderboard
-          await supabase.rpc('sync_top_profiles');
-        }, 100);
+        await supabase.rpc('update_user_activity');
+        await supabase.from('user_activity_logs').insert({
+          user_id: data.user.id,
+          action: 'USER_LOGIN',
+          details: {
+            email,
+            timestamp: new Date().toISOString(),
+          },
+        });
+        await supabase.rpc('sync_top_profiles');
       }
-      
+
       return true;
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Login failed",
-        description: "Unable to login. Please try again.",
-        variant: "destructive",
+        title: 'Login failed',
+        description: 'Unable to login. Please try again.',
+        variant: 'destructive',
       });
       return false;
     }
   };
 
   const logout = async () => {
-    const userId = user?.id;
-    
-    // Log user activity before logout
-    if (userId) {
+    if (user?.id) {
       await supabase.from('user_activity_logs').insert({
-        user_id: userId,
+        user_id: user.id,
         action: 'USER_LOGOUT',
-        details: {
-          timestamp: new Date().toISOString()
-        }
+        details: { timestamp: new Date().toISOString() },
       });
     }
 
@@ -206,10 +181,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSession(null);
     setIsAdmin(false);
-    
+
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
+      title: 'Logged out',
+      description: 'You have been successfully logged out.',
     });
   };
 

@@ -318,7 +318,7 @@ const Signup = () => {
                 </div>
               </div>
 
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 size="lg"
@@ -344,7 +344,7 @@ const Signup = () => {
                   />
                 </svg>
                 Sign up with Google
-              </Button>
+              </Button> */}
 
               <p className="text-center text-sm text-muted-foreground">
                 Already have an account?{' '}

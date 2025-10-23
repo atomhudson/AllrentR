@@ -65,7 +65,7 @@ const Landing = () => {
               <div className="flex flex-wrap gap-5 pt-4">
                 <Link to="/signup">
                   <Button variant="luxury" size="xl" className="animate-reveal">
-                    Get Started Free →
+                    Get Started  →
                   </Button>
                 </Link>
                 <Link to="/listings">

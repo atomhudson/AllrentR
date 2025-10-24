@@ -454,7 +454,7 @@ const SubmitListing = () => {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="rent_price">Price (₹/)</Label>
+                  <Label htmlFor="rent_price">Price (₹/Day)</Label>
                   <Input
                     id="rent_price"
                     name="rent_price"

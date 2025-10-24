@@ -14,7 +14,7 @@ const Blog = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">
-              RentKaro Blog
+              AllRentr Blogs
             </h1>
             <p className="text-lg text-muted-foreground">
               Stay updated with the latest news, features, and tips from our platform

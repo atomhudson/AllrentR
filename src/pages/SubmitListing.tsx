@@ -523,11 +523,11 @@ const SubmitListing = () => {
                 <Label className="text-base font-semibold">Listing Type</Label>
                 <RadioGroup value={listingType} onValueChange={(value: 'free' | 'paid') => setListingType(value)}>
                   <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
-                    <RadioGroupItem value="free" id="free" />
+                    {/* <RadioGroupItem value="free" id="free" />
                     <Label htmlFor="free" className="flex-1 cursor-pointer">
                       <div className="font-semibold">Free Listing</div>
                       <div className="text-sm text-muted-foreground">No payment required</div>
-                    </Label>
+                    </Label> */}
                   </div>
                   <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
                     <RadioGroupItem value="paid" id="paid" />

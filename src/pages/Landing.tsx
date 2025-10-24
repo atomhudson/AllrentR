@@ -277,7 +277,7 @@ const Landing = () => {
           
           <div className="border-t border-border pt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              © 2025 RentKaro. All rights reserved. Made with ❤️ in India.
+              © 2025 AllRentr. All rights reserved. Made with ❤️ in India.
             </p>
           </div>
         </div>

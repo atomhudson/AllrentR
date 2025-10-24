@@ -496,7 +496,7 @@ const SubmitListing = () => {
                   required
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+91 98765 43210 or 9876543210"
+                  placeholder="Enter Phone Number"
                   className={`transition-all duration-300 focus:shadow-card ${errors.phone ? 'border-destructive' : ''}`}
                 />
                 {errors.phone && (

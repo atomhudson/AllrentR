@@ -446,7 +446,7 @@ const SubmitListing = () => {
                   className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
                   required
                 >
-                  <option value="rent">For Rent</option>
+                  <option value="rent">For Rent per day</option>
                   <option value="sale">For Sale</option>
                   <option value="both">Both (Rent & Sale)</option>
                 </select>
@@ -454,7 +454,7 @@ const SubmitListing = () => {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="rent_price">Price (₹/day)</Label>
+                  <Label htmlFor="rent_price">Price (₹/)</Label>
                   <Input
                     id="rent_price"
                     name="rent_price"

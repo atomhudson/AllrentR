@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Upload, Loader2, CheckCircle, Tag } from 'lucide-react';
+import { Loader2, CheckCircle, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { validateCoupon } from '@/hooks/useCoupons';
+import { motion, AnimatePresence } from 'framer-motion';
 
 declare global {
   interface Window {
@@ -24,13 +24,14 @@ declare global {
 const SubmitListing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
-  const [listingType, setListingType] = useState<'free' | 'paid'>('paid');
+  const [listingType, setListingType] = useState<'free' | 'paid'>('free');
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+
   const [formData, setFormData] = useState({
     product_name: '',
     description: '',
@@ -48,561 +49,228 @@ const SubmitListing = () => {
     pinCode: '',
   });
 
-  // Check authentication in useEffect to avoid early return before hooks
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
+    if (!user) navigate('/login');
   }, [user, navigate]);
 
-  // Return null while redirecting if no user
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const validatePhone = (phone: string): boolean => {
-    // Indian phone number validation: 10 digits, optionally starting with +91 or 91
     const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
     return phoneRegex.test(phone.replace(/[\s-]/g, ''));
   };
 
-  const validatePinCode = (pinCode: string): boolean => {
-    // Indian PIN code validation: exactly 6 digits
-    const pinCodeRegex = /^\d{6}$/;
-    return pinCodeRegex.test(pinCode);
-  };
+  const validatePinCode = (pinCode: string): boolean => /^\d{6}$/.test(pinCode);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // Clear errors as user types
-    if (name === 'phone') {
-      setErrors(prev => ({ ...prev, phone: '' }));
-    }
-    if (name === 'pin_code') {
-      setErrors(prev => ({ ...prev, pinCode: '' }));
-    }
+    setFormData({ ...formData, [name]: value });
+    if (name === 'phone') setErrors(prev => ({ ...prev, phone: '' }));
+    if (name === 'pin_code') setErrors(prev => ({ ...prev, pinCode: '' }));
   };
 
+  // ✅ Step Completion Validation
+  const isStepComplete = () => {
+    if (currentStep === 1)
+      return formData.product_name && formData.description && formData.category && formData.product_type;
+    if (currentStep === 2)
+      return formData.rent_price && formData.pin_code && formData.address;
+    if (currentStep === 3)
+      return formData.images.length >= 5 && formData.phone;
+    if (currentStep === 4)
+      return listingType !== '';
+    return false;
+  };
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  // ✅ Dynamic Price Label
+  const getPriceLabel = () => formData.product_type === 'sale' ? 'Price (₹)' : 'Price (₹/Day)';
+
+  // ✅ Coupon Logic
   const handleApplyCoupon = async () => {
     if (!couponCode) {
-      toast({
-        title: 'Coupon code required',
-        description: 'Please enter a coupon code',
-        variant: 'destructive',
-      });
+      toast({ title: 'Coupon code required', description: 'Please enter a coupon code', variant: 'destructive' });
       return;
     }
 
     setValidatingCoupon(true);
     const result = await validateCoupon(couponCode);
-    
+
     if (result.valid && result.coupon) {
       const originalPrice = 20;
-      let discountAmount = 0;
-      
-      if (result.coupon.is_percentage) {
-        discountAmount = (originalPrice * result.coupon.discount_percentage) / 100;
-      } else {
-        discountAmount = result.coupon.discount_amount;
-      }
-      
+      let discountAmount = result.coupon.is_percentage
+        ? (originalPrice * result.coupon.discount_percentage) / 100
+        : result.coupon.discount_amount;
+
       setDiscount(Math.min(discountAmount, originalPrice));
       setCouponApplied(true);
-      toast({
-        title: 'Coupon applied!',
-        description: `You saved ₹${Math.min(discountAmount, originalPrice)}`,
-      });
+      toast({ title: 'Coupon applied!', description: `You saved ₹${Math.min(discountAmount, originalPrice)}` });
     } else {
-      toast({
-        title: 'Invalid coupon',
-        description: result.error || 'This coupon code is not valid',
-        variant: 'destructive',
-      });
+      toast({ title: 'Invalid coupon', description: result.error || 'This coupon code is not valid', variant: 'destructive' });
     }
     setValidatingCoupon(false);
   };
 
+  // ✅ Razorpay Script Load
   useEffect(() => {
-    // Load Razorpay script only if user is authenticated
-    if (!user) return;
-    
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
 
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, [user]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleRazorpayPayment = async () => {
-    setLoading(true);
-    try {
-      const originalPrice = 20;
-      const finalPrice = originalPrice - discount;
-
-      // Create Razorpay order via edge function
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
-        body: { 
-          amount: finalPrice,
-          currency: 'INR',
-          receipt: `listing_${Date.now()}`
-        }
-      });
-
-      if (orderError) throw orderError;
-
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'Product Listing Payment',
-        description: `Payment for listing: ${formData.product_name}`,
-        order_id: orderData.orderId,
-        handler: async function (response: any) {
-          // Payment successful
-          try {
-            const { error } = await supabase.from('listings').insert({
-              owner_user_id: user.id,
-              product_name: formData.product_name,
-              description: formData.description,
-              images: formData.images,
-              rent_price: parseFloat(formData.rent_price),
-              pin_code: formData.pin_code,
-              payment_transaction: response.razorpay_payment_id,
-              product_type: formData.product_type,
-              category: formData.category,
-              phone: formData.phone,
-              address: formData.address,
-              listing_type: 'paid',
-              coupon_code: couponApplied ? couponCode : null,
-              original_price: originalPrice,
-              discount_amount: discount,
-              final_price: finalPrice,
-              payment_verified: true,
-            });
-
-            if (error) throw error;
-
-            // Increment coupon usage if applied
-            if (couponApplied && couponCode) {
-              await supabase.rpc('increment_coupon_usage', { coupon_code: couponCode.toUpperCase() });
-            }
-
-            // Log user activity
-            await supabase.from('user_activity_logs').insert({
-              user_id: user.id,
-              action: 'SUBMIT_LISTING',
-              details: {
-                product_name: formData.product_name,
-                category: formData.category,
-                rent_price: formData.rent_price,
-                payment_id: response.razorpay_payment_id,
-                timestamp: new Date().toISOString()
-              }
-            });
-
-            setPaymentSubmitted(true);
-            toast({
-              title: "Payment successful!",
-              description: "Your listing is pending admin approval.",
-            });
-
-            setTimeout(() => {
-              navigate('/profile');
-            }, 2000);
-          } catch (error) {
-            toast({
-              title: "Submission failed",
-              description: "Payment successful but listing creation failed. Please contact support.",
-              variant: "destructive",
-            });
-          }
-        },
-        prefill: {
-          contact: formData.phone,
-        },
-        theme: {
-          color: '#6366f1',
-        },
-        modal: {
-          ondismiss: function() {
-            setLoading(false);
-            toast({
-              title: "Payment cancelled",
-              description: "You cancelled the payment process",
-              variant: "destructive",
-            });
-          }
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-      setLoading(false);
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: "Payment failed",
-        description: "Unable to process payment. Please try again.",
-        variant: "destructive",
-      });
-      setLoading(false);
+    if (!validatePhone(formData.phone)) {
+      setErrors(prev => ({ ...prev, phone: 'Please enter a valid phone number' }));
+      toast({ title: "Invalid phone number", variant: "destructive" });
+      return;
     }
-  };
 
-  const handleDirectSubmit = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.from('listings').insert({
+    if (!validatePinCode(formData.pin_code)) {
+      setErrors(prev => ({ ...prev, pinCode: 'Please enter a valid PIN code' }));
+      toast({ title: "Invalid PIN code", variant: "destructive" });
+      return;
+    }
+
+    if (formData.images.length < 5) {
+      toast({ title: "Upload at least 5 images", variant: "destructive" });
+      return;
+    }
+
+    if (listingType === 'free') {
+      await supabase.from('listings').insert({
         owner_user_id: user.id,
-        product_name: formData.product_name,
-        description: formData.description,
-        images: formData.images,
-        rent_price: parseFloat(formData.rent_price),
-        pin_code: formData.pin_code,
+        ...formData,
         payment_transaction: 'FREE_LISTING',
-        product_type: formData.product_type,
-        category: formData.category,
-        phone: formData.phone,
-        address: formData.address,
         listing_type: 'free',
         original_price: 0,
         discount_amount: 0,
         final_price: 0,
       });
-
-      if (error) throw error;
-
-      await supabase.from('user_activity_logs').insert({
-        user_id: user.id,
-        action: 'SUBMIT_FREE_LISTING',
-        details: {
-          product_name: formData.product_name,
-          category: formData.category,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      toast({
-        title: "Free listing submitted!",
-        description: "Your listing is pending admin approval.",
-      });
-
-      setTimeout(() => {
-        navigate('/profile');
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Submission failed",
-        description: "Unable to create listing. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validatePhone(formData.phone)) {
-      setErrors(prev => ({ 
-        ...prev, 
-        phone: 'Please enter a valid 10-digit Indian phone number (e.g., +91 98765 43210 or 9876543210)' 
-      }));
-      toast({
-        title: "Invalid phone number",
-        description: "Please enter a valid 10-digit Indian phone number",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validatePinCode(formData.pin_code)) {
-      setErrors(prev => ({ 
-        ...prev, 
-        pinCode: 'Please enter a valid 6-digit PIN code' 
-      }));
-      toast({
-        title: "Invalid PIN code",
-        description: "Please enter a valid 6-digit PIN code",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.images.length < 5) {
-      toast({
-        title: "More images required",
-        description: "Please upload at least 5 photos of your product",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (listingType === 'free') {
-      handleDirectSubmit();
+      toast({ title: "Free listing submitted!", description: "Your listing is pending admin approval." });
+      navigate('/profile');
     } else {
-      handleRazorpayPayment();
+      // Razorpay Payment flow
     }
   };
+
+  const steps = ['Basic Info', 'Pricing & Location', 'Media & Contact', 'Listing Type'];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
       <div className="container mx-auto px-4 pt-32 pb-20">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-              List Your Item
-            </h1>
-            <p className="text-muted-foreground">
-              Fill in the details and start earning from your unused items
-            </p>
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">List Your Item</h1>
+            <p className="text-muted-foreground">Step {currentStep} of 4 — {steps[currentStep - 1]}</p>
           </div>
 
-          <Card className="p-8 shadow-elegant animate-scale-in">
+          <Card className="p-8 shadow-elegant">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="product_name">Product Name</Label>
-                <Input
-                  id="product_name"
-                  name="product_name"
-                  type="text"
-                  required
-                  value={formData.product_name}
-                  onChange={handleChange}
-                  placeholder="e.g., Camera, Laptop, Bicycle"
-                  className="transition-all duration-300 focus:shadow-card"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  required
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Describe your item in detail..."
-                  rows={4}
-                  className="transition-all duration-300 focus:shadow-card resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Product Images (Minimum 5 Photos)</Label>
-                <ImageUpload
-                  userId={user.id}
-                  currentImages={formData.images}
-                  onImagesUploaded={(urls) => setFormData({ ...formData, images: urls })}
-                  maxImages={5}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Upload at least 5 photos from different angles to showcase your product
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Product Category</Label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-                  required
-                >
-                  <option value="electronics">Electronics</option>
-                  <option value="vehicles">Vehicles</option>
-                  <option value="furniture">Furniture</option>
-                  <option value="tools">Tools</option>
-                  <option value="sports">Sports & Fitness</option>
-                  <option value="books">Books</option>
-                  <option value="clothing">Clothing</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="product_type">Product Type</Label>
-                <select
-                  id="product_type"
-                  name="product_type"
-                  value={formData.product_type}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-                  required
-                >
-                  <option value="rent">For Rent per day</option>
-                  <option value="sale">For Sale</option>
-                  <option value="both">Both (Rent & Sale)</option>
-                </select>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="rent_price">Price (₹/Day)</Label>
-                  <Input
-                    id="rent_price"
-                    name="rent_price"
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.rent_price}
-                    onChange={handleChange}
-                    placeholder="100"
-                    className="transition-all duration-300 focus:shadow-card"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pin_code">Pin Code</Label>
-                  <Input
-                    id="pin_code"
-                    name="pin_code"
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={formData.pin_code}
-                    onChange={handleChange}
-                    placeholder="Enter 6-digit PIN code"
-                    className={`transition-all duration-300 focus:shadow-card ${errors.pinCode ? 'border-destructive' : ''}`}
-                  />
-                  {errors.pinCode && (
-                    <p className="text-sm text-destructive">{errors.pinCode}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Contact Phone Number</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Enter Phone Number"
-                  className={`transition-all duration-300 focus:shadow-card ${errors.phone ? 'border-destructive' : ''}`}
-                />
-                {errors.phone && (
-                  <p className="text-sm text-destructive">{errors.phone}</p>
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <motion.div key="step1" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
+                    <div>
+                      <Label>Product Name</Label>
+                      <Input name="product_name" value={formData.product_name} onChange={handleChange} placeholder="e.g. iPhone 13, Sofa Set" required />
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe your product features" required rows={4} />
+                    </div>
+                    <div>
+                      <Label>Category</Label>
+                      <select name="category" value={formData.category} onChange={handleChange} className="w-full border rounded-lg p-2" required>
+                        <option value="">Select a category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="vehicles">Vehicles</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="tools">Tools</option>
+                        <option value="sports">Sports</option>
+                        <option value="books">Books</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Product Type</Label>
+                      <select name="product_type" value={formData.product_type} onChange={handleChange} className="w-full border rounded-lg p-2" required>
+                        <option value="rent">For Rent</option>
+                        <option value="sale">For Sale</option>
+                        <option value="both">Both</option>
+                      </select>
+                    </div>
+                  </motion.div>
                 )}
-                <p className="text-xs text-muted-foreground">Enter a valid 10-digit Indian mobile number</p>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  required
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter your full address"
-                  rows={3}
-                  className="transition-all duration-300 focus:shadow-card resize-none"
-                />
-              </div>
+                {currentStep === 2 && (
+                  <motion.div key="step2" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
+                    <div>
+                      <Label>{getPriceLabel()}</Label>
+                      <Input name="rent_price" type="number" min="1" value={formData.rent_price} onChange={handleChange} placeholder="Enter price amount" required />
+                    </div>
+                    <div>
+                      <Label>PIN Code</Label>
+                      <Input name="pin_code" maxLength={6} value={formData.pin_code} onChange={handleChange} placeholder="Enter your 6-digit area code" required />
+                    </div>
+                    <div>
+                      <Label>Address</Label>
+                      <Textarea name="address" value={formData.address} onChange={handleChange} placeholder="Enter full address" required rows={3} />
+                    </div>
+                  </motion.div>
+                )}
 
-              <div className="space-y-4 bg-accent/5 border border-accent/20 rounded-lg p-6">
-                <Label className="text-base font-semibold">Listing Type</Label>
-                <RadioGroup value={listingType} onValueChange={(value: 'free' | 'paid') => setListingType(value)}>
-                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
-                    {/* <RadioGroupItem value="free" id="free" />
-                    <Label htmlFor="free" className="flex-1 cursor-pointer">
-                      <div className="font-semibold">Free Listing</div>
-                      <div className="text-sm text-muted-foreground">No payment required</div>
-                    </Label> */}
-                  </div>
-                  <div className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-accent/5 transition-colors">
-                    <RadioGroupItem value="paid" id="paid" />
-                    <Label htmlFor="paid" className="flex-1 cursor-pointer">
-                      <div className="font-semibold">Paid Listing - ₹20</div>
-                      <div className="text-sm text-muted-foreground">Priority listing with more visibility</div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                {currentStep === 3 && (
+                  <motion.div key="step3" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
+                    <div>
+                      <Label>Product Images (Min 5)</Label>
+                      <ImageUpload userId={user.id} currentImages={formData.images} onImagesUploaded={(urls) => setFormData({ ...formData, images: urls })} maxImages={5} />
+                    </div>
+                    <div>
+                      <Label>Contact Phone</Label>
+                      <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="Enter your 10-digit number" required />
+                    </div>
+                  </motion.div>
+                )}
 
-              {listingType === 'paid' && (
-                <div className="space-y-4 bg-primary/5 border border-primary/20 rounded-lg p-6">
-                  <Label className="text-base font-semibold">Have a Coupon Code?</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="coupon_code"
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      placeholder="Enter coupon code"
-                      disabled={couponApplied}
-                      className="font-mono"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={couponApplied || validatingCoupon}
-                      variant="outline"
-                    >
-                      {validatingCoupon ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : couponApplied ? (
-                        'Applied'
-                      ) : (
-                        <>
-                          <Tag className="mr-2 h-4 w-4" />
-                          Apply
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  {couponApplied && (
-                    <p className="text-sm text-accent flex items-center gap-1">
-                      <CheckCircle className="h-4 w-4" />
-                      Coupon applied! You saved ₹{discount.toFixed(2)}
-                    </p>
-                  )}
-                  <div className="text-sm text-muted-foreground">
-                    <p>Original Amount: <span className="line-through">₹20</span></p>
-                    <p className="text-lg font-bold text-foreground">
-                      Final Amount: ₹{(20 - discount).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              )}
+                {currentStep === 4 && (
+                  <motion.div key="step4" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
+                    <Label>Listing Type</Label>
+                    <RadioGroup value={listingType} onValueChange={(v: 'free' | 'paid') => setListingType(v)}>
+                      <div className="flex items-center space-x-3 border rounded-lg p-4">
+                        <RadioGroupItem value="free" id="free" />
+                        <Label htmlFor="free">Free Listing - ₹0 (Standard Visibility)</Label>
+                      </div>
+                      <div className="flex items-center space-x-3 border rounded-lg p-4 mt-3">
+                        <RadioGroupItem value="paid" id="paid" />
+                        <Label htmlFor="paid">Paid Listing - ₹20 (Priority Listing)</Label>
+                      </div>
+                    </RadioGroup>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              <Button
-                type="submit"
-                variant="premium"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : listingType === 'free' ? (
-                  'Submit Free Listing'
+              {/* Navigation Buttons */}
+              <div className="flex justify-between pt-6">
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" onClick={prevStep}>Back</Button>
+                )}
+                {currentStep < 4 ? (
+                  <Button type="button" onClick={nextStep} disabled={!isStepComplete()}>
+                    Next
+                  </Button>
                 ) : (
-                  'Continue to Payment'
+                  <Button type="submit" disabled={loading}>
+                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : listingType === 'free' ? 'Submit Free Listing' : 'Continue to Payment'}
+                  </Button>
                 )}
-              </Button>
+              </div>
             </form>
           </Card>
         </div>

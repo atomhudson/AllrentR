@@ -102,7 +102,7 @@ const Landing = () => {
               </p>
 
               {/* Benefits List */}
-              <div
+              {/* <div
                 className="grid grid-cols-2 gap-3 animate-fade-in-up"
                 style={{ animationDelay: "0.2s" }}
               >
@@ -116,7 +116,7 @@ const Landing = () => {
                     </span>
                   </div>
                 ))}
-              </div>
+              </div> */}
 
               <div
                 className="flex flex-wrap gap-4 animate-fade-in-up"

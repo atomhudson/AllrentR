@@ -4,6 +4,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { ExternalLink, Star, TrendingUp, Users } from "lucide-react";
+import image from '@/assets/image.svg';
+import image2 from '@/assets/image2.svg';
+import image3 from '@/assets/image2.svg';
 
 const InfluencerPartnersSection = () => {
   const { data: partners, isLoading } = useInfluencerPartners();
@@ -115,18 +118,18 @@ const InfluencerPartnersSection = () => {
               >
                 {/* Background Decorations */}
                 <img
-                  src="src/assets/image.svg"
-                  alt=""
+                  src={image3}
+                  alt="design element"
                   className="absolute top-1/4 left-10 w-32 opacity-90"
                 />
                 <img
-                  src="src/assets/image2.svg"
-                  alt=""
+                  src={image2}
+                  alt="design element"
                   className="absolute top-8 right-8 w-16 opacity-70"
                 />
                 <img
-                  src="src/assets/image3.svg"
-                  alt=""
+                  src={image}
+                  alt="design element"
                   className="absolute bottom-6 right-16 w-24 opacity-50"
                 />
 

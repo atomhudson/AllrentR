@@ -18,6 +18,7 @@ import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 import Footer from "@/components/Footer";
 import TopProfilesSection from "@/components/TopProfilesSection";
 import InfluencerPartnersSection from "@/components/InfluencerPartnersSection";
+import heroImage from "@/assets/hero-image.jpg";
 
 const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -144,7 +145,7 @@ const Landing = () => {
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#E5383B]/20 to-transparent" />
                 <div className="relative w-full h-[500px] flex items-center justify-center">
                   <img
-                    src="/src/assets/hero-image.jpg"
+                    src={heroImage}
                     alt="AllRentr Hero"
                     className="w-full h-full object-cover rounded-3xl shadow-2xl border-4 border-[#F5F3F4] transform hover:scale-105 transition-all duration-500"
                   />

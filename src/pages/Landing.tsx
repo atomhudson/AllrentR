@@ -50,12 +50,12 @@ const Landing = () => {
     },
   ];
 
-  // const benefits = [
-  //   "Zero listing fees",
-  //   "Instant verification",
-  //   "Secure payments",
-  //   "24/7 support",
-  // ];
+  const benefits = [
+    "Zero listing fees",
+    "Instant verification",
+    "Secure payments",
+    "24/7 support",
+  ];
 
   return (
     <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">

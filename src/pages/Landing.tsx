@@ -19,9 +19,13 @@ import Footer from "@/components/Footer";
 import TopProfilesSection from "@/components/TopProfilesSection";
 import InfluencerPartnersSection from "@/components/InfluencerPartnersSection";
 import heroImage from "@/assets/hero-image.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const features = [
     {
@@ -125,6 +129,7 @@ const Landing = () => {
                 <Button
                   className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-[#F5F3F4] hover:shadow-2xl hover:shadow-[#E5383B]/50 transition-all duration-300 hover:scale-105 border-0 group"
                   size="lg"
+                  onClick={() => navigate(user ? "/listings" : "/signup")}
                 >
                   Get Started
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -132,6 +137,7 @@ const Landing = () => {
                 <Button
                   className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-[#F5F3F4] border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:scale-105"
                   size="lg"
+                  onClick={() => navigate("/listings")}
                 >
                   Browse Listings
                 </Button>
@@ -334,7 +340,10 @@ const Landing = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-5 pt-6">
-              <button className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => !user && navigate("/signup")}
+                className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden"
+              >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/90 transition-transform duration-300 group-hover:scale-110" />
                 <span className="relative flex items-center gap-3">
                   Create Free Account
@@ -342,7 +351,10 @@ const Landing = () => {
                 </span>
               </button>
 
-              <button className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => navigate("/submit-listing")}
+                className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden"
+              >
                 <span className="relative flex items-center gap-3">
                   List Your First Item
                   <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />

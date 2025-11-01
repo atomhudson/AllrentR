@@ -166,14 +166,14 @@ const SubmitListing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 pt-32 pb-20">
+      <div className="container mx-auto px-4 pt-20 md:pt-32 pb-12 md:pb-20">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-serif font-bold text-foreground mb-2">List Your Item</h1>
-            <p className="text-muted-foreground">Step {currentStep} of 4 — {steps[currentStep - 1]}</p>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground mb-2">List Your Item</h1>
+            <p className="text-base md:text-lg text-muted-foreground">Step {currentStep} of 4 — {steps[currentStep - 1]}</p>
           </div>
 
-          <Card className="p-8 shadow-elegant">
+          <Card className="p-6 md:p-8 shadow-card border-border">
             <form onSubmit={handleSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (

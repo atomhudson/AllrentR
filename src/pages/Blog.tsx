@@ -28,17 +28,17 @@ const Blog = () => {
       : blogs?.filter((b) => b.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-black transition-all">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative text-center py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-300/40 via-transparent to-transparent blur-3xl"></div>
+      <section className="relative text-center pt-20 md:pt-32 pb-12 md:pb-16 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#E5383B]/20 via-transparent to-transparent blur-3xl"></div>
         <motion.h1
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 bg-clip-text text-transparent font-serif tracking-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground font-serif tracking-tight"
         >
           AllRentr Blogs
         </motion.h1>
@@ -46,7 +46,7 @@ const Blog = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto"
+          className="text-base md:text-lg text-muted-foreground mt-4 max-w-2xl mx-auto px-4"
         >
           Discover the latest updates, insights, and stories from AllRentr —
           curated for modern readers.
@@ -54,8 +54,8 @@ const Blog = () => {
       </section>
 
       {/* Filter Section */}
-      <section className="container mx-auto px-6 mb-10">
-        <div className="flex flex-wrap justify-center items-center gap-3 bg-white/70 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+      <section className="container mx-auto px-4 md:px-6 mb-10">
+        <div className="flex flex-wrap justify-center items-center gap-3 bg-card backdrop-blur-md border border-border rounded-xl p-4 shadow-card">
           <Filter className="w-4 h-4 text-muted-foreground mr-2" />
           {categories.map((cat) => (
             <Button
@@ -63,8 +63,8 @@ const Blog = () => {
               variant={selectedCategory === cat ? "default" : "outline"}
               className={`rounded-full px-4 py-1 text-sm transition-all ${
                 selectedCategory === cat
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
-                  : "hover:bg-indigo-50 dark:hover:bg-gray-700"
+                  ? "bg-[#E5383B] hover:bg-[#E5383B]/90 text-[#F5F3F4] shadow-md"
+                  : "hover:bg-accent/10"
               }`}
               onClick={() => setSelectedCategory(cat)}
             >
@@ -75,7 +75,7 @@ const Blog = () => {
       </section>
 
       {/* Blog Grid */}
-      <main className="container mx-auto px-6 pb-24">
+      <main className="container mx-auto px-4 md:px-6 pb-24">
         {isLoading ? (
           <div className="text-center py-16">
             <p className="text-muted-foreground animate-pulse text-lg">
@@ -85,7 +85,7 @@ const Blog = () => {
         ) : filteredBlogs && filteredBlogs.length > 0 ? (
           <motion.div
             layout
-            className="grid gap-10 md:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-6 md:gap-8 md:grid-cols-2 lg:grid-cols-3"
           >
             {filteredBlogs.map((post, index) => (
               <motion.div
@@ -95,7 +95,7 @@ const Blog = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card className="overflow-hidden group bg-white/80 dark:bg-gray-900/40 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300">
+                <Card className="overflow-hidden group bg-card backdrop-blur-md rounded-2xl border border-border shadow-card hover:shadow-elegant transition-all duration-300">
                   {post.image_url && (
                     <div className="overflow-hidden h-56">
                       <img
@@ -109,7 +109,7 @@ const Blog = () => {
                     <div className="flex items-center justify-between mb-3">
                       <Badge
                         variant="secondary"
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs px-3 py-1 rounded-full shadow-sm"
+                        className="bg-[#E5383B] text-[#F5F3F4] text-xs px-3 py-1 rounded-full shadow-sm"
                       >
                         {post.category}
                       </Badge>
@@ -123,12 +123,12 @@ const Blog = () => {
                       </div>
                     </div>
 
-                    <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100 group-hover:text-indigo-600 transition-colors">
+                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-[#E5383B] transition-colors">
                       {post.title}
                     </CardTitle>
 
                     {/* Show full short description */}
-                    <CardDescription className="text-base mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <CardDescription className="text-base mt-3 text-muted-foreground leading-relaxed">
                       {post.description}
                     </CardDescription>
                   </CardHeader>
@@ -136,7 +136,7 @@ const Blog = () => {
                   <CardContent className="px-6 pb-6">
                     <button
                       onClick={() => setSelectedBlog(post)}
-                      className="mt-3 inline-flex items-center text-sm font-medium text-indigo-600 hover:underline hover:translate-x-1 transition-transform"
+                      className="mt-3 inline-flex items-center text-sm font-medium text-[#E5383B] hover:underline hover:translate-x-1 transition-transform"
                     >
                       Read Full Blog →
                     </button>
@@ -161,72 +161,72 @@ const Blog = () => {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+              exit={{ opacity: 0 }}
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedBlog(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 transition"
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative bg-card rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
               >
-                <X className="w-6 h-6" />
-              </button>
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedBlog(null)}
+                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition z-10"
+                >
+                  <X className="w-6 h-6" />
+                </button>
 
-              {/* Blog Image */}
-              {selectedBlog.image_url && (
-                <img
-                  src={selectedBlog.image_url}
-                  alt={selectedBlog.title}
-                  className="w-full h-72 object-cover rounded-t-2xl"
-                />
-              )}
+                {/* Blog Image */}
+                {selectedBlog.image_url && (
+                  <img
+                    src={selectedBlog.image_url}
+                    alt={selectedBlog.title}
+                    className="w-full h-72 object-cover rounded-t-2xl"
+                  />
+                )}
 
-              {/* Blog Full Content */}
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-4">
-                  <Badge className="bg-indigo-600 text-white">
-                    {selectedBlog.category}
-                  </Badge>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(selectedBlog.created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )}
+                {/* Blog Full Content */}
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="bg-[#E5383B] text-[#F5F3F4]">
+                      {selectedBlog.category}
+                    </Badge>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {new Date(selectedBlog.created_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-                  {selectedBlog.title}
-                </h2>
+                  <h2 className="text-3xl font-bold mb-4 text-foreground">
+                    {selectedBlog.title}
+                  </h2>
 
-                <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                  {selectedBlog.description}
-                </p>
+                  <p className="text-lg text-foreground leading-relaxed mb-4">
+                    {selectedBlog.description}
+                  </p>
 
-                <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {selectedBlog.content}
-                </p>
+                  <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {selectedBlog.content}
+                  </p>
 
-                {selectedBlog.reference_url && (
-                  <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                    <p className="text-sm font-semibold text-induted-foreground mb-2">📚 Additional Resources</p>
-                    <a
-                      href={selectedBlog.reference_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline text-sm flex items-center gap-1"
-                    >
+                  {selectedBlog.reference_url && (
+                    <div className="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/30">
+                      <p className="text-sm font-semibold text-foreground mb-2">📚 Additional Resources</p>
+                      <a
+                        href={selectedBlog.reference_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#E5383B] hover:text-[#E5383B]/80 underline text-sm flex items-center gap-1"
+                      >
                       Read more at source
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

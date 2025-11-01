@@ -31,9 +31,9 @@ const Profile = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'approved':
-        return <CheckCircle className="w-5 h-5 text-accent" />;
+        return <CheckCircle className="w-5 h-5 text-[#E5383B]" />;
       case 'pending':
-        return <Clock className="w-5 h-5 text-primary" />;
+        return <Clock className="w-5 h-5 text-[#E5383B]" />;
       case 'rejected':
         return <XCircle className="w-5 h-5 text-destructive" />;
       default:
@@ -43,8 +43,8 @@ const Profile = () => {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      approved: 'bg-accent/10 text-accent border-accent',
-      pending: 'bg-primary/10 text-primary border-primary',
+      approved: 'bg-[#E5383B]/10 text-[#E5383B] border-[#E5383B]',
+      pending: 'bg-[#E5383B]/10 text-[#E5383B] border-[#E5383B]',
       rejected: 'bg-destructive/10 text-destructive border-destructive',
     };
     return styles[status as keyof typeof styles] || '';
@@ -54,32 +54,32 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-28 pb-20">
+      <div className="container mx-auto px-4 pt-20 md:pt-28 pb-12 md:pb-20">
         {/* User Info */}
-        <div className="mb-12 animate-fade-in">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-8 bg-gradient-overlay rounded-2xl border border-border/50 shadow-card">
+        <div className="mb-8 md:mb-12 animate-fade-in">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-6 md:p-8 bg-gradient-overlay rounded-2xl border border-border/50 shadow-card">
             <div>
-              <h1 className="text-4xl lg:text-5xl font-serif font-bold text-foreground mb-3">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground mb-3">
                 Welcome Back!
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base md:text-lg text-muted-foreground">
                 {user.email}
               </p>
             </div>
             {streakData && streakData.current_streak > 0 && (
-              <Card className="p-6 bg-gradient-primary border-none">
+              <Card className="p-6 bg-[#E5383B] border-none">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center">
-                    <Flame className="w-9 h-9 text-accent" />
+                  <div className="w-16 h-16 rounded-full bg-[#F5F3F4]/20 flex items-center justify-center">
+                    <Flame className="w-9 h-9 text-[#F5F3F4]" />
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-primary-foreground">
+                    <div className="text-3xl font-bold text-[#F5F3F4]">
                       {streakData.current_streak} Days
                     </div>
-                    <div className="text-sm text-primary-foreground/80 font-medium">
+                    <div className="text-sm text-[#F5F3F4]/80 font-medium">
                       Current Streak 🔥
                     </div>
-                    <div className="text-xs text-primary-foreground/70 mt-1">
+                    <div className="text-xs text-[#F5F3F4]/70 mt-1">
                       Best: {streakData.longest_streak} days
                     </div>
                   </div>
@@ -90,51 +90,51 @@ const Profile = () => {
         </div>
 
         {/* Analytics Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
-          <Card className="p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-primary/30 group">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
+          <Card className="p-6 md:p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-[#E5383B]/30 group">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Package className="w-7 h-7 text-primary" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#E5383B]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Package className="w-6 h-6 md:w-7 md:h-7 text-[#E5383B]" />
               </div>
-              <span className="text-4xl font-bold text-foreground">{listings.length}</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground">{listings.length}</span>
             </div>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Total Listings</p>
+            <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-wide">Total Listings</p>
           </Card>
 
-          <Card className="p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-accent/30 group" style={{ animationDelay: '0.1s' }}>
+          <Card className="p-6 md:p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-[#E5383B]/30 group" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <CheckCircle className="w-7 h-7 text-accent" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#E5383B]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CheckCircle className="w-6 h-6 md:w-7 md:h-7 text-[#E5383B]" />
               </div>
-              <span className="text-4xl font-bold text-foreground">{approvedListings}</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground">{approvedListings}</span>
             </div>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Approved & Live</p>
+            <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-wide">Approved & Live</p>
           </Card>
 
-          <Card className="p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-primary/30 group" style={{ animationDelay: '0.2s' }}>
+          <Card className="p-6 md:p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-[#E5383B]/30 group" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Eye className="w-7 h-7 text-primary" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#E5383B]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Eye className="w-6 h-6 md:w-7 md:h-7 text-[#E5383B]" />
               </div>
-              <span className="text-4xl font-bold text-foreground">{totalViews}</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground">{totalViews}</span>
             </div>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Total Views</p>
+            <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-wide">Total Views</p>
           </Card>
 
-          <Card className="p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-accent/30 group" style={{ animationDelay: '0.3s' }}>
+          <Card className="p-6 md:p-8 shadow-card hover:shadow-elegant transition-all duration-500 animate-fade-in-up border-border/50 hover:border-[#E5383B]/30 group" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Star className="w-7 h-7 text-accent fill-current" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#E5383B]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Star className="w-6 h-6 md:w-7 md:h-7 text-[#E5383B] fill-current" />
               </div>
-              <span className="text-4xl font-bold text-foreground">{avgRating.toFixed(1)}</span>
+              <span className="text-3xl md:text-4xl font-bold text-foreground">{avgRating.toFixed(1)}</span>
             </div>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Average Rating</p>
+            <p className="text-xs md:text-sm text-muted-foreground font-medium uppercase tracking-wide">Average Rating</p>
           </Card>
         </div>
 
         {/* Listings Table */}
-        <Card className="p-8 shadow-elegant animate-fade-in">
-          <h2 className="text-2xl font-serif font-bold text-foreground mb-6">
+        <Card className="p-6 md:p-8 shadow-elegant animate-fade-in">
+          <h2 className="text-xl md:text-2xl font-serif font-bold text-foreground mb-6">
             Your Listings
           </h2>
 
@@ -168,14 +168,14 @@ const Profile = () => {
                         {listing.description}
                       </p>
                       <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-1 text-accent font-medium">
+                        <div className="flex items-center gap-1 text-[#E5383B] font-medium">
                           ₹{listing.rent_price}/day
                         </div>
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Eye className="w-4 h-4" />
                           {listing.views || 0} views
                         </div>
-                        <div className="flex items-center gap-1 text-accent">
+                        <div className="flex items-center gap-1 text-[#E5383B]">
                           <Star className="w-4 h-4 fill-current" />
                           {listing.rating?.toFixed(1) || '5.0'}
                         </div>

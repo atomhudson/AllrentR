@@ -158,14 +158,14 @@ const Landing = () => {
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#E5383B]/20 to-transparent rounded-3xl" />
 
                   {/* Optional text overlay if you still want text on top of the image */}
-                  <div className="absolute bottom-8 left-8 text-left space-y-2">
+                  {/* <div className="absolute bottom-8 left-8 text-left space-y-2">
                     <h3 className="text-3xl font-bold text-[#F5F3F4] drop-shadow-lg">
                       Rent Smarter, Earn Faster
                     </h3>
                     <p className="text-[#F5F3F4]/80 drop-shadow-lg">
                       Thousands of verified listings. Start today!
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               {/* Floating Badge */}

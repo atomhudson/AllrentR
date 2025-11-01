@@ -78,7 +78,7 @@ const SubmitListing = () => {
     if (currentStep === 3)
       return formData.images.length >= 5 && formData.phone;
     if (currentStep === 4)
-      return listingType !== '';
+      return listingType === 'free' || listingType === 'paid';
     return false;
   };
 
@@ -143,15 +143,17 @@ const SubmitListing = () => {
     }
 
     if (listingType === 'free') {
-      await supabase.from('listings').insert({
+      const listingData = {
         owner_user_id: user.id,
         ...formData,
+        rent_price: Number(formData.rent_price),
         payment_transaction: 'FREE_LISTING',
         listing_type: 'free',
         original_price: 0,
         discount_amount: 0,
         final_price: 0,
-      });
+      };
+      await supabase.from('listings').insert([listingData]);
       toast({ title: "Free listing submitted!", description: "Your listing is pending admin approval." });
       navigate('/profile');
     } else {

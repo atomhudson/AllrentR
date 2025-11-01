@@ -132,6 +132,7 @@ export type Database = {
           id: string
           image_url: string | null
           published: boolean
+          reference_url: string | null
           title: string
           updated_at: string
         }
@@ -144,6 +145,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           published?: boolean
+          reference_url?: string | null
           title: string
           updated_at?: string
         }
@@ -156,6 +158,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           published?: boolean
+          reference_url?: string | null
           title?: string
           updated_at?: string
         }
@@ -599,14 +602,8 @@ export type Database = {
         Args: { listing_id: string }
         Returns: undefined
       }
-      sync_top_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_user_activity: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      sync_top_profiles: { Args: never; Returns: undefined }
+      update_user_activity: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"

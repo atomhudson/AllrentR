@@ -69,9 +69,9 @@ const Landing = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24">
+      <section className="relative pt-20 md:pt-32 pb-12 md:pb-24">
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
             <div className="space-y-8">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E5383B]/10 to-[#BA181B]/10 rounded-full border border-[#E5383B]/20 backdrop-blur-sm animate-fade-in">
@@ -81,7 +81,7 @@ const Landing = () => {
                 </span>
               </div>
 
-              <h1 className="text-6xl lg:text-7xl font-bold text-[#161A1D] leading-tight animate-fade-in-up">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#161A1D] leading-tight animate-fade-in-up">
                 Rent Anything,
                 <br />
                 <span className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent">
@@ -94,7 +94,7 @@ const Landing = () => {
               </h1>
 
               <p
-                className="text-xl text-[#161A1D]/80 leading-relaxed animate-fade-in-up"
+                className="text-base md:text-lg lg:text-xl text-[#161A1D]/80 leading-relaxed animate-fade-in-up"
                 style={{ animationDelay: "0.1s" }}
               >
                 Transform unused items into steady income. List in 30 seconds,
@@ -119,18 +119,18 @@ const Landing = () => {
               </div> */}
 
               <div
-                className="flex flex-wrap gap-4 animate-fade-in-up"
+                className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 animate-fade-in-up"
                 style={{ animationDelay: "0.3s" }}
               >
                 <Button
-                  className="text-lg px-8 py-6 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-[#F5F3F4] hover:shadow-2xl hover:shadow-[#E5383B]/50 transition-all duration-300 hover:scale-105 border-0 group"
+                  className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-[#F5F3F4] hover:shadow-2xl hover:shadow-[#E5383B]/50 transition-all duration-300 hover:scale-105 border-0 group"
                   size="lg"
                 >
                   Get Started
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button
-                  className="text-lg px-8 py-6 bg-[#F5F3F4] border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:scale-105"
+                  className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-[#F5F3F4] border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:scale-105"
                   size="lg"
                 >
                   Browse Listings
@@ -139,11 +139,11 @@ const Landing = () => {
             </div>
 
             {/* Hero Image with Floating Effect */}
-            <div className="relative animate-float">
-              <div className="absolute -inset-8 bg-gradient-to-r from-[#E5383B] to-[#BA181B] opacity-30 blur-3xl rounded-full animate-pulse-slow" />
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-[#F5F3F4] transform hover:scale-105 transition-all duration-500 bg-gradient-to-br from-[#B1A7A6] to-[#D3D3D3]">
+            <div className="relative animate-float mt-8 lg:mt-0">
+              <div className="absolute -inset-4 md:-inset-8 bg-gradient-to-r from-[#E5383B] to-[#BA181B] opacity-30 blur-3xl rounded-full animate-pulse-slow" />
+              <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border-2 md:border-4 border-[#F5F3F4] transform hover:scale-105 transition-all duration-500 bg-gradient-to-br from-[#B1A7A6] to-[#D3D3D3]">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#E5383B]/20 to-transparent" />
-                <div className="relative w-full h-[500px] flex items-center justify-center">
+                <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] flex items-center justify-center">
                   <img
                     src={heroImage}
                     alt="AllRentr Hero"
@@ -163,11 +163,11 @@ const Landing = () => {
                 </div>
               </div>
               {/* Floating Badge */}
-              <div className="absolute -bottom-6 -right-6 bg-[#F5F3F4] rounded-2xl shadow-2xl p-6 border-2 border-[#E5383B]/20 animate-bounce-slow">
-                <div className="text-3xl font-bold bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent">
+              <div className="absolute -bottom-4 md:-bottom-6 -right-4 md:-right-6 bg-[#F5F3F4] rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-6 border-2 border-[#E5383B]/20 animate-bounce-slow">
+                <div className="text-xl md:text-3xl font-bold bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent">
                   ₹1000+
                 </div>
-                <div className="text-sm text-[#161A1D]/70">
+                <div className="text-xs md:text-sm text-[#161A1D]/70">
                   Avg. Monthly Earnings
                 </div>
               </div>
@@ -224,7 +224,7 @@ const Landing = () => {
 
           {/* Feature Grid */}
           <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
@@ -312,7 +312,7 @@ const Landing = () => {
             </div>
 
             {/* Main heading with enhanced typography */}
-            <h2 className="text-6xl lg:text-7xl font-black text-[#F5F3F4] leading-tight tracking-tight">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-[#F5F3F4] leading-tight tracking-tight">
               Ready to Start Your
               <span className="block mt-2 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/70 bg-clip-text text-transparent">
                 Rental Journey?
@@ -327,7 +327,7 @@ const Landing = () => {
             </div>
 
             {/* Description */}
-            <p className="text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-base md:text-xl lg:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed">
               Join thousands earning from unused items or finding exactly what
               they need at unbeatable prices.
             </p>
@@ -351,7 +351,7 @@ const Landing = () => {
             </div>
 
             {/* Trust Indicators with enhanced design */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 pt-8 md:pt-12 max-w-4xl mx-auto">
               {[
                 {
                   icon: Shield,

@@ -7,6 +7,7 @@ export const blogSchema = z.object({
   content: z.string().trim().min(1, "Content is required").max(50000, "Content must be less than 50,000 characters"),
   category: z.string().trim().min(1, "Category is required").max(100, "Category must be less than 100 characters"),
   image_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
+  reference_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
   published: z.boolean(),
 });
 

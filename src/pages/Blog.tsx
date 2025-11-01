@@ -217,6 +217,23 @@ const Blog = () => {
                 <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {selectedBlog.content}
                 </p>
+
+                {selectedBlog.reference_url && (
+                  <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                    <p className="text-sm font-semibold text-induted-foreground mb-2">📚 Additional Resources</p>
+                    <a
+                      href={selectedBlog.reference_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline text-sm flex items-center gap-1"
+                    >
+                      Read more at source
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

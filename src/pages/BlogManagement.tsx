@@ -27,6 +27,7 @@ const BlogManagement = () => {
     category: '',
     published: false,
     image_url: '',
+    reference_url: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -83,6 +84,7 @@ const BlogManagement = () => {
       category: '',
       published: false,
       image_url: '',
+      reference_url: '',
     });
     setImageFile(null);
     setEditingBlog(null);
@@ -97,6 +99,7 @@ const BlogManagement = () => {
       category: blog.category,
       published: blog.published,
       image_url: blog.image_url || '',
+      reference_url: blog.reference_url || '',
     });
     setIsDialogOpen(true);
   };
@@ -204,6 +207,18 @@ const BlogManagement = () => {
                     {formData.image_url && (
                       <img src={formData.image_url} alt="Preview" className="mt-2 w-full h-40 object-cover rounded" />
                     )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="reference_url">Reference URL (Optional)</Label>
+                    <Input
+                      id="reference_url"
+                      type="url"
+                      placeholder="https://example.com/article"
+                      value={formData.reference_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, reference_url: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Add a link to additional information or source</p>
                   </div>
 
                   <div className="flex items-center space-x-2">

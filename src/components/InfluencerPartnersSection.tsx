@@ -3,7 +3,7 @@ import { useSectionVisibility } from "@/hooks/useTopProfiles";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { ExternalLink, Star, TrendingUp, Users } from "lucide-react";
+import { ExternalLink, Star} from "lucide-react";
 import image from '@/assets/image.svg';
 import image2 from '@/assets/image2.svg';
 import image3 from '@/assets/image2.svg';
@@ -144,7 +144,7 @@ const InfluencerPartnersSection = () => {
                     </div>
 
                     <div>
-                      <p className="text-[15px] text-[#D3D3D3]/90 mb-1">
+                      <p className="font-bold text-[20px] text-[#BA181B]/90 mb-1">
                         INFLUENCER WITH{" "}
                         <span className="font-bold text-[#F5F3F4]">
                           {partner.followers_count >= 1000000
@@ -157,7 +157,7 @@ const InfluencerPartnersSection = () => {
                         </span>{" "}
                         FOLLOWERS
                       </p>
-                      <p className="text-[22px] font-bold text-[#D3D3D3] tracking-wide">
+                      <p className="text-[22px] font-bold text-[#BA181B]/90 tracking-wide">
                         TOP CREATOR
                       </p>
                     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,9 +34,7 @@ export const RatingCard = ({ listingId, currentUserId }: RatingCardProps) => {
       .eq('listing_id', listingId)
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      setRatings(data);
-    }
+    if (!error && data) setRatings(data);
   };
 
   const handleSubmitRating = async () => {
@@ -84,27 +82,39 @@ export const RatingCard = ({ listingId, currentUserId }: RatingCardProps) => {
     setLoading(false);
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchRatings();
-  });
+  }, []);
 
-  const averageRating = ratings.length > 0
-    ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
-    : '0.0';
+  const averageRating =
+    ratings.length > 0
+      ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+      : '0.0';
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Star className="w-5 h-5 fill-accent text-accent" />
-          Ratings & Reviews ({ratings.length})
-          <span className="text-muted-foreground ml-2">Avg: {averageRating}</span>
+    <Card
+      className="mt-10 border border-[#B1A7A6]/30 rounded-3xl overflow-hidden 
+      bg-gradient-to-br from-[#F5F3F4] via-[#FFFFFF] to-[#F5F3F4]
+      shadow-[0_8px_24px_rgba(102,7,8,0.08)] hover:shadow-[0_10px_28px_rgba(102,7,8,0.15)]
+      transition-all duration-500 backdrop-blur-md"
+    >
+      <CardHeader className="border-b border-[#D3D3D3]/50 pb-4 bg-gradient-to-r from-[#E5383B] via-[#fc7777] to-[#e4cec7]">
+        <CardTitle className="flex items-center justify-between text-[#161A1D]">
+          <div className="flex items-center gap-3">
+            <Star className="w-8 h-8 fill-[#ffde21] text-[#E5383B]" />
+            <span className="text-lg font-bold tracking-wide">Ratings & Reviews</span>
+          </div>
+          <span className="text-lg font-bold text-[#660708]/80">
+            ({ratings.length}) • Avg: {averageRating}
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+
+      <CardContent className="p-8 space-y-8 bg-[#FFFFFF]/60 backdrop-blur-sm">
         {currentUserId && (
-          <div className="p-4 border border-border rounded-lg bg-muted/50">
-            <h4 className="font-semibold mb-3">Leave a Rating</h4>
+          <div className="p-6 border border-[#D3D3D3]/60 rounded-2xl bg-[#F5F3F4]/70 shadow-sm hover:shadow-[0_0_20px_rgba(229,56,59,0.15)] transition-all duration-300">
+            <h4 className="font-semibold text-[#161A1D] mb-3 text-lg">Leave a Rating</h4>
+
             <div className="flex gap-2 mb-4">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -112,59 +122,71 @@ export const RatingCard = ({ listingId, currentUserId }: RatingCardProps) => {
                   onClick={() => setUserRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
-                  className="transition-transform hover:scale-110"
+                  className="transition-transform duration-200 hover:scale-110"
                 >
                   <Star
                     className={`w-8 h-8 ${
                       star <= (hoveredRating || userRating)
-                        ? 'fill-accent text-accent'
-                        : 'text-muted-foreground'
+                        ? 'fill-[#E5383B] text-[#E5383B] drop-shadow-[0_0_4px_rgba(229,56,59,0.3)]'
+                        : 'text-[#B1A7A6]'
                     }`}
                   />
                 </button>
               ))}
             </div>
+
             <Textarea
-              placeholder="Write your review (optional)..."
+              placeholder="Share your thoughts about this listing..."
               value={userComment}
               onChange={(e) => setUserComment(e.target.value)}
-              className="mb-3"
+              className="mb-3 border-[#D3D3D3]/60 bg-white text-[#161A1D]
+              placeholder:text-[#B1A7A6] focus:ring-[#E5383B] focus:border-[#E5383B] rounded-xl"
               rows={3}
             />
-            <Button onClick={handleSubmitRating} disabled={loading}>
-              Submit Rating
+            <Button
+              onClick={handleSubmitRating}
+              disabled={loading}
+              className="bg-gradient-to-r from-[#BA181B] via-[#E5383B] to-[#A4161A] 
+              text-white rounded-xl shadow-md hover:shadow-[0_0_20px_rgba(229,56,59,0.3)]
+              transition-all duration-300 px-6 py-2 font-semibold tracking-wide"
+            >
+              {loading ? 'Submitting...' : 'Submit Rating'}
             </Button>
           </div>
         )}
 
         <div className="space-y-4">
           {ratings.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No ratings yet. Be the first to rate!
+            <p className="text-center text-[#B1A7A6] py-8 italic text-sm tracking-wide">
+              No ratings yet — be the first to rate!
             </p>
           ) : (
             ratings.map((rating) => (
               <div
                 key={rating.id}
-                className="p-4 border border-border rounded-lg"
+                className="p-5 rounded-2xl border border-[#D3D3D3]/60 bg-[#F5F3F4]/70 
+                hover:bg-[#E9E9E9]/80 hover:border-[#E5383B]/40 
+                transition-all duration-300 group shadow-sm"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
                       className={`w-4 h-4 ${
                         star <= rating.rating
-                          ? 'fill-accent text-accent'
-                          : 'text-muted-foreground'
+                          ? 'fill-[#E5383B] text-[#E5383B]'
+                          : 'text-[#B1A7A6]'
                       }`}
                     />
                   ))}
-                  <span className="text-sm text-muted-foreground ml-2">
+                  <span className="text-xs text-[#660708]/70 ml-2">
                     {new Date(rating.created_at).toLocaleDateString()}
                   </span>
                 </div>
                 {rating.comment && (
-                  <p className="text-sm text-foreground">{rating.comment}</p>
+                  <p className="text-sm text-[#161A1D]/90 leading-relaxed">
+                    {rating.comment}
+                  </p>
                 )}
               </div>
             ))

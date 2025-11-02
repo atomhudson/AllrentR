@@ -88,7 +88,7 @@ export default function BannerCarousel() {
   if (loading) {
     return (
       <div className="w-full px-4 py-8">
-        <div className="relative w-full max-w-7xl mx-auto h-[500px] rounded-3xl overflow-hidden bg-[#0B090A]">
+        <div className="relative w-full max-w-7xl mx-auto h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] rounded-3xl overflow-hidden bg-[#0B090A]">
           <div className="absolute inset-0 bg-gradient-to-br from-[#161A1D] to-[#0B090A] animate-pulse" />
           <div className="absolute inset-0 flex flex-col justify-end p-10">
             <div className="w-24 h-1 bg-[#B1A7A6]/30 mb-6 rounded-full animate-pulse" />
@@ -129,7 +129,7 @@ export default function BannerCarousel() {
         {/* Banner Image */}
         <div
           key={currentBanner.id}
-          className={`relative w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] cursor-pointer overflow-hidden transition-all duration-[1500ms] ease-in-out transform ${
+          className={`relative w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] cursor-pointer overflow-hidden transition-all duration-[1500ms] ease-in-out transform ${
             direction === 1
               ? "translate-x-0 opacity-100"
               : "translate-x-0 opacity-100"
@@ -139,7 +139,7 @@ export default function BannerCarousel() {
           <img
             src={currentBanner.image_url}
             alt={currentBanner.title}
-            className="absolute inset-0 w-full h-full object-cover sm:object-cover object-center transition-transform duration-[8000ms] ease-out group-hover:scale-110"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8000ms] ease-out group-hover:scale-110"
             style={{
               filter: "brightness(0.75) contrast(1.1) saturate(1.15)",
             }}

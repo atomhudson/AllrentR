@@ -104,9 +104,9 @@ const Listings = () => {
         <BannerCarousel />
 
         {/* Smart Filters Section */}
-        <div className="container mx-auto py-12 px-4">
+        <div className="container mx-auto py-6 px-4">
           <div
-            className="relative overflow-hidden rounded-[32px] p-[2px] group"
+            className="relative overflow-hidden rounded-3xl p-[2px] group"
             style={{
               background:
                 "linear-gradient(135deg, rgba(229, 56, 59, 0.3), rgba(186, 24, 27, 0.2), rgba(102, 7, 8, 0.3))",
@@ -114,7 +114,7 @@ const Listings = () => {
           >
             {/* Inner Container */}
             <div
-              className="relative rounded-[30px] p-8 md:p-12 backdrop-blur-2xl overflow-hidden"
+              className="relative rounded-[28px] p-4 md:p-6 backdrop-blur-2xl overflow-hidden"
               style={{
                 background:
                   "linear-gradient(135deg, rgba(245, 243, 244, 0.95), rgba(211, 211, 211, 0.85))",
@@ -142,10 +142,10 @@ const Listings = () => {
                 />
               </div>
 
-              {/* Header */}
-              <div className="relative text-center mb-10">
+              {/* Header - Hidden on mobile */}
+              <div className="relative text-center mb-6 hidden md:block">
                 <div
-                  className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full backdrop-blur-xl"
+                  className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full backdrop-blur-xl"
                   style={{
                     background:
                       "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
@@ -160,7 +160,7 @@ const Listings = () => {
                 </div>
 
                 <h2
-                  className="text-3xl md:text-4xl font-black tracking-tight mb-3"
+                  className="text-2xl md:text-3xl font-black tracking-tight mb-2"
                   style={{
                     background: "linear-gradient(135deg, #161A1D, #660708)",
                     WebkitBackgroundClip: "text",
@@ -169,14 +169,14 @@ const Listings = () => {
                 >
                   Refine Your Search
                 </h2>
-                <p className="text-[#660708]/70 text-base max-w-2xl mx-auto">
+                <p className="text-[#660708]/70 text-sm max-w-2xl mx-auto">
                   Discover exactly what you're looking for with our intelligent
                   filtering system
                 </p>
               </div>
 
               {/* Search Inputs */}
-              <div className="grid md:grid-cols-2 gap-6 mb-10">
+              <div className="grid md:grid-cols-3 gap-4 mb-4 md:mb-6">
                 {/* Search Field */}
                 <div className="relative group/input">
                   <div
@@ -193,22 +193,22 @@ const Listings = () => {
                         boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
                       }}
                     >
-                      <div className="flex items-center px-5 py-4 gap-3">
+                      <div className="flex items-center px-4 py-3 gap-3">
                         <div
-                          className="flex items-center justify-center w-10 h-10 rounded-xl"
+                          className="flex items-center justify-center w-9 h-9 rounded-xl"
                           style={{
                             background:
                               "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
                           }}
                         >
-                          <Search className="w-5 h-5 text-[#BA181B]" />
+                          <Search className="w-4 h-4 text-[#BA181B]" />
                         </div>
                         <input
                           type="text"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search for items..."
-                          className="flex-1 bg-transparent text-[#161A1D] text-base font-medium outline-none placeholder:text-[#B1A7A6]"
+                          placeholder="Search items..."
+                          className="flex-1 bg-transparent text-[#161A1D] text-sm font-medium outline-none placeholder:text-[#B1A7A6]"
                         />
                         {searchQuery && (
                           <button
@@ -219,14 +219,6 @@ const Listings = () => {
                           </button>
                         )}
                       </div>
-                      <div
-                        className="absolute bottom-0 left-0 h-[2px] transition-all duration-500"
-                        style={{
-                          width: searchQuery ? "100%" : "0%",
-                          background:
-                            "linear-gradient(90deg, #E5383B, #BA181B)",
-                        }}
-                      />
                     </div>
                   </div>
                 </div>
@@ -247,22 +239,22 @@ const Listings = () => {
                         boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
                       }}
                     >
-                      <div className="flex items-center px-5 py-4 gap-3">
+                      <div className="flex items-center px-4 py-3 gap-3">
                         <div
-                          className="flex items-center justify-center w-10 h-10 rounded-xl"
+                          className="flex items-center justify-center w-9 h-9 rounded-xl"
                           style={{
                             background:
                               "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
                           }}
                         >
-                          <MapPin className="w-5 h-5 text-[#BA181B]" />
+                          <MapPin className="w-4 h-4 text-[#BA181B]" />
                         </div>
                         <input
                           type="text"
                           value={pinCodeFilter}
                           onChange={(e) => setPinCodeFilter(e.target.value)}
-                          placeholder="Filter by pin code..."
-                          className="flex-1 bg-transparent text-[#161A1D] text-base font-medium outline-none placeholder:text-[#B1A7A6]"
+                          placeholder="Filter by pin..."
+                          className="flex-1 bg-transparent text-[#161A1D] text-sm font-medium outline-none placeholder:text-[#B1A7A6]"
                         />
                         {pinCodeFilter && (
                           <button
@@ -273,21 +265,93 @@ const Listings = () => {
                           </button>
                         )}
                       </div>
-                      <div
-                        className="absolute bottom-0 left-0 h-[2px] transition-all duration-500"
-                        style={{
-                          width: pinCodeFilter ? "100%" : "0%",
-                          background:
-                            "linear-gradient(90deg, #E5383B, #BA181B)",
-                        }}
-                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filter Button - Mobile Only */}
+                <div className="relative md:hidden">
+                  <button
+                    onClick={() => {
+                      const dropdown = document.getElementById('category-dropdown');
+                      if (dropdown) {
+                        dropdown.classList.toggle('hidden');
+                      }
+                    }}
+                    className="w-full rounded-2xl p-[1px]"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(229, 56, 59, 0.2), rgba(186, 24, 27, 0.15))",
+                    }}
+                  >
+                    <div
+                      className="rounded-2xl overflow-hidden backdrop-blur-xl"
+                      style={{
+                        background: "rgba(255, 255, 255, 0.7)",
+                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
+                      }}
+                    >
+                      <div className="flex items-center justify-center px-4 py-3 gap-2">
+                        <SlidersHorizontal className="w-4 h-4 text-[#BA181B]" />
+                        <span className="text-sm font-medium text-[#161A1D]">
+                          Filter
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Dropdown */}
+                  <div
+                    id="category-dropdown"
+                    className="hidden absolute top-full mt-2 w-full z-50 rounded-2xl p-[1px]"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(229, 56, 59, 0.3), rgba(186, 24, 27, 0.2))",
+                    }}
+                  >
+                    <div
+                      className="rounded-2xl backdrop-blur-xl p-2"
+                      style={{
+                        background: "rgba(245, 243, 244, 0.98)",
+                        boxShadow: "0 10px 40px rgba(11, 9, 10, 0.2)",
+                      }}
+                    >
+                      {categories.map((cat) => (
+                        <button
+                          key={cat.value}
+                          onClick={() => {
+                            setCategoryFilter(cat.value);
+                            const dropdown = document.getElementById('category-dropdown');
+                            if (dropdown) {
+                              dropdown.classList.add('hidden');
+                            }
+                          }}
+                          className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 hover:bg-[#E5383B]/10"
+                          style={{
+                            background:
+                              categoryFilter === cat.value
+                                ? "linear-gradient(135deg, #E5383B, #BA181B)"
+                                : "transparent",
+                          }}
+                        >
+                          <span
+                            className={`text-sm font-medium ${
+                              categoryFilter === cat.value
+                                ? "text-[#F5F3F4]"
+                                : "text-[#161A1D]"
+                            }`}
+                          >
+                            {cat.label}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Category Pills */}
-              <div className="relative">
+              {/* Category Pills - Desktop Only */}
+              <div className="relative hidden md:block">
                 <div className="flex flex-wrap justify-center gap-3">
                   {categories.map((cat) => (
                     <button
@@ -306,7 +370,7 @@ const Listings = () => {
                         />
                       )}
                       <div
-                        className={`relative px-6 py-3 rounded-full transition-all duration-300 ${
+                        className={`relative px-5 py-2.5 rounded-full transition-all duration-300 ${
                           categoryFilter === cat.value
                             ? "scale-105"
                             : "hover:scale-105"
@@ -327,7 +391,7 @@ const Listings = () => {
                         }}
                       >
                         <span
-                          className={`text-sm font-bold tracking-wide ${
+                          className={`text-sm font-semibold tracking-wide ${
                             categoryFilter === cat.value
                               ? "text-[#F5F3F4]"
                               : "text-[#161A1D] group-hover/pill:text-[#BA181B]"
@@ -340,9 +404,9 @@ const Listings = () => {
                   ))}
                 </div>
 
-                {/* Active Filter Count (Fixed) */}
+                {/* Active Filter Count */}
                 {(searchQuery || pinCodeFilter || categoryFilter) && (
-                  <div className="flex items-center justify-center gap-2 mt-8">
+                  <div className="flex items-center justify-center gap-2 mt-6">
                     <Sparkles className="w-4 h-4 text-[#E5383B]" />
                     <span className="text-sm font-semibold text-[#660708]">
                       {[

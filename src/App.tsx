@@ -13,6 +13,7 @@ import SubmitListing from "./pages/SubmitListing";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import BlogManagement from "./pages/BlogManagement";
 import AdEditor from "./pages/AdEditor";
 import TermsManagement from "./pages/TermsManagement";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/admin/coupons" element={<CouponManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

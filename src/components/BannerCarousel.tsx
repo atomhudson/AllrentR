@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Banner {
   id: string;
@@ -17,41 +18,46 @@ export default function BannerCarousel() {
   const [isHovered, setIsHovered] = useState(false);
   const [direction, setDirection] = useState(0);
 
-  // 🧠 Simulate async banner loading
+  // Fetch banners from Supabase
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setBanners([
+    const fetchBanners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banners')
+          .select('*')
+          .eq('active', true)
+          .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        setBanners(data || []);
+      } catch (error) {
+        console.error('Error fetching banners:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanners();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('banners-changes')
+      .on(
+        'postgres_changes',
         {
-          id: "1",
-          title: "Discover Amazing Products",
-          image_url:
-            "https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=600&fit=crop",
-          link_url: "#",
-          active: true,
-          display_order: 1,
+          event: '*',
+          schema: 'public',
+          table: 'banners'
         },
-        {
-          id: "2",
-          title: "Limited Time Offers",
-          image_url:
-            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=600&fit=crop",
-          link_url: "#",
-          active: true,
-          display_order: 2,
-        },
-        {
-          id: "3",
-          title: "Exclusive Collection",
-          image_url:
-            "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=600&fit=crop",
-          link_url: "#",
-          active: true,
-          display_order: 3,
-        },
-      ]);
-      setLoading(false);
-    }, 1800);
-    return () => clearTimeout(timer);
+        () => {
+          fetchBanners();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // 🌀 Auto-scroll effect

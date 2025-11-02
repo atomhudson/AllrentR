@@ -1,14 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowRight, X } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { useBlogs } from "@/hooks/useBlogs";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const Blog = () => {
+  const navigate = useNavigate();
   const { data: blogs, isLoading } = useBlogs();
-  const [selectedBlog, setSelectedBlog] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const categories = ["All", ...new Set(blogs?.map((b) => b.category))];
@@ -52,7 +53,7 @@ const Blog = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            onClick={() => setSelectedBlog(featuredBlog)}
+            onClick={() => navigate(`/blog/${featuredBlog.id}`)}
             className="relative group cursor-pointer rounded-3xl overflow-hidden bg-card border border-border shadow-card hover:shadow-elegant transition-all duration-500"
           >
             {featuredBlog.image_url && (
@@ -145,7 +146,7 @@ const Blog = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card
-                  onClick={() => setSelectedBlog(post)}
+                  onClick={() => navigate(`/blog/${post.id}`)}
                   className="group cursor-pointer overflow-hidden bg-card border border-border shadow-card hover:shadow-elegant transition-all duration-300 h-full"
                 >
                   {post.image_url && (
@@ -197,92 +198,6 @@ const Blog = () => {
         )}
       </section>
 
-      {/* Blog Modal */}
-      <AnimatePresence>
-        {selectedBlog && (
-          <motion.div
-            className="fixed inset-0 bg-foreground/80 backdrop-blur-sm z-50 flex items-center justify-center px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedBlog(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="relative bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedBlog(null)}
-                className="sticky top-4 right-4 float-right z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
-              >
-                <X className="w-5 h-5 text-foreground" />
-              </button>
-
-              {selectedBlog.image_url && (
-                <img
-                  src={selectedBlog.image_url}
-                  alt={selectedBlog.title}
-                  className="w-full h-72 md:h-96 object-cover"
-                />
-              )}
-
-              <div className="p-6 md:p-10">
-                <div className="flex items-center justify-between mb-6">
-                  <Badge className="bg-primary text-primary-foreground">
-                    {selectedBlog.category}
-                  </Badge>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(selectedBlog.created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )}
-                  </div>
-                </div>
-
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-                  {selectedBlog.title}
-                </h2>
-
-                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
-                  {selectedBlog.description}
-                </p>
-
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap">
-                    {selectedBlog.content}
-                  </p>
-                </div>
-
-                {selectedBlog.reference_url && (
-                  <div className="mt-8 p-6 bg-secondary/50 rounded-xl border border-border">
-                    <p className="text-sm font-semibold text-foreground mb-3">
-                      📚 Additional Resources
-                    </p>
-                    <a
-                      href={selectedBlog.reference_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary hover:text-accent transition-colors font-medium"
-                    >
-                      Read more at source
-                      <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

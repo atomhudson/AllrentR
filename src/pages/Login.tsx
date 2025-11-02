@@ -117,7 +117,7 @@ export default function Login() {
     >
       {/* Animated Background */}
       <LoginNavbar />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none pt-10">
         <div
           className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20"
           style={{

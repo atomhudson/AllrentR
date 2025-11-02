@@ -167,28 +167,82 @@ const SubmitListing = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 pt-20 md:pt-32 pb-12 md:pb-20">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground mb-2">List Your Item</h1>
-            <p className="text-base md:text-lg text-muted-foreground">Step {currentStep} of 4 — {steps[currentStep - 1]}</p>
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              List Your Item
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground">
+              Step {currentStep} of 4 — {steps[currentStep - 1]}
+            </p>
+          </motion.div>
+
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between mb-3">
+              {steps.map((step, idx) => (
+                <div key={idx} className="flex flex-col items-center flex-1">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
+                    currentStep > idx + 1 ? 'bg-primary text-primary-foreground' :
+                    currentStep === idx + 1 ? 'bg-primary text-primary-foreground' :
+                    'bg-secondary text-secondary-foreground'
+                  }`}>
+                    {currentStep > idx + 1 ? '✓' : idx + 1}
+                  </div>
+                  <span className="text-xs mt-2 text-muted-foreground hidden md:block">{step}</span>
+                </div>
+              ))}
+            </div>
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-500"
+                style={{ width: `${(currentStep / 4) * 100}%` }}
+              />
+            </div>
           </div>
 
-          <Card className="p-6 md:p-8 shadow-card border-border">
+          <Card className="p-6 md:p-10 shadow-elegant border-border bg-card">
             <form onSubmit={handleSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
-                      <Label>Product Name</Label>
-                      <Input name="product_name" value={formData.product_name} onChange={handleChange} placeholder="e.g. iPhone 13, Sofa Set" required />
+                      <Label className="text-foreground font-medium mb-2 block">Product Name</Label>
+                      <Input 
+                        name="product_name" 
+                        value={formData.product_name} 
+                        onChange={handleChange} 
+                        placeholder="e.g. iPhone 13, Sofa Set" 
+                        required 
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                     <div>
-                      <Label>Description</Label>
-                      <Textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe your product features" required rows={4} />
+                      <Label className="text-foreground font-medium mb-2 block">Description</Label>
+                      <Textarea 
+                        name="description" 
+                        value={formData.description} 
+                        onChange={handleChange} 
+                        placeholder="Describe your product features" 
+                        required 
+                        rows={4}
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                     <div>
-                      <Label>Category</Label>
-                      <select name="category" value={formData.category} onChange={handleChange} className="w-full border rounded-lg p-2" required>
+                      <Label className="text-foreground font-medium mb-2 block">Category</Label>
+                      <select 
+                        name="category" 
+                        value={formData.category} 
+                        onChange={handleChange} 
+                        className="w-full border border-border bg-card text-foreground rounded-lg p-3 focus:border-primary focus:ring-primary focus:ring-1 outline-none transition-all" 
+                        required
+                      >
                         <option value="">Select a category</option>
                         <option value="electronics">Electronics</option>
                         <option value="vehicles">Vehicles</option>
@@ -201,8 +255,14 @@ const SubmitListing = () => {
                       </select>
                     </div>
                     <div>
-                      <Label>Product Type</Label>
-                      <select name="product_type" value={formData.product_type} onChange={handleChange} className="w-full border rounded-lg p-2" required>
+                      <Label className="text-foreground font-medium mb-2 block">Product Type</Label>
+                      <select 
+                        name="product_type" 
+                        value={formData.product_type} 
+                        onChange={handleChange} 
+                        className="w-full border border-border bg-card text-foreground rounded-lg p-3 focus:border-primary focus:ring-primary focus:ring-1 outline-none transition-all" 
+                        required
+                      >
                         <option value="rent">For Rent</option>
                         <option value="sale">For Sale</option>
                         <option value="both">Both</option>
@@ -214,16 +274,41 @@ const SubmitListing = () => {
                 {currentStep === 2 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
-                      <Label>{getPriceLabel()}</Label>
-                      <Input name="rent_price" type="number" min="1" value={formData.rent_price} onChange={handleChange} placeholder="Enter price amount" required />
+                      <Label className="text-foreground font-medium mb-2 block">{getPriceLabel()}</Label>
+                      <Input 
+                        name="rent_price" 
+                        type="number" 
+                        min="1" 
+                        value={formData.rent_price} 
+                        onChange={handleChange} 
+                        placeholder="Enter price amount" 
+                        required 
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                     <div>
-                      <Label>PIN Code</Label>
-                      <Input name="pin_code" maxLength={6} value={formData.pin_code} onChange={handleChange} placeholder="Enter your 6-digit area code" required />
+                      <Label className="text-foreground font-medium mb-2 block">PIN Code</Label>
+                      <Input 
+                        name="pin_code" 
+                        maxLength={6} 
+                        value={formData.pin_code} 
+                        onChange={handleChange} 
+                        placeholder="Enter your 6-digit area code" 
+                        required 
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                     <div>
-                      <Label>Address</Label>
-                      <Textarea name="address" value={formData.address} onChange={handleChange} placeholder="Enter full address" required rows={3} />
+                      <Label className="text-foreground font-medium mb-2 block">Address</Label>
+                      <Textarea 
+                        name="address" 
+                        value={formData.address} 
+                        onChange={handleChange} 
+                        placeholder="Enter full address" 
+                        required 
+                        rows={3}
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                   </motion.div>
                 )}
@@ -231,27 +316,40 @@ const SubmitListing = () => {
                 {currentStep === 3 && (
                   <motion.div key="step3" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
-                      <Label>Product Images (Min 5)</Label>
+                      <Label className="text-foreground font-medium mb-2 block">Product Images (Min 5)</Label>
                       <ImageUpload userId={user.id} currentImages={formData.images} onImagesUploaded={(urls) => setFormData({ ...formData, images: urls })} maxImages={5} />
                     </div>
                     <div>
-                      <Label>Contact Phone</Label>
-                      <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="Enter your 10-digit number" required />
+                      <Label className="text-foreground font-medium mb-2 block">Contact Phone</Label>
+                      <Input 
+                        name="phone" 
+                        value={formData.phone} 
+                        onChange={handleChange} 
+                        placeholder="Enter your 10-digit number" 
+                        required 
+                        className="border-border focus:border-primary focus:ring-primary"
+                      />
                     </div>
                   </motion.div>
                 )}
 
                 {currentStep === 4 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
-                    <Label>Listing Type</Label>
+                    <Label className="text-foreground font-medium mb-4 block">Listing Type</Label>
                     <RadioGroup value={listingType} onValueChange={(v: 'free' | 'paid') => setListingType(v)}>
-                      <div className="flex items-center space-x-3 border rounded-lg p-4">
-                        <RadioGroupItem value="free" id="free" />
-                        <Label htmlFor="free">Free Listing - ₹0 (Standard Visibility)</Label>
+                      <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer">
+                        <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
+                        <Label htmlFor="free" className="cursor-pointer flex-1">
+                          <span className="font-semibold text-foreground">Free Listing</span>
+                          <span className="text-muted-foreground ml-2">- ₹0 (Standard Visibility)</span>
+                        </Label>
                       </div>
-                      <div className="flex items-center space-x-3 border rounded-lg p-4 mt-3">
-                        <RadioGroupItem value="paid" id="paid" />
-                        <Label htmlFor="paid">Paid Listing - ₹20 (Priority Listing)</Label>
+                      <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 mt-3 transition-all cursor-pointer">
+                        <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
+                        <Label htmlFor="paid" className="cursor-pointer flex-1">
+                          <span className="font-semibold text-foreground">Paid Listing</span>
+                          <span className="text-muted-foreground ml-2">- ₹20 (Priority Listing)</span>
+                        </Label>
                       </div>
                     </RadioGroup>
                   </motion.div>
@@ -259,17 +357,42 @@ const SubmitListing = () => {
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between pt-6">
+              <div className="flex justify-between pt-8 gap-4">
                 {currentStep > 1 && (
-                  <Button type="button" variant="outline" onClick={prevStep}>Back</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={prevStep}
+                    className="border-border hover:bg-secondary"
+                  >
+                    Back
+                  </Button>
                 )}
                 {currentStep < 4 ? (
-                  <Button type="button" onClick={nextStep} disabled={!isStepComplete()}>
+                  <Button 
+                    type="button" 
+                    onClick={nextStep} 
+                    disabled={!isStepComplete()}
+                    className="ml-auto bg-primary hover:bg-accent text-primary-foreground"
+                  >
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={loading}>
-                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : listingType === 'free' ? 'Submit Free Listing' : 'Continue to Payment'}
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="ml-auto bg-primary hover:bg-accent text-primary-foreground"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : listingType === 'free' ? (
+                      'Submit Free Listing'
+                    ) : (
+                      'Continue to Payment'
+                    )}
                   </Button>
                 )}
               </div>

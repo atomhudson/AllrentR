@@ -133,7 +133,7 @@ export default function BannerCarousel() {
           <img
             src={currentBanner.image_url}
             alt={currentBanner.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[8000ms] ease-out group-hover:scale-110"
+            className="absolute inset-0 w-full h-full object-cover sm:object-cover object-center transition-transform duration-[8000ms] ease-out group-hover:scale-110"
             style={{
               filter: "brightness(0.75) contrast(1.1) saturate(1.15)",
             }}

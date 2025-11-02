@@ -1,101 +1,153 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, X, Filter } from "lucide-react";
+import { Calendar, ArrowRight, X } from "lucide-react";
 import { useBlogs } from "@/hooks/useBlogs";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 
 const Blog = () => {
   const { data: blogs, isLoading } = useBlogs();
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Collect all unique categories
   const categories = ["All", ...new Set(blogs?.map((b) => b.category))];
-
-  // Filter blogs
   const filteredBlogs =
     selectedCategory === "All"
       ? blogs
       : blogs?.filter((b) => b.category === selectedCategory);
+
+  // Featured blog (first one)
+  const featuredBlog = filteredBlogs?.[0];
+  const recentBlogs = filteredBlogs?.slice(1);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative text-center pt-20 md:pt-32 pb-12 md:pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#E5383B]/20 via-transparent to-transparent blur-3xl"></div>
-        <motion.h1
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground font-serif tracking-tight"
-        >
-          AllRentr Blogs
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-base md:text-lg text-muted-foreground mt-4 max-w-2xl mx-auto px-4"
-        >
-          Discover the latest updates, insights, and stories from AllRentr —
-          curated for modern readers.
-        </motion.p>
+      <section className="relative pt-24 md:pt-32 pb-8 md:pb-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div className="container mx-auto px-4 md:px-6 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+              Blog
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground">
+              The latest industry news, interviews, technologies, and resources.
+            </p>
+          </motion.div>
+        </div>
       </section>
 
+      {/* Featured Blog Section */}
+      {!isLoading && featuredBlog && (
+        <section className="container mx-auto px-4 md:px-6 mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            onClick={() => setSelectedBlog(featuredBlog)}
+            className="relative group cursor-pointer rounded-3xl overflow-hidden bg-card border border-border shadow-card hover:shadow-elegant transition-all duration-500"
+          >
+            {featuredBlog.image_url && (
+              <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+                <img
+                  src={featuredBlog.image_url}
+                  alt={featuredBlog.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/50 to-transparent" />
+                
+                {/* Featured Badge */}
+                <div className="absolute top-6 left-6">
+                  <Badge className="bg-background/10 backdrop-blur-md text-background border-background/20 px-4 py-2">
+                    Featured
+                  </Badge>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+                  <Badge className="bg-primary text-primary-foreground mb-4">
+                    {featuredBlog.category}
+                  </Badge>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-background mb-4 leading-tight">
+                    {featuredBlog.title}
+                  </h2>
+                  <p className="text-base md:text-lg text-background/90 mb-6 line-clamp-2">
+                    {featuredBlog.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-background/80">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">
+                        {new Date(featuredBlog.created_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </section>
+      )}
+
       {/* Filter Section */}
-      <section className="container mx-auto px-4 md:px-6 mb-10">
-        <div className="flex flex-wrap justify-center items-center gap-3 bg-card backdrop-blur-md border border-border rounded-xl p-4 shadow-card">
-          <Filter className="w-4 h-4 text-muted-foreground mr-2" />
+      <section className="container mx-auto px-4 md:px-6 mb-12">
+        <div className="flex flex-wrap gap-3">
           {categories.map((cat) => (
-            <Button
+            <button
               key={cat}
-              variant={selectedCategory === cat ? "default" : "outline"}
-              className={`rounded-full px-4 py-1 text-sm transition-all ${
-                selectedCategory === cat
-                  ? "bg-[#E5383B] hover:bg-[#E5383B]/90 text-[#F5F3F4] shadow-md"
-                  : "hover:bg-accent/10"
-              }`}
               onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                selectedCategory === cat
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
             >
               {cat}
-            </Button>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* Blog Grid */}
-      <main className="container mx-auto px-4 md:px-6 pb-24">
+      {/* Recent Blog Posts Section */}
+      <section className="container mx-auto px-4 md:px-6 pb-24">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
+          Recent blog posts
+        </h2>
+
         {isLoading ? (
           <div className="text-center py-16">
             <p className="text-muted-foreground animate-pulse text-lg">
               Loading blogs...
             </p>
           </div>
-        ) : filteredBlogs && filteredBlogs.length > 0 ? (
-          <motion.div
-            layout
-            className="grid gap-6 md:gap-8 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {filteredBlogs.map((post, index) => (
+        ) : recentBlogs && recentBlogs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {recentBlogs.map((post, index) => (
               <motion.div
-                layout
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.1 }}
               >
-                <Card className="overflow-hidden group bg-card backdrop-blur-md rounded-2xl border border-border shadow-card hover:shadow-elegant transition-all duration-300">
+                <Card
+                  onClick={() => setSelectedBlog(post)}
+                  className="group cursor-pointer overflow-hidden bg-card border border-border shadow-card hover:shadow-elegant transition-all duration-300 h-full"
+                >
                   {post.image_url && (
                     <div className="overflow-hidden h-56">
                       <img
@@ -105,46 +157,37 @@ const Blog = () => {
                       />
                     </div>
                   )}
-                  <CardHeader className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#E5383B] text-[#F5F3F4] text-xs px-3 py-1 rounded-full shadow-sm"
-                      >
-                        {post.category}
-                      </Badge>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(post.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </div>
+                  <CardContent className="p-6">
+                    <Badge className="bg-primary text-primary-foreground mb-3">
+                      {post.category}
+                    </Badge>
+                    
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(post.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </div>
 
-                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-[#E5383B] transition-colors">
+                    <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}
-                    </CardTitle>
+                    </h3>
 
-                    {/* Show full short description */}
-                    <CardDescription className="text-base mt-3 text-muted-foreground leading-relaxed">
+                    <p className="text-base text-muted-foreground leading-relaxed mb-4 line-clamp-2">
                       {post.description}
-                    </CardDescription>
-                  </CardHeader>
+                    </p>
 
-                  <CardContent className="px-6 pb-6">
-                    <button
-                      onClick={() => setSelectedBlog(post)}
-                      className="mt-3 inline-flex items-center text-sm font-medium text-[#E5383B] hover:underline hover:translate-x-1 transition-transform"
-                    >
-                      Read Full Blog →
+                    <button className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all">
+                      Read article
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         ) : (
           <div className="text-center py-16">
             <p className="text-muted-foreground text-lg">
@@ -152,85 +195,86 @@ const Blog = () => {
             </p>
           </div>
         )}
-      </main>
+      </section>
 
-      {/* Pop-up Modal for Full Blog */}
+      {/* Blog Modal */}
       <AnimatePresence>
         {selectedBlog && (
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+            className="fixed inset-0 bg-foreground/80 backdrop-blur-sm z-50 flex items-center justify-center px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedBlog(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="relative bg-card rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+              <button
+                onClick={() => setSelectedBlog(null)}
+                className="sticky top-4 right-4 float-right z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
               >
-                {/* Close Button */}
-                <button
-                  onClick={() => setSelectedBlog(null)}
-                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition z-10"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+                <X className="w-5 h-5 text-foreground" />
+              </button>
 
-                {/* Blog Image */}
-                {selectedBlog.image_url && (
-                  <img
-                    src={selectedBlog.image_url}
-                    alt={selectedBlog.title}
-                    className="w-full h-72 object-cover rounded-t-2xl"
-                  />
-                )}
+              {selectedBlog.image_url && (
+                <img
+                  src={selectedBlog.image_url}
+                  alt={selectedBlog.title}
+                  className="w-full h-72 md:h-96 object-cover"
+                />
+              )}
 
-                {/* Blog Full Content */}
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <Badge className="bg-[#E5383B] text-[#F5F3F4]">
-                      {selectedBlog.category}
-                    </Badge>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {new Date(selectedBlog.created_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )}
-                    </div>
+              <div className="p-6 md:p-10">
+                <div className="flex items-center justify-between mb-6">
+                  <Badge className="bg-primary text-primary-foreground">
+                    {selectedBlog.category}
+                  </Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(selectedBlog.created_at).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    )}
                   </div>
+                </div>
 
-                  <h2 className="text-3xl font-bold mb-4 text-foreground">
-                    {selectedBlog.title}
-                  </h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+                  {selectedBlog.title}
+                </h2>
 
-                  <p className="text-lg text-foreground leading-relaxed mb-4">
-                    {selectedBlog.description}
-                  </p>
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
+                  {selectedBlog.description}
+                </p>
 
-                  <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap">
                     {selectedBlog.content}
                   </p>
+                </div>
 
-                  {selectedBlog.reference_url && (
-                    <div className="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/30">
-                      <p className="text-sm font-semibold text-foreground mb-2">📚 Additional Resources</p>
-                      <a
-                        href={selectedBlog.reference_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#E5383B] hover:text-[#E5383B]/80 underline text-sm flex items-center gap-1"
-                      >
+                {selectedBlog.reference_url && (
+                  <div className="mt-8 p-6 bg-secondary/50 rounded-xl border border-border">
+                    <p className="text-sm font-semibold text-foreground mb-3">
+                      📚 Additional Resources
+                    </p>
+                    <a
+                      href={selectedBlog.reference_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary hover:text-accent transition-colors font-medium"
+                    >
                       Read more at source
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
+                      <ArrowRight className="w-4 h-4" />
                     </a>
                   </div>
                 )}

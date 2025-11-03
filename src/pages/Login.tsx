@@ -46,6 +46,15 @@ export default function Login() {
       return;
     }
 
+    if (!formData.password) {
+      toast({
+        title: "Password Required",
+        description: "Please enter your password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const success = await login(formData.email, formData.password);
@@ -103,7 +112,6 @@ export default function Login() {
   // 🔹 Navigation Steps
   const nextStep = () => {
     if (step === 1 && formData.email) setStep(2);
-    else if (step === 2 && formData.password) setStep(3);
   };
 
   const prevStep = () => {
@@ -191,7 +199,7 @@ export default function Login() {
           {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex items-center justify-center gap-4">
-              {[1, 2, 3].map((s) => (
+              {[1, 2].map((s) => (
                 <div key={s} className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
@@ -207,7 +215,7 @@ export default function Login() {
                   >
                     {step > s ? <Check className="w-5 h-5" /> : s}
                   </div>
-                  {s < 3 && (
+                  {s < 2 && (
                     <div
                       className="w-12 h-1 mx-2 rounded-full"
                       style={{
@@ -222,7 +230,7 @@ export default function Login() {
               ))}
             </div>
             <div className="text-center mt-4">
-              <p className="text-sm text-[#B1A7A6]">Step {step} of 3</p>
+              <p className="text-sm text-[#B1A7A6]">Step {step} of 2</p>
             </div>
           </div>
 
@@ -308,7 +316,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Step 2: Password */}
+            {/* Step 2: Password & Terms */}
             {step === 2 && (
               <div className="space-y-6 animate-fade-in">
                 <div className="relative group">
@@ -346,33 +354,6 @@ export default function Login() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={prevStep}
-                    className="py-4 px-6 rounded-2xl bg-[#B1A7A6]/20 text-[#F5F3F4]"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={nextStep}
-                    disabled={!formData.password}
-                    className="flex-1 py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
-                    style={{
-                      background: formData.password
-                        ? "linear-gradient(135deg, #E5383B, #BA181B)"
-                        : "rgba(177,167,166,0.2)",
-                      color: formData.password ? "#F5F3F4" : "#B1A7A6",
-                    }}
-                  >
-                    Continue <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Terms & Submit */}
-            {step === 3 && (
-              <div className="space-y-6 animate-fade-in">
                 <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20">
                   <div className="flex items-start gap-4">
                     <button
@@ -417,13 +398,13 @@ export default function Login() {
                   </button>
                   <button
                     onClick={handleSubmit}
-                    disabled={!agreedToTerms || loading}
+                    disabled={!agreedToTerms || !formData.password || loading}
                     className="flex-1 py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
                     style={{
-                      background: agreedToTerms
+                      background: (agreedToTerms && formData.password)
                         ? "linear-gradient(135deg, #E5383B, #BA181B)"
                         : "rgba(177,167,166,0.2)",
-                      color: agreedToTerms ? "#F5F3F4" : "#B1A7A6",
+                      color: (agreedToTerms && formData.password) ? "#F5F3F4" : "#B1A7A6",
                     }}
                   >
                     {loading ? (

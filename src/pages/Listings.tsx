@@ -176,7 +176,7 @@ const Listings = () => {
               </div>
 
               {/* Search Inputs */}
-              <div className="grid md:grid-cols-3 gap-4 mb-4 md:mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-6">
                 {/* Search Field */}
                 <div className="relative group/input">
                   <div
@@ -303,10 +303,11 @@ const Listings = () => {
                   {/* Dropdown */}
                   <div
                     id="category-dropdown"
-                    className="hidden absolute top-full mt-2 w-full z-50 rounded-2xl p-[1px]"
+                    className="hidden absolute top-full mt-2 w-full rounded-2xl p-[1px]"
                     style={{
                       background:
                         "linear-gradient(135deg, rgba(229, 56, 59, 0.3), rgba(186, 24, 27, 0.2))",
+                      zIndex: 9999,
                     }}
                   >
                     <div

@@ -9,6 +9,7 @@ export const blogSchema = z.object({
   image_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
   reference_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
   published: z.boolean(),
+  tags: z.array(z.string().trim()).optional(),
 });
 
 // Influencer partner validation schema

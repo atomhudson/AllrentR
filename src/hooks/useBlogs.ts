@@ -12,6 +12,7 @@ export interface Blog {
   reference_url: string | null;
   author_id: string;
   created_at: string;
+  tags?: string[];
   updated_at: string;
   published: boolean;
 }

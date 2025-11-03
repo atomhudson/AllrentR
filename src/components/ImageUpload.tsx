@@ -11,7 +11,7 @@ interface ImageUploadProps {
   maxImages?: number;
 }
 
-export const ImageUpload = ({ onImagesUploaded, currentImages = [], userId, maxImages = 5 }: ImageUploadProps) => {
+export const ImageUpload = ({ onImagesUploaded, currentImages = [], userId, maxImages = 100 }: ImageUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>(currentImages);

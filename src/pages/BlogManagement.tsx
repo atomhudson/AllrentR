@@ -28,7 +28,9 @@ const BlogManagement = () => {
     published: false,
     image_url: '',
     reference_url: '',
+    tags: [] as string[],
   });
+  const [tagInput, setTagInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -85,9 +87,11 @@ const BlogManagement = () => {
       published: false,
       image_url: '',
       reference_url: '',
+      tags: [],
     });
     setImageFile(null);
     setEditingBlog(null);
+    setTagInput('');
   };
 
   const handleEdit = (blog: Blog) => {
@@ -100,6 +104,7 @@ const BlogManagement = () => {
       published: blog.published,
       image_url: blog.image_url || '',
       reference_url: blog.reference_url || '',
+      tags: blog.tags || [],
     });
     setIsDialogOpen(true);
   };
@@ -219,6 +224,64 @@ const BlogManagement = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, reference_url: e.target.value }))}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Add a link to additional information or source</p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="tags">Tags</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="tags"
+                          placeholder="Enter a tag and press Enter"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const tag = tagInput.trim();
+                              if (tag && !formData.tags.includes(tag)) {
+                                setFormData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
+                                setTagInput('');
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const tag = tagInput.trim();
+                            if (tag && !formData.tags.includes(tag)) {
+                              setFormData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
+                              setTagInput('');
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {formData.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {formData.tags.map((tag, index) => (
+                            <div key={index} className="flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                              <span>{tag}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tags: prev.tags.filter((_, i) => i !== index)
+                                  }));
+                                }}
+                                className="hover:text-destructive"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Add relevant tags to help categorize this blog post</p>
                   </div>
 
                   <div className="flex items-center space-x-2">

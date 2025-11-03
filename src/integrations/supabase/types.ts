@@ -133,6 +133,7 @@ export type Database = {
           image_url: string | null
           published: boolean
           reference_url: string | null
+          tags: string[] | null
           title: string
           updated_at: string
         }
@@ -146,6 +147,7 @@ export type Database = {
           image_url?: string | null
           published?: boolean
           reference_url?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
         }
@@ -159,6 +161,7 @@ export type Database = {
           image_url?: string | null
           published?: boolean
           reference_url?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
         }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
@@ -16,12 +17,14 @@ interface Blog {
   image_url: string | null;
   reference_url: string | null;
   created_at: string;
+  tags?: string[];
 }
 
 const BlogPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState<Blog | null>(null);
+  const [suggestedBlogs, setSuggestedBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +41,17 @@ const BlogPost = () => {
 
         if (error) throw error;
         setBlog(data);
+
+        // Fetch suggested blogs (same category, excluding current)
+        const { data: suggested } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('published', true)
+          .eq('category', data.category)
+          .neq('id', id)
+          .limit(3);
+
+        setSuggestedBlogs(suggested || []);
       } catch (error) {
         console.error('Error fetching blog:', error);
       } finally {
@@ -183,6 +197,63 @@ const BlogPost = () => {
                 Read more at source
                 <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
+            </div>
+          )}
+
+          {/* Tags */}
+          {blog.tags && blog.tags.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-sm font-semibold text-[#161A1D] mb-3">Tags:</h3>
+              <div className="flex flex-wrap gap-2">
+                {blog.tags.map((tag, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="outline"
+                    className="bg-[#F5F3F4] text-[#660708] border-[#E5383B]/20"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Suggested Blogs */}
+          {suggestedBlogs.length > 0 && (
+            <div className="mt-16 pt-8 border-t border-[#D3D3D3]">
+              <h2 className="text-2xl font-bold text-[#161A1D] mb-6">
+                More from {blog.category}
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {suggestedBlogs.map((suggestedBlog) => (
+                  <Card 
+                    key={suggestedBlog.id}
+                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/blog/${suggestedBlog.id}`)}
+                  >
+                    {suggestedBlog.image_url && (
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={suggestedBlog.image_url}
+                          alt={suggestedBlog.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <Badge className="mb-2 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white border-0">
+                        {suggestedBlog.category}
+                      </Badge>
+                      <h3 className="font-bold text-[#161A1D] line-clamp-2 mb-2">
+                        {suggestedBlog.title}
+                      </h3>
+                      <p className="text-sm text-[#660708]/70 line-clamp-2">
+                        {suggestedBlog.description}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
 

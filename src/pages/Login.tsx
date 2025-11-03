@@ -277,6 +277,39 @@ export default function Login() {
                   Continue <ArrowRight className="w-5 h-5" />
                 </button>
 
+                {/* Reset Password Button */}
+                <button
+                  onClick={() => {
+                    if (!formData.email) {
+                      toast({
+                        title: "Email Required",
+                        description: "Please enter your email address first",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    supabase.auth.resetPasswordForEmail(formData.email, {
+                      redirectTo: `${window.location.origin}/reset-password`,
+                    }).then(({ error }) => {
+                      if (error) {
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive",
+                        });
+                      } else {
+                        toast({
+                          title: "Check Your Email",
+                          description: "Password reset link has been sent to your email",
+                        });
+                      }
+                    });
+                  }}
+                  className="w-full py-3 rounded-2xl text-sm font-medium text-[#E5383B] hover:text-[#BA181B] transition-colors"
+                >
+                  Reset Password
+                </button>
+
                 {/* Divider + Google Login */}
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">
@@ -354,7 +387,8 @@ export default function Login() {
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20">
+
+                <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20 mb-4">
                   <div className="flex items-start gap-4">
                     <button
                       onClick={() => setAgreedToTerms(!agreedToTerms)}

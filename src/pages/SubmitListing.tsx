@@ -418,7 +418,7 @@ const SubmitListing = () => {
                   <motion.div key="step3" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
                       <Label className="text-foreground font-medium mb-2 block">Product Images</Label>
-                      <ImageUpload userId={user.id} currentImages={formData.images} onImagesUploaded={(urls) => setFormData({ ...formData, images: urls })} maxImages={10} />
+                      <ImageUpload userId={user.id} currentImages={formData.images} onImagesUploaded={(urls) => setFormData({ ...formData, images: urls })} maxImages={100} />
                     </div>
                     <div>
                       <Label className="text-foreground font-medium mb-2 block">Contact Phone</Label>

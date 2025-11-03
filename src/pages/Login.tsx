@@ -388,7 +388,7 @@ export default function Login() {
                 </div>
 
 
-                <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20 mb-4">
+                {/* <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20 mb-4">
                   <div className="flex items-start gap-4">
                     <button
                       onClick={() => setAgreedToTerms(!agreedToTerms)}
@@ -421,7 +421,7 @@ export default function Login() {
                       .
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex gap-3">
                   <button

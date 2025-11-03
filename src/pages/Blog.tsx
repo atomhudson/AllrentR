@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,11 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useBlogs } from "@/hooks/useBlogs";
 import { motion } from "framer-motion";
+import BlogHero from "@/components/BlogHero";
 
 const Blog = () => {
   const navigate = useNavigate();
   const { data: blogs, isLoading } = useBlogs();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const featuredRef = useRef(null);
+  const recentRef = useRef(null);
+
+  const scrollToSection = (ref) => {
+    if (ref.current) {
+      window.scrollTo({
+        top: ref.current.offsetTop - 80,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const categories = ["All", ...new Set(blogs?.map((b) => b.category))];
   const filteredBlogs =
@@ -27,28 +39,23 @@ const Blog = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-24 md:pt-32 pb-8 md:pb-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container mx-auto px-4 md:px-6 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Blog
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground">
-              The latest industry news, interviews, technologies, and resources.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+  <section className="relative pt-28 md:pt-36 pb-12 md:pb-20 overflow-hidden">
+    {/* Soft Gradient Background */}
+    <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background" />
+
+    {/* Decorative Blobs */}
+    <div className="absolute -top-24 -left-16 w-72 h-72 bg-primary/20 blur-3xl rounded-full opacity-60 animate-pulse" />
+    <div className="absolute top-40 -right-20 w-72 h-72 bg-accent/20 blur-3xl rounded-full opacity-60 animate-pulse delay-200" />
+    <BlogHero
+          onExploreClick={() => scrollToSection(recentRef)}
+          onLatestClick={() => scrollToSection(featuredRef)}
+        />
+  </section>
+
 
       {/* Featured Blog Section */}
       {!isLoading && featuredBlog && (
-        <section className="container mx-auto px-4 md:px-6 mb-16">
+        <section ref={featuredRef} className="container mx-auto px-4 md:px-6 mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -125,7 +132,7 @@ const Blog = () => {
       </section>
 
       {/* Recent Blog Posts Section */}
-      <section className="container mx-auto px-4 md:px-6 pb-24">
+      <section ref={recentRef} className="container mx-auto px-4 md:px-6 pb-24">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
           Recent blog posts
         </h2>

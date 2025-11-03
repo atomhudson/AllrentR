@@ -48,11 +48,9 @@ export default function Signup() {
     return emailRegex.test(email);
   };
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
     if (name === 'email') setErrors(prev => ({ ...prev, email: '' }));
     if (name === 'phone') setErrors(prev => ({ ...prev, phone: '' }));
     if (name === 'pin_code') setErrors(prev => ({ ...prev, pinCode: '' }));
@@ -64,16 +62,10 @@ export default function Signup() {
       if (!formData.name || !formData.email) {
         return;
       }
-      
-      // Validate email format
       if (!validateEmail(formData.email)) {
         setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
         return;
       }
-
-      // Email existence will be checked during actual signup
-      // Supabase doesn't allow reliable client-side email existence checks
-      // without potentially creating accounts or sending emails
       setStep(2);
     } else if (step === 2) {
       if (!validatePhone(formData.phone)) {
@@ -107,19 +99,14 @@ export default function Signup() {
       });
       return;
     }
-
-    // Validate password
     if (!validatePassword(formData.password)) {
       setErrors(prev => ({ ...prev, password: 'Password must be at least 8 characters' }));
       return;
     }
-    
     if (formData.password !== formData.confirmPassword) {
       setErrors(prev => ({ ...prev, password: 'Passwords do not match' }));
       return;
     }
-
-    // Validate phone and PIN before final submission
     if (!validatePhone(formData.phone)) {
       setErrors(prev => ({ ...prev, phone: 'Enter valid 10-digit phone (starts with 6-9)' }));
       toast({
@@ -129,7 +116,6 @@ export default function Signup() {
       });
       return;
     }
-
     if (!validatePinCode(formData.pin_code)) {
       setErrors(prev => ({ ...prev, pinCode: 'Enter valid 6-digit PIN code' }));
       toast({
@@ -219,6 +205,32 @@ export default function Signup() {
       setLoading(false);
     }
   };
+
+  const handleGoogleLogin = async () => {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+  
+        if (error) {
+          toast({
+            title: "Google Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Google login error:", error);
+        toast({
+          title: "Login Failed",
+          description: "Failed to login with Google",
+          variant: "destructive",
+        });
+      }
+    };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
@@ -389,7 +401,6 @@ export default function Signup() {
                 {step === 4 && 'Review and confirm'}
               </p>
             </div>
-
             <div>
               {/* Step 1: Name & Email */}
               {step === 1 && (
@@ -453,7 +464,6 @@ export default function Signup() {
                   </button>
                 </div>
               )}
-
               {/* Step 2: Phone & PIN */}
               {step === 2 && (
                 <div className="space-y-6 animate-fade-in">
@@ -520,7 +530,6 @@ export default function Signup() {
                   </div>
                 </div>
               )}
-
               {/* Step 3: Password */}
               {step === 3 && (
                 <div className="space-y-6 animate-fade-in">
@@ -590,7 +599,6 @@ export default function Signup() {
                   </div>
                 </div>
               )}
-
               {/* Step 4: Terms */}
               {step === 4 && (
                 <div className="space-y-6 animate-fade-in">
@@ -642,8 +650,32 @@ export default function Signup() {
                 </div>
               )}
             </div>
-
             <div className="text-center mt-8 pt-6" style={{ borderTop: '1px solid rgba(177, 167, 166, 0.2)' }}>
+                <button
+                  onClick={handleGoogleLogin}
+                  className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4]"
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Sign in with Google
+                </button>
+                <br />
               <p className="text-sm text-[#B1A7A6]">
                 Already have an account?{' '}
                 <Link to="/login" className="text-[#E5383B] hover:text-[#BA181B] font-semibold transition-colors">Login here</Link>
@@ -652,9 +684,7 @@ export default function Signup() {
           </div>
         </div>
       </div>
-
       <style>{`
-
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus, 
@@ -666,17 +696,14 @@ export default function Signup() {
           background-color: transparent !important;
           transition: background-color 9999s ease-in-out 0s;
         }
-          
         @keyframes float {
           0%, 100% { transform: translate(0, 0); }
           50% { transform: translate(40px, -40px); }
         }
-
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-
         .animate-fade-in {
           animation: fade-in 0.5s ease-out;
         }

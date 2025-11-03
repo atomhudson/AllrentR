@@ -19,7 +19,6 @@ import { LoginNavbar } from "@/components/LoginNavbar";
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +34,6 @@ export default function Login() {
     });
   };
 
-  // 🔹 Handle Supabase Email/Password Login
   const handleSubmit = async () => {
     if (!agreedToTerms) {
       toast({
@@ -109,7 +107,6 @@ export default function Login() {
     }
   };
 
-  // 🔹 Navigation Steps
   const nextStep = () => {
     if (step === 1 && formData.email) setStep(2);
   };
@@ -123,7 +120,6 @@ export default function Login() {
       className="min-h-screen flex relative overflow-hidden"
       style={{ background: "#0B090A" }}
     >
-      {/* Animated Background */}
       <LoginNavbar />
       <div className="absolute inset-0 overflow-hidden pointer-events-none pt-10">
         <div

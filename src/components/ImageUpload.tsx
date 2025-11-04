@@ -26,29 +26,33 @@ export const ImageUpload = ({ onImagesUploaded, currentImages = [], userId, maxI
     setIsDragging(false);
   }, []);
 
-  const uploadFile = async (file: File) => {
-    if (previews.length >= maxImages) {
-      toast({
-        title: "Maximum images reached",
-        description: `You can only upload up to ${maxImages} images`,
-        variant: "destructive",
-      });
-      return;
-    }
+  const uploadFiles = async (files: File[]) => {
+    const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name} is not a valid image file`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 5MB limit`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
 
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload an image file (JPEG, PNG, WebP, or GIF)",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (validFiles.length === 0) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (previews.length + validFiles.length > maxImages) {
       toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB",
+        title: "Too many images",
+        description: `You can only upload ${maxImages} images total`,
         variant: "destructive",
       });
       return;
@@ -57,32 +61,37 @@ export const ImageUpload = ({ onImagesUploaded, currentImages = [], userId, maxI
     setIsUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const uploadPromises = validFiles.map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('listing-images')
-        .upload(fileName, file);
+        const { error: uploadError } = await supabase.storage
+          .from('listing-images')
+          .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('listing-images')
-        .getPublicUrl(fileName);
+        const { data: { publicUrl } } = supabase.storage
+          .from('listing-images')
+          .getPublicUrl(fileName);
 
-      const newPreviews = [...previews, publicUrl];
+        return publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const newPreviews = [...previews, ...uploadedUrls];
       setPreviews(newPreviews);
       onImagesUploaded(newPreviews);
 
       toast({
-        title: "Image uploaded successfully",
+        title: `${validFiles.length} image${validFiles.length > 1 ? 's' : ''} uploaded successfully`,
         description: `${newPreviews.length}/${maxImages} images uploaded`,
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        description: "Failed to upload some images. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -95,12 +104,13 @@ export const ImageUpload = ({ onImagesUploaded, currentImages = [], userId, maxI
     setIsDragging(false);
 
     const files = Array.from(e.dataTransfer.files);
-    files.forEach(file => uploadFile(file));
+    uploadFiles(files);
   }, [userId, previews]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => uploadFile(file));
+    uploadFiles(files);
+    e.target.value = ''; // Reset input to allow re-uploading same files
   };
 
   const handleRemove = (index: number) => {

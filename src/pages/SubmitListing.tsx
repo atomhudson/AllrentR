@@ -128,6 +128,11 @@ const SubmitListing = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Only submit if we're on step 4
+    if (currentStep !== 4) {
+      return;
+    }
 
     if (!validatePhone(formData.phone)) {
       setErrors(prev => ({ ...prev, phone: 'Please enter a valid phone number' }));

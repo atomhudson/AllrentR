@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { LoginNavbar } from '@/components/LoginNavbar';
+import { TermsDialog } from '@/components/TermsDialog';
+import { Button } from '@/components/ui/button';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -615,9 +617,23 @@ export default function Signup() {
                       <div className="flex-1">
                         <p className="text-sm text-[#D3D3D3] leading-relaxed">
                           I agree to the{' '}
-                          <button className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline">Terms and Conditions</button>
+                          <TermsDialog>
+                            <Button 
+                              variant="link" 
+                              className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline p-0 h-auto"
+                            >
+                              Terms and Conditions
+                            </Button>
+                          </TermsDialog>
                           {' '}and{' '}
-                          <button className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline">Privacy Policy</button>
+                          <TermsDialog>
+                            <Button 
+                              variant="link" 
+                              className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline p-0 h-auto"
+                            >
+                              Privacy Policy
+                            </Button>
+                          </TermsDialog>
                         </p>
                       </div>
                     </div>

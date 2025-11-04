@@ -15,6 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { LoginNavbar } from "@/components/LoginNavbar";
+import { TermsDialog } from "@/components/TermsDialog";
+import { Button } from "@/components/ui/button";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -401,19 +403,23 @@ export default function Login() {
                     </button>
                     <p className="text-sm text-[#D3D3D3]">
                       I agree to the{" "}
-                      <Link
-                        to="/terms"
-                        className="text-[#E5383B] underline font-semibold"
-                      >
-                        Terms and Conditions
-                      </Link>{" "}
+                      <TermsDialog>
+                        <Button 
+                          variant="link" 
+                          className="text-[#E5383B] underline font-semibold p-0 h-auto"
+                        >
+                          Terms and Conditions
+                        </Button>
+                      </TermsDialog>{" "}
                       and{" "}
-                      <Link
-                        to="/privacy"
-                        className="text-[#E5383B] underline font-semibold"
-                      >
-                        Privacy Policy
-                      </Link>
+                      <TermsDialog>
+                        <Button 
+                          variant="link" 
+                          className="text-[#E5383B] underline font-semibold p-0 h-auto"
+                        >
+                          Privacy Policy
+                        </Button>
+                      </TermsDialog>
                       .
                     </p>
                   </div>

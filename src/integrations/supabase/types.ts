@@ -276,6 +276,7 @@ export type Database = {
           listing_type: string
           original_price: number
           owner_user_id: string
+          package_id: string | null
           payment_transaction: string
           payment_verified: boolean
           phone: string
@@ -301,6 +302,7 @@ export type Database = {
           listing_type?: string
           original_price?: number
           owner_user_id: string
+          package_id?: string | null
           payment_transaction: string
           payment_verified?: boolean
           phone?: string
@@ -326,6 +328,7 @@ export type Database = {
           listing_type?: string
           original_price?: number
           owner_user_id?: string
+          package_id?: string | null
           payment_transaction?: string
           payment_verified?: boolean
           phone?: string
@@ -336,7 +339,15 @@ export type Database = {
           rent_price?: number
           views?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -362,6 +373,42 @@ export type Database = {
           is_active?: boolean
           message?: string
           title?: string
+        }
+        Relationships: []
+      }
+      packages: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          description: string
+          features: string[] | null
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          description: string
+          features?: string[] | null
+          id?: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          description?: string
+          features?: string[] | null
+          id?: string
+          name?: string
+          price?: number
+          updated_at?: string
         }
         Relationships: []
       }

@@ -276,6 +276,10 @@ const AdminDashboard = () => {
               <Tag className="w-6 h-6" />
               <span className="text-sm font-medium">Coupons</span>
             </Button>
+            <Button onClick={() => navigate('/manage-packages')} variant="outline" className="h-24 flex-col gap-2">
+              <Package className="w-6 h-6" />
+              <span className="text-sm font-medium">Packages</span>
+            </Button>
           </div>
         </div>
 

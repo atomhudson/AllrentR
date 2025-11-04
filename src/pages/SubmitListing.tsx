@@ -14,6 +14,8 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { validateCoupon } from '@/hooks/useCoupons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePackages } from '@/hooks/usePackages';
+import { ChevronDown } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -31,6 +33,8 @@ const SubmitListing = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<string>('');
+  const { packages } = usePackages();
 
   const [formData, setFormData] = useState({
     product_name: '',
@@ -112,7 +116,8 @@ const SubmitListing = () => {
     const result = await validateCoupon(couponCode);
 
     if (result.valid && result.coupon) {
-      const originalPrice = 20;
+      const selectedPkg = packages.find(p => p.id === selectedPackage);
+      const originalPrice = selectedPkg ? selectedPkg.price : 20;
       let discountAmount = result.coupon.is_percentage
         ? (originalPrice * result.coupon.discount_percentage) / 100
         : result.coupon.discount_amount;
@@ -204,7 +209,9 @@ const SubmitListing = () => {
   };
 
   const handlePaidListing = async () => {
-    const finalPrice = 20 - discount;
+    const selectedPkg = packages.find(p => p.id === selectedPackage);
+    const originalPrice = selectedPkg ? selectedPkg.price : 20;
+    const finalPrice = originalPrice - discount;
     
     // Create Razorpay order
     const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
@@ -244,10 +251,11 @@ const SubmitListing = () => {
             listing_status: 'pending',
             payment_verified: true,
             payment_transaction: response.razorpay_payment_id,
-            original_price: 20,
+            original_price: selectedPkg ? selectedPkg.price : 20,
             final_price: finalPrice,
             discount_amount: discount,
-            coupon_code: couponCode || null
+            coupon_code: couponCode || null,
+            package_id: selectedPackage || null
           }]);
 
           if (error) throw error;
@@ -457,7 +465,15 @@ const SubmitListing = () => {
                 {currentStep === 4 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <Label className="text-foreground font-medium mb-4 block">Listing Type</Label>
-                    <RadioGroup value={listingType} onValueChange={(v: 'free' | 'paid') => setListingType(v)}>
+                    <RadioGroup value={listingType} onValueChange={(v: 'free' | 'paid') => {
+                      setListingType(v);
+                      if (v === 'free') {
+                        setSelectedPackage('');
+                        setCouponCode('');
+                        setCouponApplied(false);
+                        setDiscount(0);
+                      }
+                    }}>
                       <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer">
                         <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
                         <Label htmlFor="free" className="cursor-pointer flex-1">
@@ -469,12 +485,64 @@ const SubmitListing = () => {
                         <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
                         <Label htmlFor="paid" className="cursor-pointer flex-1">
                           <span className="font-semibold text-foreground">Paid Listing</span>
-                          <span className="text-muted-foreground ml-2">- ₹20 (Priority Listing)</span>
+                          <span className="text-muted-foreground ml-2">- Select Package Below</span>
                         </Label>
                       </div>
                     </RadioGroup>
 
                     {listingType === 'paid' && (
+                      <>
+                        <div className="space-y-4 pt-4 border-t border-border">
+                          <Label className="text-foreground font-medium block">Select Package</Label>
+                          <div className="relative">
+                            <select
+                              value={selectedPackage}
+                              onChange={(e) => {
+                                setSelectedPackage(e.target.value);
+                                setCouponCode('');
+                                setCouponApplied(false);
+                                setDiscount(0);
+                              }}
+                              className="w-full border border-border bg-card text-foreground rounded-lg p-3 pr-10 focus:border-primary focus:ring-primary focus:ring-1 outline-none transition-all appearance-none"
+                              required
+                            >
+                              <option value="">Choose a package</option>
+                              {packages.filter(p => p.active).map((pkg) => (
+                                <option key={pkg.id} value={pkg.id}>
+                                  {pkg.name} - ₹{pkg.price}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                          </div>
+                          
+                          {selectedPackage && (
+                            <div className="p-4 bg-secondary/50 border border-border rounded-lg">
+                              {(() => {
+                                const pkg = packages.find(p => p.id === selectedPackage);
+                                return pkg ? (
+                                  <>
+                                    <h3 className="font-semibold text-foreground mb-2">{pkg.name}</h3>
+                                    <p className="text-sm text-muted-foreground mb-3">{pkg.description}</p>
+                                    {pkg.features.length > 0 && (
+                                      <ul className="text-sm text-muted-foreground space-y-1">
+                                        {pkg.features.map((feature, idx) => (
+                                          <li key={idx} className="flex items-center gap-2">
+                                            <span className="text-primary">✓</span> {feature}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </>
+                                ) : null;
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {listingType === 'paid' && selectedPackage && (
                       <div className="space-y-4 pt-4 border-t border-border">
                         <Label className="text-foreground font-medium block flex items-center gap-2">
                           <Tag className="w-4 h-4" />
@@ -498,25 +566,29 @@ const SubmitListing = () => {
                             {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : couponApplied ? <CheckCircle className="w-4 h-4" /> : 'Apply'}
                           </Button>
                         </div>
-                        {couponApplied && discount > 0 && (
-                          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                              <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                                Coupon Applied Successfully!
+                        {couponApplied && discount > 0 && (() => {
+                          const selectedPkg = packages.find(p => p.id === selectedPackage);
+                          const originalPrice = selectedPkg ? selectedPkg.price : 20;
+                          return (
+                            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                                  Coupon Applied Successfully!
+                                </p>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Original Price: <span className="line-through">₹{originalPrice}</span>
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Discount: -₹{discount}
+                              </p>
+                              <p className="text-lg font-bold text-foreground mt-2">
+                                Final Price: ₹{originalPrice - discount}
                               </p>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              Original Price: <span className="line-through">₹20</span>
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Discount: -₹{discount}
-                            </p>
-                            <p className="text-lg font-bold text-foreground mt-2">
-                              Final Price: ₹{20 - discount}
-                            </p>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
                     )}
                   </motion.div>

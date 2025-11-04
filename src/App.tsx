@@ -24,6 +24,7 @@ import LeaderboardManagement from "./pages/LeaderboardManagement";
 import NotificationManagement from "./pages/NotificationManagement";
 import NotFound from "./pages/NotFound";
 import CouponManagement from "./pages/CouponManagement";
+import PackageManagement from "./pages/PackageManagement";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 import OAuthCallback from "./components/OAuthCallback";
 
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/admin/leaderboard" element={<LeaderboardManagement />} />
             <Route path="/admin/notifications" element={<NotificationManagement />} />
             <Route path="/admin/coupons" element={<CouponManagement />} />
+            <Route path="/manage-packages" element={<PackageManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />

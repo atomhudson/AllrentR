@@ -21,6 +21,7 @@ import InfluencerPartnersSection from "@/components/InfluencerPartnersSection";
 import heroImage from "@/assets/hero-image.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import HowItWorks from "@/components/HowItWorks";
 
 const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -271,6 +272,8 @@ const Landing = () => {
           </motion.div>
         </div>
       </section>
+
+      <HowItWorks />
 
       {/* CTA Section */}
       <section className="py-32 relative overflow-hidden">

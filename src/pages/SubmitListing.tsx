@@ -82,8 +82,21 @@ const SubmitListing = () => {
     return false;
   };
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const nextStep = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setCurrentStep(prev => Math.min(prev + 1, 4));
+  };
+  
+  const prevStep = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
   // ✅ Dynamic Price Label
   const getPriceLabel = () => formData.product_type === 'sale' ? 'Price (₹)' : 'Price (₹/Day)';
@@ -129,8 +142,10 @@ const SubmitListing = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Only submit if we're on step 4
+    // Prevent any submission if not on step 4
     if (currentStep !== 4) {
+      e.stopPropagation();
+      console.log('Form submission prevented - not on step 4');
       return;
     }
 
@@ -523,7 +538,11 @@ const SubmitListing = () => {
                 {currentStep < 4 ? (
                   <Button 
                     type="button" 
-                    onClick={nextStep} 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      nextStep();
+                    }} 
                     disabled={!isStepComplete()}
                     className="ml-auto bg-primary hover:bg-accent text-primary-foreground"
                   >

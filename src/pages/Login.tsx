@@ -28,7 +28,6 @@ export default function Login() {
     email: "",
     password: "",
   });
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -37,15 +36,6 @@ export default function Login() {
   };
 
   const handleSubmit = async () => {
-    if (!agreedToTerms) {
-      toast({
-        title: "Terms Required",
-        description: "Please agree to the terms and conditions to continue",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!formData.password) {
       toast({
         title: "Password Required",
@@ -192,7 +182,7 @@ export default function Login() {
       </div>
 
       {/* Right Section (Form) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10 mt-10">
         <div className="w-full max-w-md">
           {/* Progress Steps */}
           <div className="mb-8">
@@ -261,10 +251,11 @@ export default function Login() {
                   </div>
                 </div>
 
+                {/* Continue Button */}
                 <button
                   onClick={nextStep}
                   disabled={!formData.email}
-                  className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-[#E5383B]/30"
                   style={{
                     background: formData.email
                       ? "linear-gradient(135deg, #E5383B, #BA181B)"
@@ -275,7 +266,7 @@ export default function Login() {
                   Continue <ArrowRight className="w-5 h-5" />
                 </button>
 
-                {/* Reset Password Button */}
+                {/* Reset Password */}
                 <button
                   onClick={() => {
                     if (!formData.email) {
@@ -286,45 +277,47 @@ export default function Login() {
                       });
                       return;
                     }
-                    supabase.auth.resetPasswordForEmail(formData.email, {
-                      redirectTo: `${window.location.origin}/reset-password`,
-                    }).then(({ error }) => {
-                      if (error) {
-                        toast({
-                          title: "Error",
-                          description: error.message,
-                          variant: "destructive",
-                        });
-                      } else {
-                        toast({
-                          title: "Check Your Email",
-                          description: "Password reset link has been sent to your email",
-                        });
-                      }
-                    });
+                    supabase.auth
+                      .resetPasswordForEmail(formData.email, {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      })
+                      .then(({ error }) => {
+                        if (error) {
+                          toast({
+                            title: "Error",
+                            description: error.message,
+                            variant: "destructive",
+                          });
+                        } else {
+                          toast({
+                            title: "Check Your Email",
+                            description:
+                              "Password reset link has been sent to your email",
+                          });
+                        }
+                      });
                   }}
                   className="w-full py-3 rounded-2xl text-sm font-medium text-[#E5383B] hover:text-[#BA181B] transition-colors"
                 >
-                  Reset Password
+                  Forgot Password?
                 </button>
 
-                {/* Divider + Google Login */}
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full h-[1px] bg-[#B1A7A6]/20" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-4 text-xs text-[#B1A7A6] uppercase bg-[#161A1D]/60">
-                      Or continue with
+                    <span className="px-4 text-xs tracking-wider text-[#B1A7A6] uppercase bg-[#161A1D]/60">
+                      or continue with
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleGoogleLogin}
-                  className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4]"
+                  className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4] hover:bg-white/15 transition-colors"
                 >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -344,10 +337,22 @@ export default function Login() {
                   </svg>
                   Sign in with Google
                 </button>
+
+                {/* Signup Redirect */}
+                <div className="text-center mt-8">
+                  <p className="text-sm text-[#B1A7A6]">
+                    Don’t have an account?{" "}
+                    <Link
+                      to="/signup"
+                      className="text-[#E5383B] hover:text-[#BA181B] font-semibold"
+                    >
+                      Sign up here
+                    </Link>
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* Step 2: Password & Terms */}
             {step === 2 && (
               <div className="space-y-6 animate-fade-in">
                 <div className="relative group">
@@ -385,62 +390,22 @@ export default function Login() {
                   </div>
                 </div>
 
-
-                <div className="p-6 rounded-2xl bg-[#161A1D]/40 border border-[#E5383B]/20 mb-4">
-                  <div className="flex items-start gap-4">
-                    <button
-                      onClick={() => setAgreedToTerms(!agreedToTerms)}
-                      className="mt-1 w-6 h-6 rounded-lg"
-                      style={{
-                        background: agreedToTerms
-                          ? "linear-gradient(135deg, #E5383B, #BA181B)"
-                          : "rgba(177,167,166,0.2)",
-                      }}
-                    >
-                      {agreedToTerms && (
-                        <Check className="w-4 h-4 text-white m-auto" />
-                      )}
-                    </button>
-                    <p className="text-sm text-[#D3D3D3]">
-                      I agree to the{" "}
-                      <TermsDialog>
-                        <Button 
-                          variant="link" 
-                          className="text-[#E5383B] underline font-semibold p-0 h-auto"
-                        >
-                          Terms and Conditions
-                        </Button>
-                      </TermsDialog>{" "}
-                      and{" "}
-                      <TermsDialog>
-                        <Button 
-                          variant="link" 
-                          className="text-[#E5383B] underline font-semibold p-0 h-auto"
-                        >
-                          Privacy Policy
-                        </Button>
-                      </TermsDialog>
-                      .
-                    </p>
-                  </div>
-                </div> 
-
                 <div className="flex gap-3">
                   <button
                     onClick={prevStep}
-                    className="py-4 px-6 rounded-2xl bg-[#B1A7A6]/20 text-[#F5F3F4]"
+                    className="py-4 px-6 rounded-2xl bg-[#B1A7A6]/20 text-[#F5F3F4] hover:bg-[#B1A7A6]/30 transition-colors"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={handleSubmit}
-                    disabled={!agreedToTerms || !formData.password || loading}
-                    className="flex-1 py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                    disabled={!formData.password || loading}
+                    className="flex-1 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-[#E5383B]/30"
                     style={{
-                      background: (agreedToTerms && formData.password)
+                      background: formData.password
                         ? "linear-gradient(135deg, #E5383B, #BA181B)"
                         : "rgba(177,167,166,0.2)",
-                      color: (agreedToTerms && formData.password) ? "#F5F3F4" : "#B1A7A6",
+                      color: formData.password ? "#F5F3F4" : "#B1A7A6",
                     }}
                   >
                     {loading ? (
@@ -457,19 +422,6 @@ export default function Login() {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Footer */}
-          <div className="text-center mt-8">
-            <p className="text-sm text-[#B1A7A6]">
-              Don’t have an account?{" "}
-              <Link
-                to="/signup"
-                className="text-[#E5383B] hover:text-[#BA181B] font-semibold"
-              >
-                Sign up here
-              </Link>
-            </p>
           </div>
         </div>
       </div>

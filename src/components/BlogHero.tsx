@@ -12,7 +12,6 @@ export default function BlogHero({ onExploreClick, onLatestClick }) {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  
 
   // Auto-rotate words
   useEffect(() => {
@@ -66,7 +65,6 @@ export default function BlogHero({ onExploreClick, onLatestClick }) {
           >
             Dive into Our
           </motion.span>
-
           {/* Rolling Text */}
           <span className="relative inline-block min-w-[200px] text-center">
             <AnimatePresence mode="wait">

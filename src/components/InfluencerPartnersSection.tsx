@@ -1,10 +1,22 @@
+import { useInfluencerPartners } from "@/hooks/useInfluencerPartners";
 import { useSectionVisibility } from "@/hooks/useTopProfiles";
 import { Star } from "lucide-react";
 import TeamCarousel from "./TeamCarousel";
 
 const InfluencerPartnersSection = () => {
+  const { data: partners, isLoading } = useInfluencerPartners();
   const { data: visibility } = useSectionVisibility("influencer_partners");
-  if (!visibility?.is_visible) return null;
+  
+  if (!visibility?.is_visible || isLoading || !partners?.length) return null;
+
+  const teamMembers = partners.map(partner => ({
+    id: partner.id,
+    name: partner.name,
+    platform: partner.platform,
+    followers_count: partner.followers_count || 0,
+    avatar_url: partner.avatar_url,
+    profile_url: partner.profile_url,
+  }));
   return (
     <section className="relative py-32 overflow-hidden bg-gradient-to-b from-white via-[#F5F3F4] to-white">
       {/* Decorative Background */}
@@ -98,7 +110,7 @@ const InfluencerPartnersSection = () => {
           </p>
         </div>
 
-        <TeamCarousel />
+        <TeamCarousel members={teamMembers} />
       </div>
 
       <style>{`

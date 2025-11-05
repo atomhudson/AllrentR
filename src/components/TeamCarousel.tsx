@@ -1,30 +1,33 @@
 import { useState, useEffect } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface TeamMember {
+  id: string;
   name: string;
-  role: string;
-  imageUrl: string;
+  platform: string;
+  followers_count: number;
+  avatar_url: string;
+  profile_url?: string;
 }
 
-const teamMembers: TeamMember[] = [
-  { name: "Luffy", role: "Founder", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o1.jpeg?updatedAt=1754289569411" },
-  { name: "Monkey D. Luffy", role: "Creative Director", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o2.jpeg?updatedAt=1754289569307" },
-  { name: "Luffy chan", role: "Lead Developer", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o4.jpeg?updatedAt=1754289569398" },
-  { name: "Lucy", role: "UX Designer", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o3.jpeg?updatedAt=1754289569422" },
-  { name: "Luffy kun", role: "Marketing Manager", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o5.jpeg?updatedAt=1754289569406" },
-  { name: "Monkey chan", role: "Product Manager", imageUrl: "https://ik.imagekit.io/gopichakradhar/luffy/o6.jpeg?updatedAt=1754289569438" },
-];
+interface TeamCarouselProps {
+  members: TeamMember[];
+}
 
-const TeamCarousel = () => {
+const TeamCarousel = ({ members }: TeamCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  if (!members || members.length === 0) {
+    return null;
+  }
 
   const updateCarousel = (newIndex: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
 
-    const normalizedIndex = (newIndex + teamMembers.length) % teamMembers.length;
+    const normalizedIndex = (newIndex + members.length) % members.length;
     setCurrentIndex(normalizedIndex);
 
     setTimeout(() => {
@@ -41,14 +44,24 @@ const TeamCarousel = () => {
   };
 
   const getCardClass = (index: number) => {
-    const offset = (index - currentIndex + teamMembers.length) % teamMembers.length;
+    const offset = (index - currentIndex + members.length) % members.length;
 
     if (offset === 0) return "center";
     if (offset === 1) return "down-1";
     if (offset === 2) return "down-2";
-    if (offset === teamMembers.length - 1) return "up-1";
-    if (offset === teamMembers.length - 2) return "up-2";
+    if (offset === members.length - 1) return "up-1";
+    if (offset === members.length - 2) return "up-2";
     return "hidden";
+  };
+
+  const formatFollowers = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
+    return count.toString();
   };
 
   useEffect(() => {
@@ -83,14 +96,14 @@ const TeamCarousel = () => {
 
         {/* Carousel Track */}
         <div className="relative w-full max-w-[350px] lg:max-w-[450px] h-full flex items-center justify-center perspective-1000">
-          {teamMembers.map((member, index) => (
+          {members.map((member, index) => (
             <div
-              key={index}
+              key={member.id}
               onClick={() => updateCarousel(index)}
               className={`carousel-card ${getCardClass(index)}`}
             >
               <img
-                src={member.imageUrl}
+                src={member.avatar_url}
                 alt={member.name}
                 className="w-full h-full object-cover"
               />
@@ -141,20 +154,29 @@ const TeamCarousel = () => {
         </div>
 
         {/* Member Info */}
-        <div className="text-center space-y-2 transition-opacity duration-500">
+        <div className="text-center space-y-4 transition-opacity duration-500">
           <h2 className="text-3xl lg:text-4xl font-bold text-primary relative inline-block">
-            {teamMembers[currentIndex].name}
+            {members[currentIndex].name}
             <div className="absolute -left-24 top-1/2 w-20 h-0.5 bg-primary hidden lg:block" />
             <div className="absolute -right-24 top-1/2 w-20 h-0.5 bg-primary hidden lg:block" />
           </h2>
-          <p className="text-lg lg:text-xl text-muted-foreground uppercase tracking-widest font-medium">
-            {teamMembers[currentIndex].role}
+          <p className="text-lg lg:text-xl text-muted-foreground font-semibold">
+            {formatFollowers(members[currentIndex].followers_count)} Followers
           </p>
+          {members[currentIndex].profile_url && (
+            <Button
+              onClick={() => window.open(members[currentIndex].profile_url, "_blank")}
+              className="bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              View Profile
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+          )}
         </div>
 
         {/* Dots Navigation */}
         <div className="flex gap-3">
-          {teamMembers.map((_, index) => (
+          {members.map((_, index) => (
             <button
               key={index}
               onClick={() => updateCarousel(index)}

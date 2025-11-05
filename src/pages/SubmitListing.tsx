@@ -474,13 +474,13 @@ const SubmitListing = () => {
                         setDiscount(0);
                       }
                     }}>
-                      <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer">
-                        <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
+                      {/* <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer"> */}
+                        {/* <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
                         <Label htmlFor="free" className="cursor-pointer flex-1">
                           <span className="font-semibold text-foreground">Free Listing</span>
                           <span className="text-muted-foreground ml-2">- ₹0 (Standard Visibility)</span>
-                        </Label>
-                      </div>
+                        </Label> */}
+                      {/* </div> */}
                       <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 mt-3 transition-all cursor-pointer">
                         <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
                         <Label htmlFor="paid" className="cursor-pointer flex-1">

@@ -25,7 +25,7 @@ declare global {
 
 const SubmitListing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<'free' | 'paid'>('free');
@@ -53,10 +53,24 @@ const SubmitListing = () => {
     pinCode: '',
   });
 
+  // ✅ Razorpay Script Load (must be before conditional returns to keep hook order stable)
   useEffect(() => {
-    if (!user) navigate('/login');
-  }, [user, navigate]);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
+  useEffect(() => {
+    if (authReady && !user) navigate('/login');
+  }, [authReady, user, navigate]);
+
+  if (!authReady) return null;
   if (!user) return null;
 
   const validatePhone = (phone: string): boolean => {
@@ -131,18 +145,7 @@ const SubmitListing = () => {
     setValidatingCoupon(false);
   };
 
-  // ✅ Razorpay Script Load
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

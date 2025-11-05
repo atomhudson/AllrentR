@@ -6,6 +6,7 @@ import { useListings } from '@/hooks/useListings';
 import { Eye, Star, Package, CheckCircle, Clock, XCircle, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStreak } from '@/hooks/useLeaderboard';
+import { ProfileEditDialog } from '@/components/ProfileEditDialog';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -66,26 +67,31 @@ const Profile = () => {
                 {user.email}
               </p>
             </div>
-            {streakData && streakData.current_streak > 0 && (
-              <Card className="p-6 bg-[#E5383B] border-none">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-[#F5F3F4]/20 flex items-center justify-center">
-                    <Flame className="w-9 h-9 text-[#F5F3F4]" />
+            <div className="flex flex-col sm:flex-row gap-4">
+              {streakData && streakData.current_streak > 0 && (
+                <Card className="p-6 bg-[#E5383B] border-none">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-[#F5F3F4]/20 flex items-center justify-center">
+                      <Flame className="w-9 h-9 text-[#F5F3F4]" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold text-[#F5F3F4]">
+                        {streakData.current_streak} Days
+                      </div>
+                      <div className="text-sm text-[#F5F3F4]/80 font-medium">
+                        Current Streak 🔥
+                      </div>
+                      <div className="text-xs text-[#F5F3F4]/70 mt-1">
+                        Best: {streakData.longest_streak} days
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-3xl font-bold text-[#F5F3F4]">
-                      {streakData.current_streak} Days
-                    </div>
-                    <div className="text-sm text-[#F5F3F4]/80 font-medium">
-                      Current Streak 🔥
-                    </div>
-                    <div className="text-xs text-[#F5F3F4]/70 mt-1">
-                      Best: {streakData.longest_streak} days
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
+                </Card>
+              )}
+              <div className="flex items-center">
+                <ProfileEditDialog />
+              </div>
+            </div>
           </div>
         </div>
 

@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  authReady: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (userData: {
     name: string;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
@@ -37,12 +39,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) checkAdminStatus(session.user.id);
       else setIsAdmin(false);
+      setAuthReady(true);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) checkAdminStatus(session.user.id);
+      setAuthReady(true);
     });
 
     return () => listener.subscription.unsubscribe();
@@ -50,12 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
+      if (error) {
+        setIsAdmin(false);
+        return;
+      }
       setIsAdmin(!!data);
     } catch {
       setIsAdmin(false);
@@ -189,7 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, authReady, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

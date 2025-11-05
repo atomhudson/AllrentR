@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,19 +7,37 @@ import { Eye, Star, Package, CheckCircle, Clock, XCircle, Flame } from 'lucide-r
 import { useNavigate } from 'react-router-dom';
 import { useUserStreak } from '@/hooks/useLeaderboard';
 import { ProfileEditDialog } from '@/components/ProfileEditDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { listings } = useListings(undefined, user?.id);
   const { data: streakData } = useUserStreak(user?.id || '');
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
+    loadProfile();
   }, [user, navigate]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('avatar_url, name')
+      .eq('id', user.id)
+      .single();
+
+    if (data) {
+      setProfile(data);
+    }
+  };
 
   if (!user) return null;
 
@@ -63,9 +81,22 @@ const Profile = () => {
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground mb-3">
                 Welcome Back!
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground">
-                {user.email}
-              </p>
+              <div className="flex items-center gap-3">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Profile" 
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#E5383B]"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#E5383B]/10 flex items-center justify-center border-2 border-[#E5383B]/20">
+                    <User className="w-5 h-5 text-[#E5383B]" />
+                  </div>
+                )}
+                <p className="text-base md:text-lg text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               {streakData && streakData.current_streak > 0 && (

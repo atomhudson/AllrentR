@@ -33,7 +33,7 @@ export const ProfileEditDialog = () => {
     
     const { data, error } = await supabase
       .from('profiles')
-      .select('name, phone, pin_code')
+      .select('name, phone, pin_code, avatar_url')
       .eq('id', user.id)
       .single();
 
@@ -42,7 +42,7 @@ export const ProfileEditDialog = () => {
         name: data.name || '',
         email: user.email || '',
         phone: data.phone || '',
-        avatar_url: ''
+        avatar_url: data.avatar_url || ''
       });
     }
   };
@@ -90,12 +90,18 @@ export const ProfileEditDialog = () => {
 
     setLoading(true);
     try {
+      const updateData: any = {
+        name: formData.name,
+        phone: formData.phone,
+      };
+      
+      if (formData.avatar_url) {
+        updateData.avatar_url = formData.avatar_url;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          name: formData.name,
-          phone: formData.phone,
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) throw error;
@@ -122,9 +128,8 @@ export const ProfileEditDialog = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          variant="outline" 
           size="sm"
-          className="border-[#F5F3F4]/30 text-[#F5F3F4] hover:bg-[#F5F3F4]/10 hover:text-[#F5F3F4]"
+          className="bg-[#F5F3F4] text-[#E5383B] hover:bg-[#F5F3F4]/90 hover:scale-105 transition-all shadow-lg font-semibold"
         >
           <Edit className="w-4 h-4 mr-2" />
           Edit Profile

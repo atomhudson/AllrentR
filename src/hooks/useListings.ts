@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Listing {
@@ -31,7 +31,7 @@ export const useListings = (status?: string, userId?: string) => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase.from('listings').select('*');
@@ -54,11 +54,11 @@ export const useListings = (status?: string, userId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [status, userId]);
 
   useEffect(() => {
     fetchListings();
-  }, [status, userId]);
+  }, [fetchListings]);
 
   return { listings, loading, refetch: fetchListings };
 };

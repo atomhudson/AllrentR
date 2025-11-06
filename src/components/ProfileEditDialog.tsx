@@ -8,12 +8,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Edit, Upload } from 'lucide-react';
 
-export const ProfileEditDialog = () => {
+interface ProfileEditDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const ProfileEditDialog = ({ open: controlledOpen, onOpenChange }: ProfileEditDialogProps = {}) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -126,16 +134,18 @@ export const ProfileEditDialog = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          size="sm"
-          className="bg-[#F5F3F4] text-[#E5383B] hover:bg-[#F5F3F4]/90 hover:scale-105 transition-all shadow-lg font-semibold"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit Profile
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      {!controlledOpen && (
+        <DialogTrigger asChild>
+          <Button 
+            size="sm"
+            className="bg-[#F5F3F4] text-[#E5383B] hover:bg-[#F5F3F4]/90 hover:scale-105 transition-all shadow-lg font-semibold"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit Profile
+          </Button>
+        </DialogTrigger>
+      )}
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-serif">Edit Profile</DialogTitle>
         </DialogHeader>

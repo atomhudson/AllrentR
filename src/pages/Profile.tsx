@@ -6,12 +6,15 @@ import { useUserStreak } from '@/hooks/useLeaderboard';
 import ListingCardOnProfile from '@/components/ListingCardOnProfile';
 import StatsCardsOnProfile from '@/components/StatsCardsOnProfile';
 import DashboardHero from '@/components/DashboardHeroOnProfile';
+import { ProfileEditDialog } from '@/components/ProfileEditDialog';
+import { useState } from 'react';
 
 const Profile = () => {
   const { user, authReady } = useAuth();
   const navigate = useNavigate();
   const { listings } = useListings(undefined, user?.id);
   const { data: streakData } = useUserStreak(user?.id || '');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   if (!user) return null;
 
@@ -34,7 +37,7 @@ const Profile = () => {
           totalViews={totalViews}
           avgRating={avgRating}
           streakData={streakData}
-          onEditProfile={() => navigate('/edit-profile')}
+          onEditProfile={() => setEditDialogOpen(true)}
         />
         <StatsCardsOnProfile
           totalListings={listings.length}
@@ -46,6 +49,9 @@ const Profile = () => {
 
         <ListingCardOnProfile listings={listings} />
       </div>
+
+      {/* Edit Profile Dialog */}
+      <ProfileEditDialog open={editDialogOpen} onOpenChange={setEditDialogOpen} />
     </div>
   );
 };

@@ -134,9 +134,9 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
                 top: `${particle.y}%`,
                 width: `${particle.size}px`,
                 height: `${particle.size}px`,
-                '--duration': `${particle.duration}s`,
+                animationDuration: `${particle.duration}s`,
                 animationDelay: `${particle.delay}s`
-              }}
+              } as React.CSSProperties}
             />
           ))}
 
@@ -197,13 +197,18 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
                     <p className="text-base md:text-lg text-[#B1A7A6] font-medium mb-4 tracking-wide">
                       {user.email}
                     </p>
-                    <button className="group relative inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#BA181B] via-[#E5383B] to-[#BA181B] text-white font-bold rounded-xl shadow-lg shadow-[#E5383B]/40 hover:shadow-2xl hover:shadow-[#E5383B]/60 transition-all duration-500 overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                      <svg className="w-5 h-5 relative z-10 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      <span className="relative z-10">Edit Profile</span>
-                    </button>
+                    {onEditProfile && (
+                      <button 
+                        onClick={onEditProfile}
+                        className="group relative inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#BA181B] via-[#E5383B] to-[#BA181B] text-white font-bold rounded-xl shadow-lg shadow-[#E5383B]/40 hover:shadow-2xl hover:shadow-[#E5383B]/60 transition-all duration-500 overflow-hidden text-sm md:text-base"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                        <svg className="w-4 h-4 md:w-5 md:h-5 relative z-10 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span className="relative z-10">Edit Profile</span>
+                      </button>
+                    )}
                   </div>
                 </div>
                 

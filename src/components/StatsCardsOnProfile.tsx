@@ -88,7 +88,7 @@ export default function StatsCardsOnProfile({ totalListings, totalViews, avgRati
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (

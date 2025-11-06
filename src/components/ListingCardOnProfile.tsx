@@ -94,7 +94,7 @@ export default function ListingsCardOnProfile({ listings }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               {listings.map((listing, index) => (
                 <div
                   key={listing.id}

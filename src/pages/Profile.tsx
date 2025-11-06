@@ -17,17 +17,21 @@ const Profile = () => {
   const { data: streakData } = useUserStreak(user?.id || '');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
     if (user?.id) {
       supabase
         .from('profiles')
-        .select('avatar_url')
+        .select('avatar_url, name')
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
           if (data?.avatar_url) {
             setAvatarUrl(data.avatar_url);
+          }
+          if (data?.name) {
+            setUserName(data.name);
           }
         });
     }
@@ -46,7 +50,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#F5F3F4] via-white to-[#F5F3F4]">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-20 md:pt-28 pb-12 md:pb-20">
+      <div className="container mx-auto px-3 sm:px-4 pt-16 sm:pt-20 md:pt-28 pb-8 sm:pb-12 md:pb-20">
 
         {/* Hero Section */}
         <DashboardHero
@@ -55,6 +59,7 @@ const Profile = () => {
           avgRating={avgRating}
           streakData={streakData}
           avatarUrl={avatarUrl}
+          userName={userName}
           onEditProfile={() => setEditDialogOpen(true)}
         />
         <StatsCardsOnProfile

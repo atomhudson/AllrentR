@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
-import heroImage from '@/assets/Logo.png';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
+import heroImage from "@/assets/Logo.png";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const LoginNavbar = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -15,24 +15,33 @@ export const LoginNavbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
     setOpen(false);
   };
 
   const NavLinks = () => (
     <>
       <Link to="/listings" onClick={() => setOpen(false)}>
-        <Button variant="ghost" className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200">
+        <Button
+          variant="ghost"
+          className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+        >
           Browse Items
         </Button>
       </Link>
       <Link to="/blog" onClick={() => setOpen(false)}>
-        <Button variant="ghost" className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200">
+        <Button
+          variant="ghost"
+          className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+        >
           Blog
         </Button>
       </Link>
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
-        <Button variant="ghost" className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200">
+        <Button
+          variant="ghost"
+          className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+        >
           🏆 Leaderboard
         </Button>
       </Link>
@@ -48,14 +57,20 @@ export const LoginNavbar = () => {
             </Button>
           </Link>
           <Link to="/profile" onClick={() => setOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+            >
               <User className="w-5 h-5 mr-2" /> Profile
             </Button>
           </Link>
 
           {isAdmin && (
             <Link to="/admin" onClick={() => setOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+              >
                 <LayoutDashboard className="w-5 h-5 mr-2" /> Admin Dashboard
               </Button>
             </Link>
@@ -93,27 +108,27 @@ export const LoginNavbar = () => {
     <nav
       className="
         fixed top-0 left-0 right-0 z-50
-        bg-[#0B090A]/70
+      bg-[#161A1D]/70
         backdrop-blur-2xl
         border-b border-[#E5383B]/20
         shadow-md shadow-black/30
         transition-all duration-500
-      "
-    >
+        "
+      >
       {/* Glowing Background Accent */}
       <div className="absolute inset-0 overflow-hidden -z-10">
-        <div 
+        <div
           className="absolute top-0 left-1/3 w-[300px] h-[300px] rounded-full blur-[120px] opacity-10"
           style={{
-            background: 'radial-gradient(circle, #E5383B, transparent)',
-            animation: 'float 18s ease-in-out infinite',
+            background: "radial-gradient(circle, #E5383B, transparent)",
+            animation: "float 18s ease-in-out infinite",
           }}
         />
-        <div 
+        <div
           className="absolute bottom-0 right-1/3 w-[400px] h-[400px] rounded-full blur-[140px] opacity-10"
           style={{
-            background: 'radial-gradient(circle, #BA181B, transparent)',
-            animation: 'float 15s ease-in-out infinite reverse',
+            background: "radial-gradient(circle, #BA181B, transparent)",
+            animation: "float 15s ease-in-out infinite reverse",
           }}
         />
       </div>
@@ -237,7 +252,10 @@ export const LoginNavbar = () => {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] bg-[#0B090A]/90 border-l border-[#E5383B]/30 backdrop-blur-2xl">
+              <SheetContent
+                side="right"
+                className="w-[300px] bg-[#0B090A]/90 border-l border-[#E5383B]/30 backdrop-blur-2xl"
+              >
                 <div className="flex flex-col gap-3 mt-8">
                   <NavLinks />
                 </div>

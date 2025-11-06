@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Navbar } from "@/components/Navbar";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -18,10 +17,12 @@ import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 import Footer from "@/components/Footer";
 import TopProfilesSection from "@/components/TopProfilesSection";
 import InfluencerPartnersSection from "@/components/InfluencerPartnersSection";
-import heroImage from "@/assets/hero-image.jpg";
+import heroImage from "@/assets/hero-image6.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import HowItWorks from "@/components/HowItWorks";
+import HeroSection from "@/components/HeroSection";
+import { LoginNavbar } from "@/components/LoginNavbar";
 
 const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,124 +65,10 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">
-      <Navbar />
+      <LoginNavbar/>
 
       {/* Animated Background Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-[#E5383B] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-[#BA181B] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-[#660708] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* Hero Section */}
-      <section className="relative pt-20 md:pt-32 pb-12 md:pb-24">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
-            <div className="space-y-8">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E5383B]/10 to-[#BA181B]/10 rounded-full border border-[#E5383B]/20 backdrop-blur-sm animate-fade-in">
-                <Sparkles className="w-4 h-4 text-[#E5383B]" />
-                <span className="text-sm font-medium text-[#660708]">
-                  🎯 India's #1 Rental Platform
-                </span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#161A1D] leading-tight animate-fade-in-up">
-                Rent Anything,
-                <br />
-                <span className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent">
-                  Anytime
-                </span>
-                ,<br />
-                <span className="bg-gradient-to-r from-[#660708] to-[#A4161A] bg-clip-text text-transparent">
-                  Anywhere
-                </span>
-              </h1>
-
-              <p
-                className="text-base md:text-lg lg:text-xl text-[#161A1D]/80 leading-relaxed animate-fade-in-up"
-                style={{ animationDelay: "0.1s" }}
-              >
-                Transform unused items into steady income. List in 30 seconds,
-                connect with verified renters near you.
-              </p>
-
-              {/* Benefits List */}
-              {/* <div
-                className="grid grid-cols-2 gap-3 animate-fade-in-up"
-                style={{ animationDelay: "0.2s" }}
-              >
-                {benefits.map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#E5383B] to-[#BA181B] flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-[#F5F3F4]" />
-                    </div>
-                    <span className="text-sm font-medium text-[#161A1D]">
-                      {benefit}
-                    </span>
-                  </div>
-                ))}
-              </div> */}
-
-              <div
-                className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 animate-fade-in-up"
-                style={{ animationDelay: "0.3s" }}
-              >
-                <Button
-                  className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-[#F5F3F4] hover:shadow-2xl hover:shadow-[#E5383B]/50 transition-all duration-300 hover:scale-105 border-0 group"
-                  size="lg"
-                  onClick={() => navigate(user ? "/listings" : "/signup")}
-                >
-                  Get Started
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Button
-                  className="text-base md:text-lg px-6 md:px-8 py-4 md:py-6 bg-[#F5F3F4] border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:scale-105"
-                  size="lg"
-                  onClick={() => navigate("/listings")}
-                >
-                  Browse Listings
-                </Button>
-              </div>
-            </div>
-
-            {/* Hero Image with Floating Effect */}
-            <div className="relative animate-float mt-8 lg:mt-0">
-              <div className="absolute -inset-4 md:-inset-8 bg-gradient-to-r from-[#E5383B] to-[#BA181B] opacity-30 blur-3xl rounded-full animate-pulse-slow" />
-              <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border-2 md:border-4 border-[#F5F3F4] transform hover:scale-105 transition-all duration-500 bg-gradient-to-br from-[#B1A7A6] to-[#D3D3D3]">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#E5383B]/20 to-transparent" />
-                <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] flex items-center justify-center">
-                  <img
-                    src={heroImage}
-                    alt="AllRentr Hero"
-                    className="w-full h-full object-cover rounded-3xl shadow-2xl border-4 border-[#F5F3F4] transform hover:scale-105 transition-all duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#E5383B]/20 to-transparent rounded-3xl" />
-
-                  {/* Optional text overlay if you still want text on top of the image */}
-                  {/* <div className="absolute bottom-8 left-8 text-left space-y-2">
-                    <h3 className="text-3xl font-bold text-[#F5F3F4] drop-shadow-lg">
-                      Rent Smarter, Earn Faster
-                    </h3>
-                    <p className="text-[#F5F3F4]/80 drop-shadow-lg">
-                      Thousands of verified listings. Start today!
-                    </p>
-                  </div> */}
-                </div>
-              </div>
-              {/* Floating Badge */}
-              <div className="absolute -bottom-4 md:-bottom-6 -right-4 md:-right-6 bg-[#F5F3F4] rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-6 border-2 border-[#E5383B]/20 animate-bounce-slow">
-                <div className="text-xl md:text-3xl font-bold bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent">
-                  ₹1000+
-                </div>
-                <div className="text-xs md:text-sm text-[#161A1D]/70">
-                  Avg. Monthly Earnings
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Top Profiles Section */}
       <TopProfilesSection />

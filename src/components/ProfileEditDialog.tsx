@@ -134,17 +134,6 @@ export const ProfileEditDialog = ({ open: controlledOpen, onOpenChange }: Profil
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {!controlledOpen && (
-        <DialogTrigger asChild>
-          <Button 
-            size="sm"
-            className="bg-[#F5F3F4] text-[#E5383B] hover:bg-[#F5F3F4]/90 hover:scale-105 transition-all shadow-lg font-semibold"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Profile
-          </Button>
-        </DialogTrigger>
-      )}
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-serif">Edit Profile</DialogTitle>

@@ -51,49 +51,6 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
 
   return (
     <div className="min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] p-3 sm:p-4 md:p-8 overflow-hidden">
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.1); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
-        }
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes slide-up {
-          from { transform: translateY(30px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-float { animation: float var(--duration) ease-in-out infinite; }
-        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
-        .animate-shimmer { 
-          background: linear-gradient(90deg, transparent, rgba(229, 56, 59, 0.3), transparent);
-          background-size: 1000px 100%;
-          animation: shimmer 3s infinite;
-        }
-        .animate-rotate { animation: rotate 20s linear infinite; }
-        .animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
-        .glass-effect {
-          background: rgba(22, 26, 29, 0.6);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(229, 56, 59, 0.2);
-        }
-        .gradient-border {
-          position: relative;
-          background: linear-gradient(#161A1D, #161A1D) padding-box,
-                      linear-gradient(135deg, #E5383B, #BA181B, #660708) border-box;
-          border: 2px solid transparent;
-        }
-      `}</style>
-
       <div className="max-w-7xl mx-auto relative">
         {/* Animated Background Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -292,6 +249,48 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.1); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes slide-up {
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-float { animation: float var(--duration) ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-shimmer { 
+          background: linear-gradient(90deg, transparent, rgba(229, 56, 59, 0.3), transparent);
+          background-size: 1000px 100%;
+          animation: shimmer 3s infinite;
+        }
+        .animate-rotate { animation: rotate 20s linear infinite; }
+        .animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
+        .glass-effect {
+          background: rgba(22, 26, 29, 0.6);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(229, 56, 59, 0.2);
+        }
+        .gradient-border {
+          position: relative;
+          background: linear-gradient(#161A1D, #161A1D) padding-box,
+                      linear-gradient(135deg, #E5383B, #BA181B, #660708) border-box;
+          border: 2px solid transparent;
+        }
+      `}</style>
     </div>
   );
 };

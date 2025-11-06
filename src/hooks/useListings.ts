@@ -27,11 +27,14 @@ export interface Listing {
   final_price?: number;
 }
 
-export const useListings = (status?: string, userId?: string) => {
+export const useListings = (status?: string, userId?: string, enabled: boolean = true) => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchListings = useCallback(async () => {
+    if (!enabled) {
+      return;
+    }
     setLoading(true);
     try {
       let query = supabase.from('listings').select('*');
@@ -54,7 +57,7 @@ export const useListings = (status?: string, userId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [status, userId]);
+  }, [status, userId, enabled]);
 
   useEffect(() => {
     fetchListings();

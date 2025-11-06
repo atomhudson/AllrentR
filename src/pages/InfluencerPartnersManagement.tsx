@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { influencerPartnerSchema } from '@/lib/validation';
+import { ImageUpload } from '@/components/ImageUpload';
 
 const InfluencerPartnersManagement = () => {
   const queryClient = useQueryClient();
@@ -192,13 +193,12 @@ const InfluencerPartnersManagement = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="avatar_url">Avatar URL</Label>
-                  <Input
-                    id="avatar_url"
-                    value={formData.avatar_url}
-                    onChange={(e) =>
-                      setFormData({ ...formData, avatar_url: e.target.value })
-                    }
+                  <Label>Profile Image</Label>
+                  <ImageUpload
+                    onImagesUploaded={(urls) => setFormData({ ...formData, avatar_url: urls[0] || '' })}
+                    currentImages={formData.avatar_url ? [formData.avatar_url] : []}
+                    userId="admin"
+                    maxImages={1}
                   />
                 </div>
                 <div>
@@ -281,15 +281,22 @@ const InfluencerPartnersManagement = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {partners?.map((partner) => (
           <Card key={partner.id} className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold">{partner.name}</h3>
-                <p className="text-sm text-muted-foreground">{partner.platform}</p>
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              {partner.avatar_url && (
+                <img 
+                  src={partner.avatar_url} 
+                  alt={partner.name}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold truncate">{partner.name}</h3>
+                <p className="text-sm text-muted-foreground truncate">{partner.platform}</p>
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {partner.bio}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Followers: {partner.followers_count}
+                  Followers: {partner.followers_count?.toLocaleString()}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Order: {partner.display_order}
@@ -298,7 +305,7 @@ const InfluencerPartnersManagement = () => {
                   Status: {partner.active ? 'Active' : 'Inactive'}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 self-start">
                 <Button
                   variant="outline"
                   size="icon"

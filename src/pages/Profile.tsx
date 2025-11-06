@@ -7,7 +7,8 @@ import ListingCardOnProfile from '@/components/ListingCardOnProfile';
 import StatsCardsOnProfile from '@/components/StatsCardsOnProfile';
 import DashboardHero from '@/components/DashboardHeroOnProfile';
 import { ProfileEditDialog } from '@/components/ProfileEditDialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const { user, authReady } = useAuth();
@@ -15,6 +16,22 @@ const Profile = () => {
   const { listings } = useListings(undefined, user?.id);
   const { data: streakData } = useUserStreak(user?.id || '');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.id) {
+      supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.avatar_url) {
+            setAvatarUrl(data.avatar_url);
+          }
+        });
+    }
+  }, [user?.id]);
 
   if (!user) return null;
 
@@ -37,6 +54,7 @@ const Profile = () => {
           totalViews={totalViews}
           avgRating={avgRating}
           streakData={streakData}
+          avatarUrl={avatarUrl}
           onEditProfile={() => setEditDialogOpen(true)}
         />
         <StatsCardsOnProfile

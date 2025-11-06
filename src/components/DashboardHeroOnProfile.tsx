@@ -10,6 +10,7 @@ interface DashboardHeroProps {
     current_streak?: number;
     longest_streak?: number;
   };
+  avatarUrl?: string;
   onEditProfile?: () => void;
 }
 
@@ -18,6 +19,7 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
   totalViews,
   avgRating,
   streakData,
+  avatarUrl,
   onEditProfile
 }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -175,9 +177,17 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
                     <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-gradient-to-br from-[#BA181B] via-[#E5383B] to-[#A4161A] p-1 shadow-2xl transform group-hover:scale-110 transition-transform duration-500">
                       <div className="w-full h-full rounded-xl bg-[#F5F3F4] flex items-center justify-center overflow-hidden relative">
                         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[#E5383B]/10 to-transparent animate-shimmer" />
-                        <span className="relative text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#660708] via-[#BA181B] to-[#E5383B]">
-                          {user.email?.[0]?.toUpperCase() || 'U'}
-                        </span>
+                        {avatarUrl ? (
+                          <img 
+                            src={avatarUrl} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover rounded-xl"
+                          />
+                        ) : (
+                          <span className="relative text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#660708] via-[#BA181B] to-[#E5383B]">
+                            {user.email?.[0]?.toUpperCase() || 'U'}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

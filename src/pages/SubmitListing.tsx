@@ -16,6 +16,7 @@ import { validateCoupon } from '@/hooks/useCoupons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePackages } from '@/hooks/usePackages';
 import { ChevronDown } from 'lucide-react';
+import ngeohash from 'ngeohash';
 
 declare global {
   interface Window {
@@ -85,6 +86,48 @@ const SubmitListing = () => {
     setFormData({ ...formData, [name]: value });
     if (name === 'phone') setErrors(prev => ({ ...prev, phone: '' }));
     if (name === 'pin_code') setErrors(prev => ({ ...prev, pinCode: '' }));
+  };
+
+  // Geocode using OpenStreetMap Nominatim (robust with headers and retries)
+  const geocodeWithNominatim = async (query: string) => {
+    try {
+      const url = new URL('https://nominatim.openstreetmap.org/search');
+      url.searchParams.set('q', query);
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('addressdetails', '1');
+      url.searchParams.set('limit', '1');
+      url.searchParams.set('countrycodes', 'IN');
+      // Optional email param per Nominatim policy (update to your contact email)
+      url.searchParams.set('email', 'support@allrentr.example');
+
+      const res = await fetch(url.toString(), {
+        headers: {
+          'User-Agent': 'AllrentR/1.0 (contact: support@allrentr.example)',
+          'Accept-Language': 'en-IN,en;q=0.9',
+          'Referer': window.location.origin,
+        },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) return null;
+      const item = data[0];
+      const address = item.address ?? {};
+      return {
+        lat: Number(item.lat),
+        lon: Number(item.lon),
+        city: address.city || address.town || address.village || address.county || null,
+        state: address.state || null,
+        locality: address.suburb || address.neighbourhood || address.hamlet || null
+      } as {
+        lat: number;
+        lon: number;
+        city: string | null;
+        state: string | null;
+        locality: string | null;
+      };
+    } catch {
+      return null;
+    }
   };
 
   // ✅ Step Completion Validation
@@ -190,6 +233,22 @@ const SubmitListing = () => {
   };
 
   const handleFreeListing = async () => {
+    // Geocode first - combine address + pin + country for better accuracy
+    const primaryQuery = [formData.address, formData.pin_code, 'India'].filter(Boolean).join(', ');
+    let geo = await geocodeWithNominatim(primaryQuery);
+    if (!geo && formData.address && formData.pin_code) {
+      geo = await geocodeWithNominatim(`${formData.address}, ${formData.pin_code}, India`);
+    }
+    if (!geo && formData.pin_code) {
+      geo = await geocodeWithNominatim(`${formData.pin_code}, India`);
+    }
+    if (!geo) {
+      toast({ title: 'Location not found', description: 'Please refine address or PIN code', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+    const gh = ngeohash.encode(geo.lat, geo.lon, 9);
+
     const listingData = {
       owner_user_id: user.id,
       ...formData,
@@ -200,6 +259,13 @@ const SubmitListing = () => {
       discount_amount: 0,
       final_price: 0,
       coupon_code: null,
+      // location fields
+      latitude: geo.lat,
+      longitude: geo.lon,
+      city: geo.city,
+      state: geo.state,
+      locality: geo.locality,
+      geohash: gh
     };
     
     const { error } = await supabase.from('listings').insert([listingData]);
@@ -246,6 +312,22 @@ const SubmitListing = () => {
       handler: async (response: any) => {
         // Payment successful - create listing
         try {
+          // Geocode before insert - combine address + pin + country
+          const primaryQuery = [formData.address, formData.pin_code, 'India'].filter(Boolean).join(', ');
+          let geo = await geocodeWithNominatim(primaryQuery);
+          if (!geo && formData.address && formData.pin_code) {
+            geo = await geocodeWithNominatim(`${formData.address}, ${formData.pin_code}, India`);
+          }
+          if (!geo && formData.pin_code) {
+            geo = await geocodeWithNominatim(`${formData.pin_code}, India`);
+          }
+          if (!geo) {
+            toast({ title: 'Location not found', description: 'Please refine address or PIN code', variant: 'destructive' });
+            setLoading(false);
+            return;
+          }
+          const gh = ngeohash.encode(geo.lat, geo.lon, 9);
+
           const { error } = await supabase.from('listings').insert([{
             owner_user_id: user.id,
             ...formData,
@@ -258,7 +340,14 @@ const SubmitListing = () => {
             final_price: finalPrice,
             discount_amount: discount,
             coupon_code: couponCode || null,
-            package_id: selectedPackage || null
+            package_id: selectedPackage || null,
+            // location fields
+            latitude: geo.lat,
+            longitude: geo.lon,
+            city: geo.city,
+            state: geo.state,
+            locality: geo.locality,
+            geohash: gh
           }]);
 
           if (error) throw error;

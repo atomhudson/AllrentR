@@ -1,4 +1,4 @@
-import { useState, useMemo  } from "react";
+import { useState, useMemo, useEffect  } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import { Navbar } from "@/components/Navbar";
 import { RatingCard } from "@/components/RatingCard";
 import { AdPopup } from "@/components/AdPopup";
 import BannerCarousel from "@/components/BannerCarousel";
+import FilterSection from "@/components/FilterSection";
 import { useListings, incrementViews } from "@/hooks/useListings";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -20,10 +21,8 @@ import {
   Phone,
   User,
   Package,
-  Search,
   Tag,
   Sparkles,
-  SlidersHorizontal,
 } from "lucide-react";
 import {
   Carousel,
@@ -33,6 +32,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useDebounce } from "@/hooks/useDebounce";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const Listings = () => {
   const { listings, loading } = useListings("approved");
@@ -41,6 +42,15 @@ const Listings = () => {
   const [pinCodeFilter, setPinCodeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [clusterMode, setClusterMode] = useState<"none" | "city" | "pin" | "geo">("none");
+  const [selectedClusterItems, setSelectedClusterItems] = useState<any[] | null>(null);
+  const [nearbyEnabled, setNearbyEnabled] = useState(false);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [radiusMeters, setRadiusMeters] = useState<number>(5000);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyListings, setNearbyListings] = useState<any[]>([]);
+  const [distanceById, setDistanceById] = useState<Record<string, number>>({});
   // const [testLoading] = useState(true);
 
   const handleViewListing = (listing: any) => {
@@ -51,7 +61,7 @@ const Listings = () => {
   const debouncedSearch = useDebounce(searchQuery, 500);
   const debouncedPin = useDebounce(pinCodeFilter, 500);
 
-  const filteredListings = useMemo(() => {
+  const baseFiltered = useMemo(() => {
     return listings.filter((listing) => {
       const matchesSearch =
         listing.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -64,8 +74,291 @@ const Listings = () => {
     });
   }, [listings, debouncedSearch, debouncedPin, categoryFilter]);
 
-  console.log("Debounced search:", debouncedSearch);
-  console.log("Search query:", searchQuery);
+  const nearbyFiltered = useMemo(() => {
+    if (!nearbyEnabled) return [];
+    return nearbyListings.filter((listing) => {
+      const matchesSearch =
+        listing.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (listing.description || "").toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesPinCode = debouncedPin === "" || (listing.pin_code || "").includes(debouncedPin);
+      const matchesCategory = categoryFilter === "" || listing.category === categoryFilter;
+      return matchesSearch && matchesPinCode && matchesCategory;
+    }).sort((a, b) => (distanceById[a.id] || 0) - (distanceById[b.id] || 0));
+  }, [nearbyEnabled, nearbyListings, debouncedSearch, debouncedPin, categoryFilter, distanceById]);
+
+  // If a cluster is selected, show only those items
+  const clusterFiltered = useMemo(() => {
+    if (!selectedClusterItems || selectedClusterItems.length === 0) return null;
+    return selectedClusterItems.filter((listing) => {
+      const matchesSearch =
+        listing.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (listing.description || "").toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesPinCode = debouncedPin === "" || (listing.pin_code || "").includes(debouncedPin);
+      const matchesCategory = categoryFilter === "" || listing.category === categoryFilter;
+      return matchesSearch && matchesPinCode && matchesCategory;
+    });
+  }, [selectedClusterItems, debouncedSearch, debouncedPin, categoryFilter]);
+
+  const filteredListings = clusterFiltered !== null 
+    ? clusterFiltered 
+    : (nearbyEnabled ? nearbyFiltered : baseFiltered);
+
+  // Haversine helper for fallback distance calculations
+  const haversineMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const R = 6371000; // meters
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Fetch nearby listings via RPC then hydrate to full records
+  useEffect(() => {
+    const fetchNearby = async () => {
+      if (!nearbyEnabled || userLat == null || userLng == null) {
+        setNearbyListings([]);
+        setDistanceById({});
+        return;
+      }
+      setNearbyLoading(true);
+      try {
+        // Cast to any to allow calling custom RPC without generated types
+        const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('get_nearby_listings', {
+          user_lat: userLat,
+          user_lng: userLng,
+          radius_meters: radiusMeters
+        });
+        
+        if (rpcError) {
+          console.error('RPC error:', rpcError);
+          throw rpcError;
+        }
+        
+        const rpcRows: any[] = Array.isArray(rpcData) ? rpcData : [];
+        console.log('RPC returned', rpcRows.length, 'nearby listings');
+        
+        if (rpcRows.length === 0) {
+          // RPC returned empty - this is normal if no listings in radius or RPC not available
+          // Silently fall through to client-side fallback
+          console.log('RPC returned no results, using client-side fallback');
+        } else {
+          // RPC succeeded, process results
+          const ids = rpcRows.map((r: any) => r.id);
+          const distanceMap: Record<string, number> = {};
+          rpcRows.forEach((r: any) => { distanceMap[r.id] = r.distance_meters; });
+          setDistanceById(distanceMap);
+          
+          const { data: fullRows, error: selError } = await supabase
+            .from('listings')
+            .select('*')
+            .in('id', ids);
+          if (selError) throw selError;
+          
+          // Preserve RPC order by distance
+          const orderIndex: Record<string, number> = {};
+          ids.forEach((id: string, i: number) => { orderIndex[id] = i; });
+          const ordered = (fullRows || []).slice().sort((a: any, b: any) => orderIndex[a.id] - orderIndex[b.id]);
+          setNearbyListings(ordered);
+          console.log('Nearby listings set from RPC:', ordered.length);
+          setNearbyLoading(false);
+          return; // Exit early if RPC succeeded
+        }
+        
+      } catch (e) {
+        console.warn('RPC error, using client-side fallback:', e);
+      }
+      
+      // Fallback: compute nearby client-side from all approved listings
+      // This runs if RPC returned empty or failed
+      try {
+        const candidates = listings.filter((l: any) => 
+          typeof l.latitude === 'number' && 
+          typeof l.longitude === 'number' &&
+          !isNaN(l.latitude) &&
+          !isNaN(l.longitude)
+        );
+        console.log('Fallback: found', candidates.length, 'listings with coordinates');
+        
+        if (candidates.length === 0) {
+          console.warn('No listings with coordinates found');
+          setNearbyListings([]);
+          setDistanceById({});
+          setNearbyLoading(false);
+          return;
+        }
+        
+        const distances: Record<string, number> = {};
+        // Calculate distances for all candidates first
+        candidates.forEach((l: any) => {
+          const d = haversineMeters(userLat!, userLng!, l.latitude, l.longitude);
+          distances[l.id] = d;
+        });
+        
+        // Filter to within radius - respect the user's radius selection
+        const within = candidates.filter((l: any) => {
+          return distances[l.id] <= radiusMeters;
+        }).sort((a: any, b: any) => (distances[a.id] || 0) - (distances[b.id] || 0));
+        
+        console.log('Fallback: found', within.length, 'listings within', radiusMeters, 'meters');
+        console.log('User location:', userLat, userLng);
+        console.log('Total candidates with coordinates:', candidates.length);
+        console.log('Sample distances:', Object.entries(distances).slice(0, 5));
+        
+        // Only store distances for listings within radius
+        const distanceMap: Record<string, number> = {};
+        within.forEach((l: any) => {
+          distanceMap[l.id] = distances[l.id];
+        });
+        setDistanceById(distanceMap);
+        setNearbyListings(within);
+        
+        if (within.length === 0) {
+          // Find the closest listing to suggest increasing radius
+          const allSorted = candidates.sort((a: any, b: any) => (distances[a.id] || 0) - (distances[b.id] || 0));
+          const closestDistance = allSorted.length > 0 ? distances[allSorted[0].id] : null;
+          const closestKm = closestDistance ? (closestDistance / 1000).toFixed(1) : 'unknown';
+          
+          toast({
+            title: 'No listings within radius',
+            description: `No listings found within ${radiusMeters / 1000}km. ${closestDistance ? `Closest listing is ${closestKm}km away. ` : ''}Try increasing the radius.`,
+          });
+        }
+      } catch (err) {
+        console.error('Nearby fallback failed', err);
+        setNearbyListings([]);
+        setDistanceById({});
+        toast({
+          title: 'Error finding nearby listings',
+          description: 'Unable to calculate nearby listings. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setNearbyLoading(false);
+      }
+    };
+    fetchNearby();
+  }, [nearbyEnabled, userLat, userLng, radiusMeters, listings]);
+
+  // Client-side clusters derived from filtered listings
+  const clusters = useMemo(() => {
+    // console.log('Clusters useMemo triggered, clusterMode:', clusterMode, 'listings count:', listings.length);
+    if (clusterMode === 'none') {
+      // console.log('Cluster mode is none, returning empty');
+      return [] as any[];
+    }
+    
+    // Use base listings (not filtered) for clustering to ensure we have all data
+    const sourceListings = listings.length > 0 ? listings : filteredListings;
+    if (!sourceListings || sourceListings.length === 0) {
+      // console.log('No listings available for clustering');
+      return [] as any[];
+    }
+
+    // console.log('Computing clusters for', sourceListings.length, 'listings, mode:', clusterMode);
+
+    if (clusterMode === 'city') {
+      const map: Record<string, any[]> = {};
+      sourceListings.forEach((l: any) => {
+        const key = (l.city && l.city.trim()) || 'Unknown';
+        if (!map[key]) map[key] = [];
+        map[key].push(l);
+      });
+      const result = Object.entries(map).map(([key, items]) => ({
+        key,
+        label: key,
+        count: (items as any[]).length,
+        items: items as any[],
+      })).sort((a, b) => b.count - a.count);
+      // console.log('City clusters:', result.length);
+      return result;
+    }
+
+    if (clusterMode === 'pin') {
+      const map: Record<string, any[]> = {};
+      sourceListings.forEach((l: any) => {
+        const key = (l.pin_code && l.pin_code.trim()) || '—';
+        if (!map[key]) map[key] = [];
+        map[key].push(l);
+      });
+      const result = Object.entries(map).map(([key, items]) => ({
+        key,
+        label: `PIN ${key}`,
+        count: (items as any[]).length,
+        items: items as any[],
+      })).sort((a, b) => b.count - a.count);
+      // console.log('PIN clusters:', result.length);
+      return result;
+    }
+
+    // geo clustering by coarse lat/lng grid (~1km). Uses 0.01 deg buckets as a simple approximation
+    if (clusterMode === 'geo') {
+      const grid: Record<string, any[]> = {};
+      sourceListings.forEach((l: any) => {
+        if (typeof l.latitude !== 'number' || typeof l.longitude !== 'number' || 
+            isNaN(l.latitude) || isNaN(l.longitude)) return;
+        const latBucket = Math.round(l.latitude * 100) / 100;
+        const lngBucket = Math.round(l.longitude * 100) / 100;
+        const key = `${latBucket.toFixed(2)},${lngBucket.toFixed(2)}`;
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(l);
+      });
+      const result = Object.entries(grid).map(([key, items]) => ({
+        key,
+        label: key,
+        count: (items as any[]).length,
+        items: items as any[],
+      })).sort((a, b) => b.count - a.count);
+      // console.log('Geo clusters:', result.length);
+      return result;
+    }
+
+    return [] as any[];
+  }, [clusterMode, listings, filteredListings]);
+
+  const requestLocation = () => {
+    if (!('geolocation' in navigator)) {
+      toast({
+        title: 'Geolocation not supported',
+        description: 'Your browser does not support location services.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    // Clear previous coordinates to ensure fresh location
+    setUserLat(null);
+    setUserLng(null);
+    setNearbyListings([]);
+    setDistanceById({});
+    
+    // console.log('Requesting location...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        // console.log('Location obtained:', pos.coords.latitude, pos.coords.longitude);
+        setUserLat(pos.coords.latitude);
+        setUserLng(pos.coords.longitude);
+        setNearbyEnabled(true);
+        toast({
+          title: 'Location enabled',
+          description: 'Showing listings near you',
+        });
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        setNearbyEnabled(false);
+        toast({
+          title: 'Unable to get location',
+          description: err.message || 'Please enable location permissions in your browser.',
+          variant: 'destructive',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   const categories = [
     { value: "", label: "All" },
@@ -104,335 +397,51 @@ const Listings = () => {
         <BannerCarousel />
 
         {/* Smart Filters Section */}
-        <div className="container mx-auto py-6 px-4">
-          <div
-            className="relative overflow-hidden rounded-3xl p-[2px] group"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(229, 56, 59, 0.3), rgba(186, 24, 27, 0.2), rgba(102, 7, 8, 0.3))",
-            }}
-          >
-            {/* Inner Container */}
-            <div
-              className="relative rounded-[28px] p-4 md:p-6 backdrop-blur-2xl overflow-hidden"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(245, 243, 244, 0.95), rgba(211, 211, 211, 0.85))",
-                boxShadow:
-                  "inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 20px 60px rgba(11, 9, 10, 0.1)",
-              }}
-            >
-              {/* Animated Background Pattern */}
-              <div className="absolute inset-0 opacity-40">
-                <div
-                  className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(229, 56, 59, 0.15), transparent 70%)",
-                    animation: "float 8s ease-in-out infinite",
-                  }}
-                />
-                <div
-                  className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-3xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(186, 24, 27, 0.12), transparent 70%)",
-                    animation: "float 10s ease-in-out infinite reverse",
-                  }}
-                />
-              </div>
-
-              {/* Header - Hidden on mobile */}
-              <div className="relative text-center mb-6 hidden md:block">
-                <div
-                  className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full backdrop-blur-xl"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
-                    border: "1px solid rgba(229, 56, 59, 0.2)",
-                    boxShadow: "0 4px 20px rgba(229, 56, 59, 0.15)",
-                  }}
-                >
-                  <SlidersHorizontal className="w-4 h-4 text-[#BA181B]" />
-                  <span className="text-xs font-bold tracking-wider text-[#660708] uppercase">
-                    Smart Filters
-                  </span>
-                </div>
-
-                <h2
-                  className="text-2xl md:text-3xl font-black tracking-tight mb-2"
-                  style={{
-                    background: "linear-gradient(135deg, #161A1D, #660708)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  Refine Your Search
-                </h2>
-                <p className="text-[#660708]/70 text-sm max-w-2xl mx-auto">
-                  Discover exactly what you're looking for with our intelligent
-                  filtering system
-                </p>
-              </div>
-
-              {/* Search Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-6">
-                {/* Search Field */}
-                <div className="relative group/input">
-                  <div
-                    className="rounded-2xl p-[1px]"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(229, 56, 59, 0.2), rgba(186, 24, 27, 0.15))",
-                    }}
-                  >
-                    <div
-                      className="rounded-2xl overflow-hidden backdrop-blur-xl"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.7)",
-                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
-                      }}
-                    >
-                      <div className="flex items-center px-4 py-3 gap-3">
-                        <div
-                          className="flex items-center justify-center w-9 h-9 rounded-xl"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
-                          }}
-                        >
-                          <Search className="w-4 h-4 text-[#BA181B]" />
-                        </div>
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search items..."
-                          className="flex-1 bg-transparent text-[#161A1D] text-sm font-medium outline-none placeholder:text-[#B1A7A6]"
-                        />
-                        {searchQuery && (
-                          <button
-                            onClick={() => setSearchQuery("")}
-                            className="w-6 h-6 flex items-center justify-center rounded-full bg-[#B1A7A6]/20 hover:bg-[#E5383B]/20 transition-colors duration-200"
-                          >
-                            <span className="text-[#660708] text-xs">✕</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pin Code Field */}
-                <div className="relative group/input">
-                  <div
-                    className="rounded-2xl p-[1px]"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(229, 56, 59, 0.2), rgba(186, 24, 27, 0.15))",
-                    }}
-                  >
-                    <div
-                      className="rounded-2xl overflow-hidden backdrop-blur-xl"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.7)",
-                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
-                      }}
-                    >
-                      <div className="flex items-center px-4 py-3 gap-3">
-                        <div
-                          className="flex items-center justify-center w-9 h-9 rounded-xl"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, rgba(229, 56, 59, 0.1), rgba(186, 24, 27, 0.08))",
-                          }}
-                        >
-                          <MapPin className="w-4 h-4 text-[#BA181B]" />
-                        </div>
-                        <input
-                          type="text"
-                          value={pinCodeFilter}
-                          onChange={(e) => setPinCodeFilter(e.target.value)}
-                          placeholder="Filter by pin..."
-                          className="flex-1 bg-transparent text-[#161A1D] text-sm font-medium outline-none placeholder:text-[#B1A7A6]"
-                        />
-                        {pinCodeFilter && (
-                          <button
-                            onClick={() => setPinCodeFilter("")}
-                            className="w-6 h-6 flex items-center justify-center rounded-full bg-[#B1A7A6]/20 hover:bg-[#E5383B]/20 transition-colors duration-200"
-                          >
-                            <span className="text-[#660708] text-xs">✕</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Filter Button - Mobile Only */}
-                <div className="relative md:hidden">
-                  <button
-                    onClick={() => {
-                      const dropdown = document.getElementById('category-dropdown');
-                      if (dropdown) {
-                        dropdown.classList.toggle('hidden');
-                      }
-                    }}
-                    className="w-full rounded-2xl p-[1px]"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(229, 56, 59, 0.2), rgba(186, 24, 27, 0.15))",
-                    }}
-                  >
-                    <div
-                      className="rounded-2xl overflow-hidden backdrop-blur-xl"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.7)",
-                        boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
-                      }}
-                    >
-                      <div className="flex items-center justify-center px-4 py-3 gap-2">
-                        <SlidersHorizontal className="w-4 h-4 text-[#BA181B]" />
-                        <span className="text-sm font-medium text-[#161A1D]">
-                          Filter
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Dropdown */}
-                  <div
-                    id="category-dropdown"
-                    className="hidden absolute top-full mt-2 w-full rounded-2xl p-[1px]"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(229, 56, 59, 0.3), rgba(186, 24, 27, 0.2))",
-                      zIndex: 9999,
-                    }}
-                  >
-                    <div
-                      className="rounded-2xl backdrop-blur-xl p-2"
-                      style={{
-                        background: "rgba(245, 243, 244, 0.98)",
-                        boxShadow: "0 10px 40px rgba(11, 9, 10, 0.2)",
-                      }}
-                    >
-                      {categories.map((cat) => (
-                        <button
-                          key={cat.value}
-                          onClick={() => {
-                            setCategoryFilter(cat.value);
-                            const dropdown = document.getElementById('category-dropdown');
-                            if (dropdown) {
-                              dropdown.classList.add('hidden');
-                            }
-                          }}
-                          className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 hover:bg-[#E5383B]/10"
-                          style={{
-                            background:
-                              categoryFilter === cat.value
-                                ? "linear-gradient(135deg, #E5383B, #BA181B)"
-                                : "transparent",
-                          }}
-                        >
-                          <span
-                            className={`text-sm font-medium ${
-                              categoryFilter === cat.value
-                                ? "text-[#F5F3F4]"
-                                : "text-[#161A1D]"
-                            }`}
-                          >
-                            {cat.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category Pills - Desktop Only */}
-              <div className="relative hidden md:block">
-                <div className="flex flex-wrap justify-center gap-3">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.value}
-                      onClick={() => setCategoryFilter(cat.value)}
-                      className="relative group/pill"
-                    >
-                      {categoryFilter === cat.value && (
-                        <div
-                          className="absolute inset-0 rounded-full blur-xl"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, rgba(229, 56, 59, 0.6), rgba(186, 24, 27, 0.4))",
-                            animation: "pulse 2s ease-in-out infinite",
-                          }}
-                        />
-                      )}
-                      <div
-                        className={`relative px-5 py-2.5 rounded-full transition-all duration-300 ${
-                          categoryFilter === cat.value
-                            ? "scale-105"
-                            : "hover:scale-105"
-                        }`}
-                        style={{
-                          background:
-                            categoryFilter === cat.value
-                              ? "linear-gradient(135deg, #E5383B, #BA181B, #660708)"
-                              : "rgba(255, 255, 255, 0.8)",
-                          border:
-                            categoryFilter === cat.value
-                              ? "none"
-                              : "1px solid rgba(177, 167, 166, 0.3)",
-                          boxShadow:
-                            categoryFilter === cat.value
-                              ? "0 8px 32px rgba(229, 56, 59, 0.35)"
-                              : "0 2px 8px rgba(11, 9, 10, 0.05)",
-                        }}
-                      >
-                        <span
-                          className={`text-sm font-semibold tracking-wide ${
-                            categoryFilter === cat.value
-                              ? "text-[#F5F3F4]"
-                              : "text-[#161A1D] group-hover/pill:text-[#BA181B]"
-                          }`}
-                        >
-                          {cat.label}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Active Filter Count */}
-                {(searchQuery || pinCodeFilter || categoryFilter) && (
-                  <div className="flex items-center justify-center gap-2 mt-6">
-                    <Sparkles className="w-4 h-4 text-[#E5383B]" />
-                    <span className="text-sm font-semibold text-[#660708]">
-                      {[
-                        searchQuery ? 1 : 0,
-                        pinCodeFilter ? 1 : 0,
-                        categoryFilter ? 1 : 0,
-                      ].reduce((a, b) => a + b, 0)}{" "}
-                      active filter
-                      {[
-                        searchQuery ? 1 : 0,
-                        pinCodeFilter ? 1 : 0,
-                        categoryFilter ? 1 : 0,
-                      ].reduce((a, b) => a + b, 0) !== 1
-                        ? "s"
-                        : ""}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <FilterSection
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          pinCodeFilter={pinCodeFilter}
+          setPinCodeFilter={setPinCodeFilter}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          categories={categories}
+          nearbyEnabled={nearbyEnabled}
+          setNearbyEnabled={setNearbyEnabled}
+          requestLocation={requestLocation}
+          radiusMeters={radiusMeters}
+          setRadiusMeters={setRadiusMeters}
+          clusterMode={clusterMode}
+          setClusterMode={setClusterMode}
+          setSelectedClusterItems={setSelectedClusterItems}
+        />
 
         {/* Listings Section */}
-        {loading ? (
+        <div id="listings-section">
+        {/* Show indicator when viewing cluster items */}
+        {selectedClusterItems && selectedClusterItems.length > 0 && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-[#E5383B]/10 to-[#BA181B]/10 border border-[#E5383B]/30 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-[#E5383B]" />
+              <span className="text-sm font-semibold text-[#660708]">
+                Showing {filteredListings.length} items from selected cluster
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedClusterItems(null);
+                setSearchQuery('');
+                setPinCodeFilter('');
+                setCategoryFilter('');
+              }}
+              className="border-[#E5383B] text-[#E5383B] hover:bg-[#E5383B] hover:text-white"
+            >
+              Clear Filter
+            </Button>
+          </div>
+        )}
+        {(loading || (nearbyEnabled && nearbyLoading)) ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 py-10 animate-fade-in">
             {[...Array(6)].map((_, i) => (
               <div
@@ -458,6 +467,66 @@ const Listings = () => {
               </div>
             ))}
           </div>
+        ) : (clusterMode !== 'none') ? (
+          clusters.length === 0 ? (
+            <div className="text-center py-20 animate-fade-in">
+              <p className="text-xl text-[#660708]/70">
+                No clusters found. {listings.length === 0 ? 'No listings available.' : 'Try a different cluster mode or check if listings have location data.'}
+              </p>
+            </div>
+          ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {clusters.map((cluster, index) => (
+              <Card
+                key={cluster.key}
+                className="group bg-white border border-[#E5E5E5] hover:border-[#E5383B]/50 hover:shadow-[0_8px_30px_rgba(229,56,59,0.15)] transition-all duration-500 rounded-2xl overflow-hidden"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="p-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-[#161A1D]">{cluster.label}</h3>
+                    <span className="text-sm px-2 py-1 rounded-full bg-[#E5383B]/10 text-[#E5383B] font-semibold">{cluster.count}</span>
+                  </div>
+                  <p className="text-sm text-[#660708]/70">Popular items in this area</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {cluster.items.slice(0, 3).map((l: any) => (
+                      <div key={l.id} className="aspect-video rounded-md overflow-hidden bg-[#F8F9FA]">
+                        {l.images?.[0] ? (
+                          <img src={l.images[0]} alt={l.product_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-[#BA181B]" /></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    className="w-full bg-gradient-to-r from-[#E5383B] to-[#BA181B] hover:from-[#BA181B] hover:to-[#660708] text-white font-medium rounded-xl py-2 shadow-md transition-all duration-300"
+                    onClick={() => {
+                      // console.log('View items clicked for cluster:', cluster.key, 'Items:', cluster.items.length);
+                      // Store the cluster items and exit cluster mode to show them
+                      setSelectedClusterItems(cluster.items);
+                      setClusterMode('none');
+                      setNearbyEnabled(false); // Disable nearby when viewing cluster items
+                      // Clear other filters to show all items from this cluster
+                      setSearchQuery('');
+                      setPinCodeFilter('');
+                      setCategoryFilter('');
+                      // Scroll to listings section
+                      setTimeout(() => {
+                        const listingsSection = document.getElementById('listings-section');
+                        if (listingsSection) {
+                          listingsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }, 100);
+                    }}
+                  >
+                    View {cluster.count} items
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+          )
         ) : filteredListings.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
             <p className="text-xl text-[#660708]/70">
@@ -527,7 +596,14 @@ const Listings = () => {
                   <div className="flex items-center justify-between text-sm text-[#A4161A]/70 mt-4">
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4 text-[#BA181B]" />
-                      <span>{listing.pin_code}</span>
+                      <span>
+                        {listing.pin_code || listing.city || '—'}
+                        {nearbyEnabled && distanceById[listing.id] != null && (
+                          <span className="ml-2 text-xs text-[#660708]">
+                            {(distanceById[listing.id] / 1000).toFixed(1)} km
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
@@ -549,6 +625,7 @@ const Listings = () => {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       <Dialog

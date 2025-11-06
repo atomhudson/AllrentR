@@ -108,17 +108,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: 'Please check your email to verify your account.',
       });
 
-      if (data.user) {
-        await supabase.from('user_activity_logs').insert({
-          user_id: data.user.id,
-          action: 'USER_SIGNUP',
-          details: {
-            email: userData.email,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      }
-
       return true;
     } catch (error: any) {
       console.error('Unexpected signup error:', error);
@@ -139,6 +128,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
+        const message = (error.message || '').toLowerCase();
+        const isUnconfirmed = message.includes('confirm') || message.includes('not confirmed');
+        if (isUnconfirmed) {
+          try {
+            await supabase.auth.resend({
+              type: 'signup',
+              email,
+              options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+            });
+            toast({
+              title: 'Verify your email',
+              description: 'We resent the verification email. Please check your inbox.',
+            });
+          } catch (_) {
+            // fall through to generic error toast
+          }
+        }
         toast({
           title: 'Login failed',
           description: error.message,

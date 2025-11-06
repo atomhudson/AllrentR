@@ -178,17 +178,8 @@ export default function Signup() {
         return;
       }
 
-      // Signup successful - log activity and navigate
+      // Signup successful - show confirmation and navigate
       if (signupData.user) {
-        await supabase.from('user_activity_logs').insert({
-          user_id: signupData.user.id,
-          action: 'USER_SIGNUP',
-          details: {
-            email: formData.email,
-            timestamp: new Date().toISOString(),
-          },
-        });
-
         toast({
           title: 'Account created successfully 🎉',
           description: 'Please check your email to verify your account.',

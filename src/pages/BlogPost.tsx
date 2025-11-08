@@ -1,24 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
+import { Calendar, ArrowLeft, ExternalLink, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { SEOHead } from "@/components/SEOHead";
+import { Blog } from "@/hooks/useBlogs";
 
-interface Blog {
-  id: string;
-  title: string;
-  description: string;
-  content: string;
-  category: string;
-  image_url: string | null;
-  reference_url: string | null;
-  created_at: string;
-  tags?: string[];
-}
+// Helper function to calculate reading time
+const calculateReadingTime = (content: string): number => {
+  const wordsPerMinute = 200;
+  const words = content.trim().split(/\s+/).length;
+  return Math.ceil(words / wordsPerMinute);
+};
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -62,6 +59,23 @@ const BlogPost = () => {
     fetchBlog();
   }, [id]);
 
+  // Calculate reading time
+  const readingTime = useMemo(() => {
+    if (!blog) return null;
+    if (blog.reading_time) return blog.reading_time;
+    return calculateReadingTime(blog.content);
+  }, [blog]);
+
+  // Get base URL for canonical and OG URLs
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://allrent-r.vercel.app';
+  const blogUrl = blog ? `${baseUrl}/blog/${blog.id}` : '';
+  
+  // Prepare SEO data
+  const seoTitle = blog?.seo_title || blog?.title || '';
+  const seoDescription = blog?.meta_description || blog?.description || '';
+  const seoImage = blog?.og_image || blog?.image_url || '';
+  const seoKeywords = blog?.meta_keywords || (blog?.tags ? blog.tags.join(', ') : '');
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white">
@@ -99,6 +113,23 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white">
+      {blog && (
+        <SEOHead
+          title={seoTitle}
+          description={seoDescription}
+          image={seoImage}
+          url={blogUrl}
+          type="article"
+          siteName="AllRentr - P2P Rental Marketplace India"
+          author={blog.author_name || undefined}
+          publishedTime={blog.created_at}
+          modifiedTime={blog.updated_at}
+          section={blog.category}
+          tags={blog.tags || []}
+          keywords={seoKeywords}
+          canonicalUrl={blogUrl}
+        />
+      )}
       <Navbar />
       
       {/* Hero Section */}
@@ -143,13 +174,13 @@ const BlogPost = () => {
           )}
 
           {/* Meta Info */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6 flex-wrap">
             <Badge className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white border-0">
               {blog.category}
             </Badge>
             <div className="flex items-center gap-2 text-[#660708]/70">
               <Calendar className="w-4 h-4" />
-              <time className="text-sm">
+              <time className="text-sm" dateTime={blog.created_at}>
                 {new Date(blog.created_at).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
@@ -157,6 +188,17 @@ const BlogPost = () => {
                 })}
               </time>
             </div>
+            {readingTime && (
+              <div className="flex items-center gap-2 text-[#660708]/70">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">{readingTime} min read</span>
+              </div>
+            )}
+            {blog.author_name && (
+              <div className="text-sm text-[#660708]/70">
+                By <span className="font-semibold">{blog.author_name}</span>
+              </div>
+            )}
           </div>
 
           {/* Title */}
@@ -173,14 +215,14 @@ const BlogPost = () => {
           <div className="w-20 h-1 bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full mb-8" />
 
           {/* Content */}
-          <div className="prose prose-lg max-w-none">
+          <article className="prose prose-lg max-w-none">
             <div 
               className="text-[#161A1D]/90 leading-relaxed whitespace-pre-wrap"
               style={{ fontSize: '1.125rem', lineHeight: '1.75' }}
             >
               {blog.content}
             </div>
-          </div>
+          </article>
 
           {/* Reference Link */}
           {blog.reference_url && (

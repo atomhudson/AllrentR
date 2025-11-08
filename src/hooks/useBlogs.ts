@@ -21,10 +21,14 @@ export const useBlogs = () => {
   return useQuery({
     queryKey: ['blogs'],
     queryFn: async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       const { data, error } = await supabase
         .from('blogs')
         .select('*')
         .eq('published', true)
+        .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false });
 
       if (error) throw error;

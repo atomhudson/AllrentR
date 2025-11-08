@@ -10,6 +10,13 @@ export const blogSchema = z.object({
   reference_url: z.string().url("Invalid URL format").optional().or(z.literal('')),
   published: z.boolean(),
   tags: z.array(z.string().trim()).optional(),
+  // SEO fields
+  seo_title: z.string().trim().max(200, "SEO title must be less than 200 characters").optional().or(z.literal('')),
+  meta_description: z.string().trim().max(500, "Meta description must be less than 500 characters").optional().or(z.literal('')),
+  meta_keywords: z.string().trim().max(500, "Keywords must be less than 500 characters").optional().or(z.literal('')),
+  og_image: z.string().url("Invalid OG image URL format").optional().or(z.literal('')),
+  author_name: z.string().trim().max(100, "Author name must be less than 100 characters").optional().or(z.literal('')),
+  reading_time: z.number().int().min(1, "Reading time must be at least 1 minute").max(1000, "Reading time too large").optional().nullable(),
 });
 
 // Influencer partner validation schema

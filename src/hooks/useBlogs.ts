@@ -15,6 +15,13 @@ export interface Blog {
   tags?: string[];
   updated_at: string;
   published: boolean;
+  // SEO fields
+  seo_title?: string | null;
+  meta_description?: string | null;
+  meta_keywords?: string | null;
+  og_image?: string | null;
+  author_name?: string | null;
+  reading_time?: number | null;
 }
 
 export const useBlogs = () => {

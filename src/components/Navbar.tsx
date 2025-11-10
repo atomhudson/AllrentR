@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
-import heroImage from '@/assets/Logo.png';
+import { useUnreadCount } from '@/hooks/useUnreadCount';
+import { Menu, X, User, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
+import heroImage from '@/assets/logo-remove.png';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -12,6 +14,7 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const unreadCount = useUnreadCount();
 
   const handleLogout = () => {
     logout();
@@ -45,6 +48,16 @@ export const Navbar = () => {
               className="font-medium w-full justify-start border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:shadow-lg hover:shadow-[#E5383B]/20"
             >
               List an Item
+            </Button>
+          </Link>
+          <Link to="/inbox" onClick={() => setOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200 relative">
+              <MessageCircle className="w-5 h-5 mr-2" /> Inbox
+              {unreadCount > 0 && (
+                <Badge className="ml-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
             </Button>
           </Link>
           <Link to="/profile" onClick={() => setOpen(false)}>
@@ -96,13 +109,16 @@ export const Navbar = () => {
           {/* Brand */}
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="relative">
-              <img 
-                src={heroImage} 
-                alt="AllRentR Logo" 
-                className="w-20 h-20 object-contain transition-transform duration-300 group-hover:scale-110" 
+              <img
+                src={heroImage}
+                alt="AllRentR Logo"
+                className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/0 via-[#E5383B]/5 to-[#E5383B]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/0 via-[#E5383B]/20 to-[#E5383B]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-xl"></div>
             </div>
+            <span className="text-[#000000] font-bold text-lg tracking-wide group-hover:text-[#E5383B] transition-all">
+              AllRentR
+            </span>
           </Link>
 
           {/* Desktop Menu */}
@@ -139,6 +155,21 @@ export const Navbar = () => {
                       className="border-2 border-[#E5383B] text-[#660708] hover:bg-[#E5383B] hover:text-[#F5F3F4] transition-all duration-300 hover:shadow-lg hover:shadow-[#E5383B]/30 font-medium hover:scale-105"
                     >
                       List an Item
+                    </Button>
+                  </Link>
+
+                  <Link to="/inbox">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="hover:text-[#E5383B] text-[#161A1D] hover:bg-[#E5383B]/10 transition-all duration-200 rounded-full relative"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white text-xs min-w-[18px] h-5 flex items-center justify-center px-1">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </Badge>
+                      )}
                     </Button>
                   </Link>
 

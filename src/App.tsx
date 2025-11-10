@@ -27,6 +27,7 @@ import CouponManagement from "./pages/CouponManagement";
 import PackageManagement from "./pages/PackageManagement";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 import OAuthCallback from "./components/OAuthCallback";
+import Inbox from "./pages/Inbox";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <NotificationBanner />
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -45,6 +51,7 @@ const App = () => (
             <Route path="/listings" element={<Listings />} />
             <Route path="/submit-listing" element={<SubmitListing />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/inbox" element={<Inbox />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/blogs" element={<BlogManagement />} />
             <Route path="/admin/ad-editor" element={<AdEditor />} />
@@ -59,7 +66,6 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
           <ElevenLabsWidget />

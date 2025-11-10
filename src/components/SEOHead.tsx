@@ -166,7 +166,7 @@ export const SEOHead = ({
         name: siteName,
         logo: {
           '@type': 'ImageObject',
-          url: image || 'https://allrent-r.vercel.app/logo.png',
+          url: image || 'https://res.cloudinary.com/dmq75b48d/image/upload/v1762800581/logo-remove_elajrc.png',
         },
       },
     };

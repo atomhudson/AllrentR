@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect  } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,6 +16,8 @@ import BannerCarousel from "@/components/BannerCarousel";
 import FilterSection from "@/components/FilterSection";
 import { useListings, incrementViews } from "@/hooks/useListings";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChat } from "@/hooks/useChat";
+import { ChatWindow } from "@/components/ChatWindow";
 import {
   MapPin,
   Eye,
@@ -23,6 +27,7 @@ import {
   Package,
   Tag,
   Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import {
   Carousel,
@@ -36,8 +41,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const Listings = () => {
+  const navigate = useNavigate();
   const { listings, loading } = useListings("approved");
   const { user } = useAuth();
+  const { getOrCreateConversation, joinConversation, conversations } = useChat();
   const [searchQuery, setSearchQuery] = useState("");
   const [pinCodeFilter, setPinCodeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -51,12 +58,109 @@ const Listings = () => {
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyListings, setNearbyListings] = useState<any[]>([]);
   const [distanceById, setDistanceById] = useState<Record<string, number>>({});
+  const [chatOpen, setChatOpen] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [otherUserProfile, setOtherUserProfile] = useState<any>(null);
   // const [testLoading] = useState(true);
 
   const handleViewListing = (listing: any) => {
     incrementViews(listing.id);
     setSelectedListing(listing);
   };
+
+  const handleStartChat = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to start a conversation with the owner",
+        variant: "destructive"
+      });
+      navigate("/login");
+      return;
+    }
+
+    if (!selectedListing) return;
+
+    // Check if user is the owner
+    if (selectedListing.owner_user_id === user.id) {
+      toast({
+        title: "Cannot chat with yourself",
+        description: "You cannot start a conversation for your own listing",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Check if conversation already exists
+      let conversation: any = existingConversation;
+      
+      if (!conversation) {
+        // Get or create conversation
+        conversation = await getOrCreateConversation(
+          selectedListing.id,
+          selectedListing.owner_user_id
+        );
+      }
+
+      if (conversation) {
+        // Determine which user profile to load
+        const isOwner = selectedListing.owner_user_id === user.id;
+        
+        // Try to get profile from existing conversation data first
+        let profile = null;
+        if (existingConversation?.other_user) {
+          profile = existingConversation.other_user;
+        } else {
+          // Fallback: try to fetch profile, but handle errors gracefully
+          const otherUserId = isOwner ? conversation.leaser_id : conversation.owner_id;
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('name, avatar_url')
+              .eq('id', otherUserId)
+              .maybeSingle();
+            
+            if (!error && data) {
+              profile = data;
+            }
+          } catch (err) {
+            console.error('Error fetching profile:', err);
+          }
+        }
+
+        // Set profile or use defaults
+        if (profile) {
+          setOtherUserProfile(profile);
+        } else {
+          setOtherUserProfile({
+            name: isOwner ? 'Leaser' : 'Owner',
+            avatar_url: null
+          });
+        }
+        
+        setCurrentConversationId(conversation.id);
+        joinConversation(conversation.id);
+        setChatOpen(true);
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Find existing conversation for selected listing
+  const existingConversation = useMemo(() => {
+    if (!selectedListing || !user) return null;
+    return conversations.find(
+      conv => conv.listing_id === selectedListing.id && 
+      (conv.owner_id === user.id || conv.leaser_id === user.id)
+    );
+  }, [conversations, selectedListing, user]);
 
   const debouncedSearch = useDebounce(searchQuery, 500);
   const debouncedPin = useDebounce(pinCodeFilter, 500);
@@ -710,18 +814,26 @@ const Listings = () => {
                     </div>
                   </div>
 
-                  {/* Contact Card */}
+                  {/* Chat Card */}
                   <div className="p-5 rounded-2xl bg-gradient-to-r from-[#F5F3F4] to-[#D3D3D3]/40 border border-[#B1A7A6]/20 shadow-inner space-y-3">
                     <h3 className="font-semibold text-lg text-[#161A1D]">
                       Contact Owner
                     </h3>
-                    <div className="flex items-center gap-2 text-sm text-[#660708]/80">
-                      <Phone size={16} />
-                      <span>{selectedListing.phone || "Not provided"}</span>
-                    </div>
-                    <Button className="w-full bg-gradient-to-r from-[#E5383B] via-[#BA181B] to-[#660708] hover:opacity-90 text-white rounded-xl py-2 font-medium shadow-md transition-all duration-300">
-                      Call Owner
+                    <p className="text-sm text-[#660708]/70">
+                      Start a conversation with the owner to discuss this listing
+                    </p>
+                    <Button 
+                      onClick={handleStartChat}
+                      className="w-full bg-gradient-to-r from-[#E5383B] via-[#BA181B] to-[#660708] hover:opacity-90 text-white rounded-xl py-2 font-medium shadow-md transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle size={18} />
+                      {existingConversation ? "Open Chat" : "Start Chat"}
                     </Button>
+                    {existingConversation && (
+                      <p className="text-xs text-[#660708]/60 text-center">
+                        You have an existing conversation
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -737,6 +849,34 @@ const Listings = () => {
                 />
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat Dialog */}
+      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+        <DialogContent className="max-w-4xl p-0 border-0 bg-transparent" aria-describedby="chat-description">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Chat with {otherUserProfile?.name || (selectedListing?.owner_user_id === user?.id ? "Leaser" : "Owner")}</DialogTitle>
+            <DialogDescription id="chat-description">
+              Start a conversation about {selectedListing?.product_name || 'this listing'}
+            </DialogDescription>
+          </DialogHeader>
+          {currentConversationId && selectedListing && otherUserProfile && (
+            <ChatWindow
+              conversationId={currentConversationId}
+              listingName={selectedListing.product_name}
+              otherUserName={otherUserProfile.name || (selectedListing.owner_user_id === user?.id ? "Leaser" : "Owner")}
+              otherUserAvatar={otherUserProfile.avatar_url}
+              onClose={() => {
+                setChatOpen(false);
+                setCurrentConversationId(null);
+                setOtherUserProfile(null);
+              }}
+              isOwner={selectedListing.owner_user_id === user?.id}
+              contactRequestStatus={existingConversation?.contact_request_status}
+              ownerPhone={selectedListing.phone}
+            />
           )}
         </DialogContent>
       </Dialog>

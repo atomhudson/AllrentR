@@ -24,16 +24,31 @@ export const Navbar = () => {
 
   const NavLinks = () => (
     <>
+      
+
+    
       <Link to="/listings" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           Browse Items
         </Button>
       </Link>
+
+      <Link to="/about" className="relative group px-4 py-2">
+  <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
+    About Us
+  </span>
+  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
+</Link>
+
       <Link to="/blog" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           Blog
         </Button>
       </Link>
+
+       
+ 
+
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           🏆 Leaderboard
@@ -127,6 +142,12 @@ export const Navbar = () => {
               <Link to="/listings" className="relative group px-4 py-2">
                 <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
                   Browse Items
+                </span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
+              </Link>
+               <Link to="/about" className="relative group px-4 py-2">
+                <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
+                  About us
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NotificationBanner } from "./components/NotificationBanner";
+import AboutPage from "./pages/AboutPage";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -28,6 +29,7 @@ import PackageManagement from "./pages/PackageManagement";
 import ElevenLabsWidget from "./components/ElevenLabsWidget";
 import OAuthCallback from "./components/OAuthCallback";
 import Inbox from "./pages/Inbox";
+import TermsAndConditionPage from "./pages/Terms&Condition";
 
 const queryClient = new QueryClient();
 
@@ -63,7 +65,10 @@ const App = () => (
             <Route path="/admin/coupons" element={<CouponManagement />} />
             <Route path="/manage-packages" element={<PackageManagement />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route  path="/about" element={<AboutPage />} />
             <Route path="/blog" element={<Blog />} />
+
+            <Route path="/terms-and-conditions" element={<TermsAndConditionPage />} />
             <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route path="*" element={<NotFound />} />

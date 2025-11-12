@@ -37,6 +37,17 @@ export const LoginNavbar = () => {
           Blog
         </Button>
       </Link>
+
+        <Link to="/about" onClick={() => setOpen(false)}>
+        <Button
+          variant="ghost"
+          className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
+        >
+          About us
+        </Button>
+      </Link>
+
+      
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button
           variant="ghost"
@@ -155,7 +166,14 @@ export const LoginNavbar = () => {
             <div className="flex items-center gap-4">
               <Link to="/listings" className="relative group px-3 py-2">
                 <span className="text-[#F5F3F4] group-hover:text-[#E5383B] font-medium transition-all">
-                  Browse
+                  Browse Items
+                </span>
+                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
+              </Link>
+
+               <Link to="/about" className="relative group px-3 py-2">
+                <span className="text-[#F5F3F4] group-hover:text-[#E5383B] font-medium transition-all">
+                  About us
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>

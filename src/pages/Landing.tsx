@@ -11,13 +11,16 @@ import {
 } from "lucide-react";
 import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 import Footer from "@/components/Footer";
-import TopProfilesSection from "@/components/TopProfilesSection";
-import InfluencerPartnersSection from "@/components/InfluencerPartnersSection";
+import { LoginNavbar } from "@/components/LoginNavbar";
+import { Suspense, lazy } from "react";
+import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import HowItWorks from "@/components/HowItWorks";
-import HeroSection from "@/components/HeroSection";
-import { LoginNavbar } from "@/components/LoginNavbar";
+
+const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
+const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
+const HowItWorks = lazy(() => import("@/components/HowItWorks"));
+
 
 const Landing = () => {
   const { user } = useAuth();
@@ -56,9 +59,13 @@ const Landing = () => {
 
       <HeroSection />
 
-      <TopProfilesSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100/50 rounded-xl mx-4 my-8" />}>
+        <TopProfilesSection />
+      </Suspense>
 
-      <InfluencerPartnersSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100/50 rounded-xl mx-4 my-8" />}>
+        <InfluencerPartnersSection />
+      </Suspense>
 
       <section
         id="features"
@@ -134,7 +141,9 @@ const Landing = () => {
       </section>
 
       <div id="how-it-works" className="content-visibility-auto">
-        <HowItWorks />
+        <Suspense fallback={<div className="h-96 w-full" />}>
+          <HowItWorks />
+        </Suspense>
       </div>
 
       <section className="py-32 relative overflow-hidden">

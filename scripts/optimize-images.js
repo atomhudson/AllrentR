@@ -25,10 +25,25 @@ async function optimizeImages() {
 
             console.log(`Optimizing ${file}...`);
 
+            let pipeline = sharp(inputPath);
+            let quality = 80;
+
+            // Specific rules
+            if (filename.toLowerCase().includes('hero') || filename.includes('dashboard')) {
+                pipeline = pipeline.resize({ width: 1000, withoutEnlargement: true });
+                quality = 75; // Lower quality for background/hero images
+            } else if (filename.toLowerCase().includes('logo')) {
+                pipeline = pipeline.resize({ width: 128, withoutEnlargement: true });
+                quality = 90; // Higher quality for logos
+                // Ensure we also make a .png version for the logo if it was a png (processed as webp here, but we might want to keep original or optimization logic for png is separate)
+                // actually the script converts everything TO webp.
+            } else {
+                pipeline = pipeline.resize({ width: 1920, withoutEnlargement: true });
+            }
+
             try {
-                await sharp(inputPath)
-                    .resize({ width: 1920, withoutEnlargement: true }) // Resize huge hero images
-                    .webp({ quality: 80 })
+                await pipeline
+                    .webp({ quality })
                     .toFile(webpPath);
 
                 console.log(`Generated ${filename}.webp`);

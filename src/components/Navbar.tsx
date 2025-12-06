@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { Menu, X, User, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
-import heroImage from '@/assets/logo-remove.png';
+import heroImage from '@/assets/logo-remove.webp';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -24,9 +24,9 @@ export const Navbar = () => {
 
   const NavLinks = () => (
     <>
-      
 
-    
+
+
       <Link to="/listings" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           Browse Items
@@ -34,11 +34,11 @@ export const Navbar = () => {
       </Link>
 
       <Link to="/about" className="relative group px-4 py-2">
-  <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
-    About Us
-  </span>
-  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
-</Link>
+        <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
+          About Us
+        </span>
+        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
+      </Link>
 
       <Link to="/blog" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
@@ -46,8 +46,8 @@ export const Navbar = () => {
         </Button>
       </Link>
 
-       
- 
+
+
 
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
@@ -145,20 +145,20 @@ export const Navbar = () => {
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>
-               <Link to="/about" className="relative group px-4 py-2">
+              <Link to="/about" className="relative group px-4 py-2">
                 <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
                   About us
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>
-              
+
               <Link to="/blog" className="relative group px-4 py-2">
                 <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
                   Blog
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>
-              
+
               <Link to="/leaderboard" className="relative group px-4 py-2">
                 <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
                   🏆 Leaderboard
@@ -180,9 +180,9 @@ export const Navbar = () => {
                   </Link>
 
                   <Link to="/inbox">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="hover:text-[#E5383B] text-[#161A1D] hover:bg-[#E5383B]/10 transition-all duration-200 rounded-full relative"
                     >
                       <MessageCircle className="w-5 h-5" />
@@ -195,9 +195,9 @@ export const Navbar = () => {
                   </Link>
 
                   <Link to="/profile">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="hover:text-[#E5383B] text-[#161A1D] hover:bg-[#E5383B]/10 transition-all duration-200 rounded-full"
                     >
                       <User className="w-5 h-5" />
@@ -206,9 +206,9 @@ export const Navbar = () => {
 
                   {isAdmin && (
                     <Link to="/admin">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="hover:text-[#E5383B] text-[#161A1D] hover:bg-[#E5383B]/10 transition-all duration-200 rounded-full"
                       >
                         <LayoutDashboard className="w-5 h-5" />
@@ -216,10 +216,10 @@ export const Navbar = () => {
                     </Link>
                   )}
 
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={handleLogout} 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
                     className="hover:text-[#E5383B] text-[#660708] hover:bg-[#E5383B]/10 transition-all duration-200 rounded-full"
                   >
                     <LogOut className="w-5 h-5" />
@@ -249,9 +249,9 @@ export const Navbar = () => {
           {isMobile && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="hover:bg-[#E5383B]/10 transition-colors duration-200 rounded-full"
                 >
                   {open ? (

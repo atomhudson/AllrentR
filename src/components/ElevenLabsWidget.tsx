@@ -7,20 +7,19 @@ const ElevenLabsWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Load the ElevenLabs script
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-    script.async = true;
-    script.type = 'text/javascript';
-    document.body.appendChild(script);
+    if (isOpen) {
+      // Load the ElevenLabs script only when widget is opened
+      const existingScript = document.querySelector('script[src="https://elevenlabs.io/convai-widget/index.js"]');
 
-    return () => {
-      // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://elevenlabs.io/convai-widget/index.js';
+        script.async = true;
+        script.type = 'text/javascript';
+        document.body.appendChild(script);
       }
-    };
-  }, []);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     // Create the custom element only when open
@@ -49,7 +48,7 @@ const ElevenLabsWidget = () => {
       {/* Voice Agent Widget - Small and Mobile Responsive */}
       {isOpen && (
         <div className="fixed bottom-28 md:bottom-32 right-4 md:right-6 z-50 animate-scale-in w-[280px] sm:w-[320px] md:w-[360px] max-h-[400px] md:max-h-[480px]">
-          <div 
+          <div
             ref={widgetRef}
             className="w-full h-full transition-all duration-300 rounded-2xl overflow-hidden shadow-elegant"
             style={{

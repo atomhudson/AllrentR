@@ -1,12 +1,27 @@
+import { useState, useRef, useEffect } from "react";
 import { useInfluencerPartners } from "@/hooks/useInfluencerPartners";
 import { useSectionVisibility } from "@/hooks/useTopProfiles";
 import { Star } from "lucide-react";
 import TeamCarousel from "./TeamCarousel";
 
 const InfluencerPartnersSection = () => {
-  const { data: partners, isLoading } = useInfluencerPartners();
-  const { data: visibility } = useSectionVisibility("influencer_partners");
-  
+  const [visible, setVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => sectionRef.current && observer.unobserve(sectionRef.current);
+  }, []);
+
+  const { data: partners, isLoading } = useInfluencerPartners({ enabled: visible });
+  // Wait, I didn't update useInfluencerPartners hook yet. I should do that first or concurrently.
+  // Assuming I will update it next.
+  const { data: visibility } = useSectionVisibility("influencer_partners", { enabled: visible });
+
   if (!visibility?.is_visible || isLoading || !partners?.length) return null;
 
   const teamMembers = partners.map(partner => ({
@@ -18,7 +33,7 @@ const InfluencerPartnersSection = () => {
     profile_url: partner.profile_url,
   }));
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-b from-white via-[#F5F3F4] to-white">
+    <section ref={sectionRef} className="relative py-32 overflow-hidden bg-gradient-to-b from-white via-[#F5F3F4] to-white">
       {/* Decorative Background */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#E5383B]/20 rounded-full blur-[120px] animate-pulse-slow" />

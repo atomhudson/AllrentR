@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "optimize-assets": "node scripts/optimize-images.js",
-    "build-opt": "npm run optimize-assets && node scripts/generate-sitemap.js && vite build"
+    "build-opt": "npm run optimize-assets && node scripts/generate-sitemap.js && vite build && node scripts/defer-css.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

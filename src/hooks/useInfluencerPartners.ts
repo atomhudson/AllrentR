@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useInfluencerPartners = () => {
+export const useInfluencerPartners = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['influencer-partners'],
     queryFn: async () => {
@@ -14,5 +14,6 @@ export const useInfluencerPartners = () => {
       if (error) throw error;
       return data;
     },
+    enabled: options?.enabled ?? true,
   });
 };

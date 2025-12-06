@@ -83,22 +83,45 @@
         gtag('js', new Date());
         gtag('config', 'G-RFDF45XBND');
     </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5002603351055656"
-        crossorigin="anonymous"></script>
+    <!-- Ads Performance Optimization -->
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+    <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
+
+    <script>
+        // Lazy load Google Ads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const script = document.createElement('script');
+                script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5002603351055656";
+                script.async = true;
+                script.crossOrigin = "anonymous";
+                document.head.appendChild(script);
+            }, 3000); // 3 seconds delay to prioritize LCP/TTI
+        });
+    </script>
     <!-- Critical CSS to prevent FOUC -->
     <style>
+        :root {
+            --font-inter: 'Inter', sans-serif;
+            --font-playfair: 'Playfair Display', serif;
+            --background: #0B090A;
+            --foreground: #F5F3F4;
+            --primary: #E5383B;
+        }
+
         body {
-            background-color: #0B090A;
-            color: #F5F3F4;
+            background-color: var(--background);
+            color: var(--foreground);
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-inter);
+            -webkit-font-smoothing: antialiased;
         }
 
         .skip-content {
             position: absolute;
             top: -40px;
             left: 0;
-            background: #E5383B;
+            background: var(--primary);
             color: white;
             padding: 8px;
             z-index: 100;
@@ -113,6 +136,20 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+        }
+
+        /* Critical Hero Styles to Prevent FOUC */
+        .hero-gradient {
+            background: linear-gradient(135deg, #660708, #A4161A, #BA181B);
+            min-height: 100vh;
+        }
+
+        .serif-heading {
+            font-family: var(--font-playfair);
+        }
+
+        h1 {
+            font-weight: 700;
         }
     </style>
 </head>

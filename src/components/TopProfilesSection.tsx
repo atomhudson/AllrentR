@@ -5,10 +5,12 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Flame, Trophy, Crown } from "lucide-react";
 
 const TopProfilesSection = () => {
-  const { data: profiles, isLoading } = useTopProfiles();
-  const { data: visibility } = useSectionVisibility("top_profiles");
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+
+  // Defer rendering until visible to prevent early fetching
+  const { data: profiles, isLoading } = useTopProfiles({ enabled: visible });
+  const { data: visibility } = useSectionVisibility("top_profiles", { enabled: visible });
 
   // Fade-in when section enters viewport
   useEffect(() => {
@@ -39,9 +41,8 @@ const TopProfilesSection = () => {
   return (
     <section
       ref={sectionRef}
-      className={`relative overflow-hidden min-h-[120vh] py-32 transition-all duration-1000 ease-out ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
-      } bg-gradient-to-b from-[#0B090A] via-[#161A1D] to-[#0B090A]`}
+      className={`relative overflow-hidden min-h-[120vh] py-32 transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
+        } bg-gradient-to-b from-[#0B090A] via-[#161A1D] to-[#0B090A]`}
     >
       {/* ---- Animated Background Glow ---- */}
       <div className="absolute inset-0 overflow-hidden">
@@ -70,9 +71,8 @@ const TopProfilesSection = () => {
       <div className="container mx-auto px-6 relative z-10">
         {/* ---- Header ---- */}
         <div
-          className={`text-center mb-20 transition-all duration-700 ${
-            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
+          className={`text-center mb-20 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            }`}
         >
           <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#E5383B]/15 to-[#BA181B]/15 rounded-full backdrop-blur-md shadow-inner mb-5">
             <span className="text-sm tracking-widest font-semibold text-[#E5383B]">
@@ -97,11 +97,10 @@ const TopProfilesSection = () => {
             {profiles.map((profile, index) => (
               <div
                 key={profile.id}
-                className={`group flex flex-col items-center gap-5 min-w-[200px] transition-all duration-700 ${
-                  visible
-                    ? "opacity-100 translate-y-0 animate-scale-in"
-                    : "opacity-0 translate-y-10"
-                }`}
+                className={`group flex flex-col items-center gap-5 min-w-[200px] transition-all duration-700 ${visible
+                  ? "opacity-100 translate-y-0 animate-scale-in"
+                  : "opacity-0 translate-y-10"
+                  }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="relative">

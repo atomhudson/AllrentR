@@ -29,14 +29,13 @@ async function optimizeImages() {
             let quality = 80;
 
             // Specific rules
+            // Specific rules
             if (filename.toLowerCase().includes('hero') || filename.includes('dashboard')) {
-                pipeline = pipeline.resize({ width: 1000, withoutEnlargement: true });
-                quality = 75; // Lower quality for background/hero images
+                pipeline = pipeline.resize({ width: 800, withoutEnlargement: true });
+                quality = 65; // High compression for LCP image
             } else if (filename.toLowerCase().includes('logo')) {
-                pipeline = pipeline.resize({ width: 128, withoutEnlargement: true });
-                quality = 90; // Higher quality for logos
-                // Ensure we also make a .png version for the logo if it was a png (processed as webp here, but we might want to keep original or optimization logic for png is separate)
-                // actually the script converts everything TO webp.
+                pipeline = pipeline.resize({ width: 96, withoutEnlargement: true });
+                quality = 80; // Reasonable quality for logos
             } else {
                 pipeline = pipeline.resize({ width: 1920, withoutEnlargement: true });
             }

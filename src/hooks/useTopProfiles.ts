@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useTopProfiles = () => {
+export const useTopProfiles = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['top-profiles'],
     queryFn: async () => {
@@ -15,10 +15,11 @@ export const useTopProfiles = () => {
       if (error) throw error;
       return data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 
-export const useSectionVisibility = (sectionName: string) => {
+export const useSectionVisibility = (sectionName: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['section-visibility', sectionName],
     queryFn: async () => {
@@ -31,5 +32,6 @@ export const useSectionVisibility = (sectionName: string) => {
       if (error) throw error;
       return data;
     },
+    enabled: options?.enabled ?? true,
   });
 };

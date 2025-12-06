@@ -83,11 +83,44 @@
     </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5002603351055656"
         crossorigin="anonymous"></script>
+    <!-- Critical CSS to prevent FOUC -->
+    <style>
+        body {
+            background-color: #0B090A;
+            color: #F5F3F4;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .skip-content {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #E5383B;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+
+        .skip-content:focus {
+            top: 0;
+        }
+
+        #root {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <a href="#main" class="skip-content">Skip to main content</a>
+    <div id="root">
+        <!-- Add a minimal header shell here if possible, but React will hydrate it -->
+    </div>
+    <script type="module" src="/src/main.tsx" defer></script>
 </body>
 
 </html>

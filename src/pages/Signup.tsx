@@ -129,7 +129,7 @@ export default function Signup() {
     }
 
     setLoading(true);
-    
+
     try {
       // Try signup directly to catch the specific error
       const { data: signupData, error: signupError } = await supabase.auth.signUp({
@@ -147,7 +147,7 @@ export default function Signup() {
 
       if (signupError) {
         const errorMsg = signupError.message?.toLowerCase() || '';
-        const isDuplicateEmail = 
+        const isDuplicateEmail =
           errorMsg.includes('already registered') ||
           errorMsg.includes('already exists') ||
           errorMsg.includes('user already') ||
@@ -157,9 +157,9 @@ export default function Signup() {
         if (isDuplicateEmail) {
           // Email already exists - go back to step 1 and show error
           setStep(1);
-          setErrors(prev => ({ 
-            ...prev, 
-            email: 'This email is already registered. Please login instead.' 
+          setErrors(prev => ({
+            ...prev,
+            email: 'This email is already registered. Please login instead.'
           }));
           toast({
             title: "Email already registered",
@@ -200,30 +200,30 @@ export default function Signup() {
   };
 
   const handleGoogleLogin = async () => {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-  
-        if (error) {
-          toast({
-            title: "Google Login Failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Google login error:", error);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
         toast({
-          title: "Login Failed",
-          description: "Failed to login with Google",
+          title: "Google Login Failed",
+          description: error.message,
           variant: "destructive",
         });
       }
-    };
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast({
+        title: "Login Failed",
+        description: "Failed to login with Google",
+        variant: "destructive",
+      });
+    }
+  };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
@@ -238,14 +238,14 @@ export default function Signup() {
       {/* Animated Background */}
       <LoginNavbar />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
+        <div
           className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20"
           style={{
             background: 'radial-gradient(circle, #E5383B, transparent)',
             animation: 'float 18s ease-in-out infinite'
           }}
         />
-        <div 
+        <div
           className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[140px] opacity-15"
           style={{
             background: 'radial-gradient(circle, #BA181B, transparent)',
@@ -265,7 +265,7 @@ export default function Signup() {
           />
         </div>
 
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             background: 'linear-gradient(135deg, rgba(229, 56, 59, 0.45), rgba(11, 9, 10, 0.85))'
@@ -274,7 +274,7 @@ export default function Signup() {
 
         <div className="relative z-10 flex flex-col justify-end p-12 lg:p-16">
           <div className="space-y-6">
-            <div 
+            <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-xl"
               style={{
                 background: 'rgba(229, 56, 59, 0.2)',
@@ -288,7 +288,7 @@ export default function Signup() {
             <h1 className="text-5xl lg:text-6xl font-black text-[#F5F3F4] leading-tight">
               Start Your
               <br />
-              <span 
+              <span
                 style={{
                   background: 'linear-gradient(135deg, #E5383B, #BA181B)',
                   WebkitBackgroundClip: 'text',
@@ -304,7 +304,7 @@ export default function Signup() {
             </p>
 
             <div className="grid grid-cols-2 gap-6 pt-8">
-              <div 
+              <div
                 className="p-6 rounded-2xl backdrop-blur-xl"
                 style={{
                   background: 'rgba(22, 26, 29, 0.5)',
@@ -315,7 +315,7 @@ export default function Signup() {
                 <div className="text-xl font-black text-[#F5F3F4]">Secure</div>
                 <div className="text-sm text-[#B1A7A6]">Bank-level encryption</div>
               </div>
-              <div 
+              <div
                 className="p-6 rounded-2xl backdrop-blur-xl"
                 style={{
                   background: 'rgba(22, 26, 29, 0.5)',
@@ -339,12 +339,11 @@ export default function Signup() {
             <div className="flex items-center justify-center gap-3">
               {[1, 2, 3, 4].map((s) => (
                 <div key={s} className="flex items-center">
-                  <div 
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${
-                      step >= s ? 'scale-110' : 'scale-100'
-                    }`}
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${step >= s ? 'scale-110' : 'scale-100'
+                      }`}
                     style={{
-                      background: step >= s 
+                      background: step >= s
                         ? 'linear-gradient(135deg, #E5383B, #BA181B)'
                         : 'rgba(177, 167, 166, 0.2)',
                       color: step >= s ? '#F5F3F4' : '#B1A7A6',
@@ -354,10 +353,10 @@ export default function Signup() {
                     {step > s ? <Check className="w-5 h-5" /> : s}
                   </div>
                   {s < 4 && (
-                    <div 
+                    <div
                       className="w-8 h-1 mx-2 rounded-full transition-all duration-500"
                       style={{
-                        background: step > s 
+                        background: step > s
                           ? 'linear-gradient(90deg, #E5383B, #BA181B)'
                           : 'rgba(177, 167, 166, 0.2)'
                       }}
@@ -372,7 +371,7 @@ export default function Signup() {
           </div>
 
           {/* Card */}
-          <div 
+          <div
             className="rounded-3xl p-8 backdrop-blur-2xl"
             style={{
               background: 'linear-gradient(135deg, rgba(245, 243, 244, 0.1), rgba(211, 211, 211, 0.05))',
@@ -414,6 +413,7 @@ export default function Signup() {
                             onChange={handleChange}
                             placeholder="Full name"
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="Full Name"
                           />
                         </div>
                       </div>
@@ -436,6 +436,7 @@ export default function Signup() {
                             onChange={handleChange}
                             placeholder="your@email.com"
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="Email Address"
                           />
                         </div>
                       </div>
@@ -476,6 +477,7 @@ export default function Signup() {
                             placeholder="10-digit mobile"
                             maxLength={10}
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="Phone Number"
                           />
                         </div>
                       </div>
@@ -499,6 +501,7 @@ export default function Signup() {
                             placeholder="6-digit PIN code"
                             maxLength={6}
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="PIN Code"
                           />
                         </div>
                       </div>
@@ -541,8 +544,9 @@ export default function Signup() {
                             onChange={handleChange}
                             placeholder="Create password (8+ chars)"
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="Create Password"
                           />
-                          <button onClick={() => setShowPassword(!showPassword)} className="text-[#B1A7A6] hover:text-[#E5383B]">
+                          <button onClick={() => setShowPassword(!showPassword)} className="text-[#B1A7A6] hover:text-[#E5383B]" aria-label={showPassword ? "Hide password" : "Show password"}>
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>
                         </div>
@@ -565,8 +569,9 @@ export default function Signup() {
                             onChange={handleChange}
                             placeholder="Confirm password"
                             className="flex-1 bg-transparent text-[#F5F3F4] text-base outline-none placeholder:text-[#B1A7A6]"
+                            aria-label="Confirm Password"
                           />
-                          <button onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-[#B1A7A6] hover:text-[#E5383B]">
+                          <button onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-[#B1A7A6] hover:text-[#E5383B]" aria-label={showConfirmPassword ? "Hide password" : "Show password"}>
                             {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>
                         </div>
@@ -602,15 +607,18 @@ export default function Signup() {
                         style={{
                           background: agreedToTerms ? 'linear-gradient(135deg, #E5383B, #BA181B)' : 'rgba(177, 167, 166, 0.2)',
                           border: agreedToTerms ? 'none' : '2px solid rgba(177, 167, 166, 0.4)'
-                        }}>
+                        }}
+                        aria-label="Agree to Terms and Conditions"
+                        aria-pressed={agreedToTerms}
+                      >
                         {agreedToTerms && <Check className="w-4 h-4 text-[#F5F3F4] m-auto" />}
                       </button>
                       <div className="flex-1">
                         <p className="text-sm text-[#D3D3D3] leading-relaxed">
                           I agree to the{' '}
                           <TermsDialog>
-                            <Button 
-                              variant="link" 
+                            <Button
+                              variant="link"
                               className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline p-0 h-auto"
                             >
                               Terms and Conditions
@@ -618,8 +626,8 @@ export default function Signup() {
                           </TermsDialog>
                           {' '}and{' '}
                           <TermsDialog>
-                            <Button 
-                              variant="link" 
+                            <Button
+                              variant="link"
                               className="text-[#E5383B] hover:text-[#BA181B] font-semibold underline p-0 h-auto"
                             >
                               Privacy Policy
@@ -658,31 +666,32 @@ export default function Signup() {
               )}
             </div>
             <div className="text-center mt-8 pt-6" style={{ borderTop: '1px solid rgba(177, 167, 166, 0.2)' }}>
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4]"
-                >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  Sign in with Google
-                </button>
-                <br />
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4]"
+                aria-label="Sign up with Google"
+              >
+                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
+                </svg>
+                Sign in with Google
+              </button>
+              <br />
               <p className="text-sm text-[#B1A7A6]">
                 Already have an account?{' '}
                 <Link to="/login" className="text-[#E5383B] hover:text-[#BA181B] font-semibold transition-colors">Login here</Link>

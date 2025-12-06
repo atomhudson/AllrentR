@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
-import heroImage from "@/assets/logo-remove.png";
+import heroImage from "@/assets/logo-remove.webp";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -38,7 +38,7 @@ export const LoginNavbar = () => {
         </Button>
       </Link>
 
-        <Link to="/about" onClick={() => setOpen(false)}>
+      <Link to="/about" onClick={() => setOpen(false)}>
         <Button
           variant="ghost"
           className="font-medium w-full justify-start text-[#F5F3F4] hover:text-[#E5383B] hover:bg-[#E5383B]/10 transition-all duration-200"
@@ -47,7 +47,7 @@ export const LoginNavbar = () => {
         </Button>
       </Link>
 
-      
+
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button
           variant="ghost"
@@ -125,7 +125,7 @@ export const LoginNavbar = () => {
         shadow-md shadow-black/30
         transition-all duration-500
         "
-      >
+    >
       {/* Glowing Background Accent */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         <div
@@ -152,6 +152,8 @@ export const LoginNavbar = () => {
               <img
                 src={heroImage}
                 alt="AllRentR Logo"
+                width="64"
+                height="64"
                 className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/0 via-[#E5383B]/20 to-[#E5383B]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-xl"></div>
@@ -171,7 +173,7 @@ export const LoginNavbar = () => {
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>
 
-               <Link to="/about" className="relative group px-3 py-2">
+              <Link to="/about" className="relative group px-3 py-2">
                 <span className="text-[#F5F3F4] group-hover:text-[#E5383B] font-medium transition-all">
                   About us
                 </span>

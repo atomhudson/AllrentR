@@ -190,9 +190,8 @@ export default function Login() {
               {[1, 2].map((s) => (
                 <div key={s} className="flex items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                      step >= s ? "scale-110" : "scale-100"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${step >= s ? "scale-110" : "scale-100"
+                      }`}
                     style={{
                       background:
                         step >= s
@@ -245,6 +244,7 @@ export default function Login() {
                           onChange={handleChange}
                           placeholder="your@email.com"
                           className="flex-1 bg-transparent text-[#F5F3F4] outline-none placeholder:text-[#B1A7A6]"
+                          aria-label="Email address"
                         />
                       </div>
                     </div>
@@ -316,8 +316,9 @@ export default function Login() {
                 <button
                   onClick={handleGoogleLogin}
                   className="w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 bg-white/10 border border-[#B1A7A6]/30 text-[#F5F3F4] hover:bg-white/15 transition-colors"
+                  aria-label="Sign in with Google"
                 >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -373,11 +374,13 @@ export default function Login() {
                           onChange={handleChange}
                           placeholder="Enter password"
                           className="flex-1 bg-transparent text-[#F5F3F4] outline-none placeholder:text-[#B1A7A6]"
+                          aria-label="Password"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="text-[#B1A7A6] hover:text-[#E5383B]"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
                             <EyeOff className="w-5 h-5" />

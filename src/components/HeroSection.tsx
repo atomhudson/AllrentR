@@ -8,7 +8,8 @@ import {
   Zap,
   Package,
 } from "lucide-react";
-import heroImage from "@/assets/heroimage.mp4";
+import heroVideo from "@/assets/heroimage.mp4";
+import heroPoster from "@/assets/hero-image.webp";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -164,12 +165,14 @@ export default function StartupHeroSection() {
 
               <div className="relative rounded-2xl overflow-hidden">
                 <video
-                  src={heroImage}
+                  src={heroVideo}
+                  poster={heroPoster}
                   autoPlay
                   loop
                   muted
                   playsInline
                   className="w-full h-[500px] object-cover rounded-2xl"
+                  aria-label="AllRentR promotional video showing simplified rental process"
                 >
                   Your browser does not support the video tag.
                 </video>

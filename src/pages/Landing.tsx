@@ -52,7 +52,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">
-      <LoginNavbar/>
+      <LoginNavbar />
 
       <HeroSection />
 
@@ -133,7 +133,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <div id="how-it-works">
+      <div id="how-it-works" className="content-visibility-auto">
         <HowItWorks />
       </div>
 
@@ -189,7 +189,7 @@ const Landing = () => {
               they need at unbeatable prices.
             </p>
             <div className="flex flex-wrap justify-center gap-5 pt-6">
-              <button 
+              <button
                 onClick={() => !user && navigate("/signup")}
                 className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden"
               >
@@ -200,7 +200,7 @@ const Landing = () => {
                 </span>
               </button>
 
-              <button 
+              <button
                 onClick={() => navigate("/submit-listing")}
                 className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden"
               >
@@ -264,7 +264,9 @@ const Landing = () => {
         </div>
       </section>
 
-      <Footer />
+      <div className="content-visibility-auto">
+        <Footer />
+      </div>
 
       <style>{`
                 @keyframes blob {

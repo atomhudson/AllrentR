@@ -51,14 +51,17 @@ export default function StartupHeroSection() {
         />
         <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-[#660708] rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse-slow" />
         <div className="absolute inset-0 opacity-5">
-          <div className="grid grid-cols-12 gap-8 h-full p-8">
-            {[...Array(48)].map((_, i) => (
-              <div
-                key={i}
-                className="w-2 h-2 bg-[#F5F3F4] rounded-full animate-twinkle"
-                style={{ animationDelay: `${i * 0.1}s` }}
-              />
-            ))}
+          {/* Optimized Stars - Reduced Count for Performance */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="grid grid-cols-6 gap-20 h-full p-8">
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 bg-[#F5F3F4] rounded-full animate-twinkle"
+                  style={{ animationDelay: `${i * 0.3}s` }}
+                />
+              ))}
+            </div>
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-[#161A1D]/20 to-[#161A1D]/60" />
@@ -163,7 +166,16 @@ export default function StartupHeroSection() {
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-[#E5383B] to-[#BA181B] rounded-2xl rotate-12 opacity-80 blur-sm" />
               <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-gradient-to-br from-[#BA181B] to-[#660708] rounded-2xl -rotate-12 opacity-60 blur-sm" />
 
-              <div className="relative rounded-2xl overflow-hidden">
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] md:aspect-video">
+                {/* LCP Optimization: Preload Poster via hidden img */}
+                <img
+                  src={heroPoster}
+                  alt="Hero Poster"
+                  className="absolute inset-0 w-full h-full object-cover -z-10"
+                  // @ts-ignore
+                  fetchPriority="high"
+                />
+
                 <video
                   src={heroVideo}
                   poster={heroPoster}
@@ -171,7 +183,7 @@ export default function StartupHeroSection() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-[500px] object-cover rounded-2xl"
+                  className="w-full h-full object-cover rounded-2xl"
                   aria-label="AllRentR promotional video showing simplified rental process"
                 >
                   Your browser does not support the video tag.
@@ -286,92 +298,7 @@ export default function StartupHeroSection() {
 
       <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B090A] to-transparent pointer-events-none" />
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; }
-        .serif-heading { font-family: 'Playfair Display', serif; }
-        
-        @keyframes float { 
-          0%, 100% { transform: translateY(0px); } 
-          50% { transform: translateY(-20px); } 
-        }
-        @keyframes float-delayed { 
-          0%, 100% { transform: translateY(0px); } 
-          50% { transform: translateY(-15px); } 
-        }
-        @keyframes float-slow { 
-          0%, 100% { transform: translate(0, 0); } 
-          50% { transform: translate(-30px, -30px); } 
-        }
-        @keyframes float-slower { 
-          0%, 100% { transform: translate(0, 0); } 
-          50% { transform: translate(30px, 30px); } 
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.15; transform: scale(1); }
-          50% { opacity: 0.25; transform: scale(1.05); }
-        }
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes slide-in-left {
-          from { opacity: 0; transform: translateX(-40px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slide-in-right {
-          from { opacity: 0; transform: translateX(40px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
 
-        @keyframes floatSlow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-        }
-
-        .animate-float-slow {
-          animation: floatSlow 3.5s ease-in-out infinite;
-        }
-        
-        .animate-float { 
-          animation: float 4s ease-in-out infinite; 
-        }
-        .animate-float-delayed { 
-          animation: float-delayed 4s ease-in-out infinite; 
-          animation-delay: 0.5s;
-        }
-        .animate-float-slow { animation: float-slow 15s ease-in-out infinite; }
-        .animate-float-slower { animation: float-slower 20s ease-in-out infinite; }
-        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
-        .animate-twinkle { animation: twinkle 3s ease-in-out infinite; }
-        .animate-slide-in-left { animation: slide-in-left 0.8s ease-out; }
-        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out; }
-        
-        .glass-card {
-          background: linear-gradient(135deg, rgba(245, 243, 244, 0.08), rgba(177, 167, 166, 0.05));
-          backdrop-filter: blur(20px);
-        }
-        .glass-card-strong {
-          background: linear-gradient(135deg, rgba(245, 243, 244, 0.12), rgba(177, 167, 166, 0.08));
-          backdrop-filter: blur(30px);
-        }
-        .gradient-text {
-          background: linear-gradient(135deg, #E5383B 0%, #F5F3F4 50%, #E5383B 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmer 3s ease-in-out infinite;
-        }
-        @keyframes shimmer {
-          0%, 100% { background-position: 0% center; }
-          50% { background-position: 100% center; }
-        }
-        .bg-gradient-radial {
-          background: radial-gradient(circle at center, var(--tw-gradient-stops));
-        }
-      `}</style>
     </div>
   );
 }

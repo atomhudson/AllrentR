@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface Listing {
   id: string;
+  display_id?: string;
   owner_user_id: string;
   product_name: string;
   description: string;

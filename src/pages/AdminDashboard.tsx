@@ -320,6 +320,10 @@ const AdminDashboard = () => {
               <Package className="w-6 h-6" />
               <span className="text-sm font-medium">Packages</span>
             </Button>
+            <Button onClick={() => navigate('/admin/boost-packages')} variant="outline" className="h-24 flex-col gap-2">
+              <TrendingUp className="w-6 h-6" />
+              <span className="text-sm font-medium">Boost Pkg</span>
+            </Button>
           </div>
         </div>
 

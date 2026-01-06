@@ -279,3 +279,76 @@
 .animate-float-slow-transform {
   animation: floatSlow 3.5s ease-in-out infinite;
 }
+
+/* Pinterest Masonry Grid */
+.masonry-grid {
+  column-count: 3;
+  column-gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry-grid {
+    column-count: 1;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #E5383B, #BA181B);
+  color: white;
+  box-shadow: 0 4px 15px rgba(229, 56, 59, 0.3);
+}
+
+.pagination-btn:not(.active) {
+  background: white;
+  border: 1px solid #E5E5E5;
+  color: #660708;
+}
+
+.pagination-btn:not(.active):hover:not(:disabled) {
+  border-color: #E5383B;
+  color: #E5383B;
+}

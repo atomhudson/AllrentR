@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Linkedin, Link2, Share2 } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Link2, Share2, Instagram } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -6,6 +6,14 @@ import { toast } from "@/hooks/use-toast";
 interface ShareButtonsProps {
     url: string;
     title: string;
+}
+
+interface ShareLink {
+    name: string;
+    icon: JSX.Element;
+    href: string;
+    color: string;
+    onClick?: () => void;
 }
 
 export const ShareButtons = ({ url, title }: ShareButtonsProps) => {
@@ -31,7 +39,27 @@ export const ShareButtons = ({ url, title }: ShareButtonsProps) => {
         }
     };
 
-    const shareLinks = [
+    const handleInstagramShare = async () => {
+        // Instagram doesn't support direct web sharing
+        // Copy to clipboard with Instagram-friendly message
+        const instagramText = `🏠 Check out "${title}" on AllRentr!\n\n${url}\n\n#AllRentr #Rental #Marketplace`;
+        try {
+            await navigator.clipboard.writeText(instagramText);
+            toast({
+                title: "Ready for Instagram!",
+                description: "Caption copied! Paste it in your Instagram post or story.",
+            });
+        } catch (err) {
+            console.error("Failed to copy:", err);
+            toast({
+                title: "Couldn't copy",
+                description: "Please copy the link manually.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const shareLinks: ShareLink[] = [
         {
             name: "WhatsApp",
             icon: (
@@ -51,6 +79,13 @@ export const ShareButtons = ({ url, title }: ShareButtonsProps) => {
             ),
             href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
             color: "hover:bg-[#25D366]/10 hover:text-[#25D366]",
+        },
+        {
+            name: "Instagram",
+            icon: <Instagram className="w-4 h-4" />,
+            href: "#",
+            color: "hover:bg-[#E1306C]/10 hover:text-[#E1306C]",
+            onClick: handleInstagramShare,
         },
         {
             name: "Twitter",
@@ -109,13 +144,17 @@ export const ShareButtons = ({ url, title }: ShareButtonsProps) => {
                 <a
                     key={link.name}
                     href={link.href}
-                    target="_blank"
+                    target={link.onClick ? undefined : "_blank"}
                     rel="noopener noreferrer"
-                    className={`p-2 rounded-full transition-colors ${link.color} text-muted-foreground flex items-center justify-center`}
+                    className={`p-2 rounded-full transition-colors ${link.color} text-muted-foreground flex items-center justify-center cursor-pointer`}
                     title={`Share on ${link.name}`}
                     onClick={(e) => {
-                        // Prevent default if href is invalid or empty
-                        if (!link.href) e.preventDefault();
+                        if (link.onClick) {
+                            e.preventDefault();
+                            link.onClick();
+                        } else if (!link.href || link.href === "#") {
+                            e.preventDefault();
+                        }
                     }}
                 >
                     {link.icon}

@@ -16,6 +16,7 @@ const Landing = lazy(() => import("./pages/Landing"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Login = lazy(() => import("./pages/Login"));
 const Listings = lazy(() => import("./pages/Listings"));
+const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const SubmitListing = lazy(() => import("./pages/SubmitListing"));
 const AIListing = lazy(() => import("./pages/AIListing"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -35,6 +36,8 @@ const CouponManagement = lazy(() => import("./pages/CouponManagement"));
 const PackageManagement = lazy(() => import("./pages/PackageManagement"));
 const Inbox = lazy(() => import("./pages/Inbox"));
 const TermsAndConditionPage = lazy(() => import("./pages/Terms&Condition"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const BoostPackageManagement = lazy(() => import("./pages/BoostPackageManagement"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen w-full bg-background">
@@ -62,7 +65,9 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/listings" element={<Listings />} />
+              <Route path="/listings/:slugId" element={<ListingDetail />} />
               <Route path="/submit-listing" element={<SubmitListing />} />
               <Route path="/submit-listing-ai" element={<AIListing />} />
               <Route path="/profile" element={<Profile />} />
@@ -76,6 +81,7 @@ const App = () => (
               <Route path="/admin/leaderboard" element={<LeaderboardManagement />} />
               <Route path="/admin/notifications" element={<NotificationManagement />} />
               <Route path="/admin/coupons" element={<CouponManagement />} />
+              <Route path="/admin/boost-packages" element={<BoostPackageManagement />} />
               <Route path="/manage-packages" element={<PackageManagement />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/about" element={<AboutPage />} />

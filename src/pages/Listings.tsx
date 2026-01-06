@@ -2,37 +2,23 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Navbar } from "@/components/Navbar";
-import { RatingCard } from "@/components/RatingCard";
 import { AdPopup } from "@/components/AdPopup";
 import BannerCarousel from "@/components/BannerCarousel";
 import FilterSection from "@/components/FilterSection";
 import { useListings, incrementViews } from "@/hooks/useListings";
 import { useAuth } from "@/contexts/AuthContext";
-import { useChat } from "@/hooks/useChat";
-import { ChatWindow } from "@/components/ChatWindow";
 import {
   MapPin,
   Eye,
   Star,
-  Phone,
-  User,
   Package,
   Tag,
   Sparkles,
-  MessageCircle,
   Heart,
-  Share2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { ShareButtons } from "@/components/ShareButtons";
-import { ListingQRCode } from "@/components/ListingQRCode";
 import {
   Carousel,
   CarouselContent,
@@ -49,21 +35,10 @@ const Listings = () => {
   const { listings, loading } = useListings("approved");
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const listingIdFromUrl = searchParams.get("id");
 
-  useEffect(() => {
-    if (listingIdFromUrl && listings.length > 0) {
-      const listing = listings.find(l => l.id === listingIdFromUrl);
-      if (listing) {
-        setSelectedListing(listing);
-      }
-    }
-  }, [listingIdFromUrl, listings]);
-  const { getOrCreateConversation, joinConversation, conversations } = useChat();
   const [searchQuery, setSearchQuery] = useState("");
   const [pinCodeFilter, setPinCodeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [selectedListing, setSelectedListing] = useState<any>(null);
   const [clusterMode, setClusterMode] = useState<"none" | "city" | "pin" | "geo">("none");
   const [selectedClusterItems, setSelectedClusterItems] = useState<any[] | null>(null);
   const [nearbyEnabled, setNearbyEnabled] = useState(false);
@@ -73,9 +48,6 @@ const Listings = () => {
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyListings, setNearbyListings] = useState<any[]>([]);
   const [distanceById, setDistanceById] = useState<Record<string, number>>({});
-  const [chatOpen, setChatOpen] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [otherUserProfile, setOtherUserProfile] = useState<any>(null);
 
   // New filters and sort
   const [minPrice, setMinPrice] = useState<number>(0);
@@ -84,6 +56,10 @@ const Listings = () => {
 
   // Wishlist state
   const [wishlist, setWishlist] = useState<string[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     if (user) {
@@ -138,102 +114,15 @@ const Listings = () => {
 
   const handleViewListing = (listing: any) => {
     incrementViews(listing.id);
-    setSelectedListing(listing);
+    // Generate SEO-friendly slug from product name
+    const slug = listing.product_name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    // Use display_id with hyphens for URL (converted from PROD_xxx to PROD-xxx)
+    const urlId = (listing.display_id || listing.id).replace('_', '-');
+    navigate(`/listings/${slug}-${urlId}`);
   };
-
-  const handleStartChat = async () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login to start a conversation with the owner",
-        variant: "destructive"
-      });
-      navigate("/login");
-      return;
-    }
-
-    if (!selectedListing) return;
-
-    // Check if user is the owner
-    if (selectedListing.owner_user_id === user.id) {
-      toast({
-        title: "Cannot chat with yourself",
-        description: "You cannot start a conversation for your own listing",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      // Check if conversation already exists
-      let conversation: any = existingConversation;
-
-      if (!conversation) {
-        // Get or create conversation
-        conversation = await getOrCreateConversation(
-          selectedListing.id,
-          selectedListing.owner_user_id
-        );
-      }
-
-      if (conversation) {
-        // Determine which user profile to load
-        const isOwner = selectedListing.owner_user_id === user.id;
-
-        // Try to get profile from existing conversation data first
-        let profile = null;
-        if (existingConversation?.other_user) {
-          profile = existingConversation.other_user;
-        } else {
-          // Fallback: try to fetch profile, but handle errors gracefully
-          const otherUserId = isOwner ? conversation.leaser_id : conversation.owner_id;
-          try {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('name, avatar_url')
-              .eq('id', otherUserId)
-              .maybeSingle();
-
-            if (!error && data) {
-              profile = data;
-            }
-          } catch (err) {
-            console.error('Error fetching profile:', err);
-          }
-        }
-
-        // Set profile or use defaults
-        if (profile) {
-          setOtherUserProfile(profile);
-        } else {
-          setOtherUserProfile({
-            name: isOwner ? 'Leaser' : 'Owner',
-            avatar_url: null
-          });
-        }
-
-        setCurrentConversationId(conversation.id);
-        joinConversation(conversation.id);
-        setChatOpen(true);
-      }
-    } catch (error) {
-      console.error('Error starting chat:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start conversation",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Find existing conversation for selected listing
-  const existingConversation = useMemo(() => {
-    if (!selectedListing || !user) return null;
-    return conversations.find(
-      conv => conv.listing_id === selectedListing.id &&
-        (conv.owner_id === user.id || conv.leaser_id === user.id)
-    );
-  }, [conversations, selectedListing, user]);
 
   const debouncedSearch = useDebounce(searchQuery, 500);
   const debouncedPin = useDebounce(pinCodeFilter, 500);
@@ -295,6 +184,28 @@ const Listings = () => {
   const filteredListings = clusterFiltered !== null
     ? clusterFiltered
     : (nearbyEnabled ? nearbyFiltered : baseFiltered);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, debouncedPin, categoryFilter, minPrice, maxPrice, sortBy, nearbyEnabled, clusterMode]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedListings = filteredListings.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to listings section
+    setTimeout(() => {
+      const listingsSection = document.getElementById('listings-section');
+      if (listingsSection) {
+        listingsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
 
   // Haversine helper for fallback distance calculations
   const haversineMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -572,19 +483,19 @@ const Listings = () => {
 
       {/* Decorative soft glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-32 left-10 w-72 h-72 bg-[#E5383B]/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-0 right-20 w-96 h-96 bg-[#BA181B]/10 rounded-full blur-3xl animate-float delay-2000" />
+        <div className="absolute top-32 left-10 w-72 h-72 bg-[#E5383B]/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-[#BA181B]/8 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 pt-28 pb-20 relative z-10">
-        <div className="mb-16 text-center space-y-4 animate-fade-in">
-          <h1 className="text-5xl font-serif font-bold text-[#161A1D]">
+        <div className="mb-12 text-center space-y-4 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#161A1D]">
             Browse Premium Items
           </h1>
-          <p className="text-lg text-[#660708]/70">
+          <p className="text-lg text-[#660708]/70 max-w-lg mx-auto">
             Discover verified rentals from trusted owners near you
           </p>
-          <div className="w-20 h-[3px] mx-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full" />
+          <div className="w-16 h-1 mx-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full" />
         </div>
 
         <BannerCarousel />
@@ -727,270 +638,193 @@ const Listings = () => {
               </div>
             )
           ) : filteredListings.length === 0 ? (
-            <div className="text-center py-20 animate-fade-in">
-              <p className="text-xl text-[#660708]/70">
-                No listings found. Be the first to list an item!
+            <div className="text-center py-24 animate-fade-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <Package className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-lg font-medium text-gray-900 mb-1">
+                No listings found
+              </p>
+              <p className="text-sm text-gray-500">
+                Be the first to list an item in this category!
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredListings.map((listing, index) => (
-                <Card
-                  key={listing.id}
-                  onClick={() => handleViewListing(listing)}
-                  className="group bg-white border border-[#E5E5E5] hover:border-[#E5383B]/50 hover:shadow-[0_8px_30px_rgba(229,56,59,0.15)] transition-all duration-500 rounded-2xl overflow-hidden hover:-translate-y-2 cursor-pointer"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Image Section */}
-                  <div className="relative h-56 overflow-hidden">
-                    {listing.images?.length > 0 ? (
-                      <Carousel className="w-full h-full">
-                        <CarouselContent>
-                          {listing.images.map((image, i) => (
-                            <CarouselItem key={i}>
+            <>
+              {/* Showing count */}
+              <div className="mb-6 flex items-center justify-between">
+                <p className="text-sm text-[#660708]/70">
+                  Showing <span className="font-semibold text-[#161A1D]">{startIndex + 1}-{Math.min(endIndex, filteredListings.length)}</span> of <span className="font-semibold text-[#E5383B]">{filteredListings.length}</span> items
+                </p>
+              </div>
+
+              {/* Pinterest Masonry Grid */}
+              <div className="masonry-grid">
+                {paginatedListings.map((listing, index) => {
+                  // Vary heights for Pinterest effect
+                  const heightVariants = [200, 260, 300, 240, 280, 220];
+                  const imageHeight = heightVariants[index % heightVariants.length];
+
+                  return (
+                    <div key={listing.id} className="masonry-item">
+                      <div
+                        onClick={() => handleViewListing(listing)}
+                        className="group relative bg-white border border-[#E5E5E5] rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:border-[#E5383B]/40 hover:shadow-[0_15px_40px_-10px_rgba(229,56,59,0.2)] hover:-translate-y-1"
+                      >
+                        {/* Image Section */}
+                        <div className="relative overflow-hidden" style={{ height: imageHeight }}>
+                          {listing.images?.length > 0 ? (
+                            <>
                               <img
-                                src={image}
-                                alt={`${listing.product_name} - ${i + 1}`}
-                                className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                                src={listing.images[0]}
+                                alt={listing.product_name}
+                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                               />
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition" />
-                        <CarouselNext className="right-2 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition" />
-                      </Carousel>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#F8F9FA]">
-                        <Package className="w-16 h-16 text-[#BA181B]" />
-                      </div>
-                    )}
-
-                    {/* Sale / Rent Tag */}
-                    {listing.product_type && (
-                      <div className="absolute top-3 left-3 bg-gradient-to-r from-[#BA181B] to-[#E5383B] text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md flex items-center gap-1">
-                        <Tag className="w-3.5 h-3.5" />
-                        {listing.product_type === "both"
-                          ? "Rent & Sale"
-                          : listing.product_type === "sale"
-                            ? "For Sale"
-                            : "For Rent"}
-                      </div>
-                    )}
-
-                    {/* Price Tag */}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md border border-[#E5383B]/20 text-[#E5383B] px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
-                      ₹{listing.rent_price || 0}{listing.product_type === 'sale' ? '' : '/day'}
-                    </div>
-
-                    {/* Wishlist Button */}
-                    <button
-                      onClick={(e) => toggleWishlist(e, listing.id)}
-                      className="absolute top-3 right-32 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
-                    >
-                      <Heart
-                        className={`w-4 h-4 ${wishlist.includes(listing.id) ? 'fill-[#E5383B] text-[#E5383B]' : 'text-gray-600'}`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-[#161A1D] group-hover:text-[#E5383B] transition-colors duration-300 line-clamp-1">
-                      {listing.product_name}
-                    </h3>
-                    <p className="text-sm text-[#660708]/70 leading-relaxed line-clamp-2">
-                      {listing.description}
-                    </p>
-
-                    <div className="flex items-center justify-between text-sm text-[#A4161A]/70 mt-4">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-[#BA181B]" />
-                        <span>
-                          {listing.pin_code || listing.city || '—'}
-                          {nearbyEnabled && distanceById[listing.id] != null && (
-                            <span className="ml-2 text-xs text-[#660708]">
-                              {(distanceById[listing.id] / 1000).toFixed(1)} km
-                            </span>
+                              {/* Gradient Overlay on Hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#161A1D]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#F5F3F4] to-[#E5E5E5]">
+                              <Package className="w-14 h-14 text-[#B1A7A6]" />
+                            </div>
                           )}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <Eye className="w-4 h-4 text-[#BA181B]" />
-                          <span>{listing.views || 0}</span>
+
+                          {/* Product Type Badge */}
+                          {listing.product_type && (
+                            <div className="absolute top-3 left-3">
+                              <span className="px-2.5 py-1 bg-gradient-to-r from-[#BA181B] to-[#E5383B] text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
+                                <Tag className="w-3 h-3" />
+                                {listing.product_type === "both"
+                                  ? "Rent & Sale"
+                                  : listing.product_type === "sale"
+                                    ? "For Sale"
+                                    : "For Rent"}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Wishlist Button */}
+                          <button
+                            onClick={(e) => toggleWishlist(e, listing.id)}
+                            className="absolute top-3 right-3 p-2 bg-white/95 backdrop-blur-sm rounded-full shadow-md hover:bg-white hover:scale-110 transition-all duration-300 border border-[#E5E5E5]"
+                          >
+                            <Heart
+                              className={`w-4 h-4 ${wishlist.includes(listing.id) ? 'fill-[#E5383B] text-[#E5383B]' : 'text-[#660708]/60 group-hover:text-[#E5383B]'} transition-colors`}
+                            />
+                          </button>
+
+                          {/* Price Badge */}
+                          <div className="absolute bottom-3 left-3">
+                            <div className="px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-white/50">
+                              <span className="text-base font-bold text-[#E5383B]">
+                                ₹{listing.rent_price?.toLocaleString() || 0}
+                              </span>
+                              <span className="text-xs text-[#660708]/60 ml-0.5">
+                                {listing.product_type === 'sale' ? '' : '/day'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Multiple Images Indicator */}
+                          {listing.images?.length > 1 && (
+                            <div className="absolute bottom-3 right-3 flex gap-1">
+                              {listing.images.slice(0, 4).map((_, i) => (
+                                <div
+                                  key={i}
+                                  className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/50'}`}
+                                />
+                              ))}
+                              {listing.images.length > 4 && (
+                                <span className="text-[10px] text-white/80 ml-0.5">+{listing.images.length - 4}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 text-[#E5383B]">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span>{listing.rating?.toFixed(1) || "5.0"}</span>
+
+                        {/* Content Section */}
+                        <div className="p-4">
+                          <h3 className="font-serif font-semibold text-[15px] text-[#161A1D] group-hover:text-[#E5383B] transition-colors line-clamp-2 leading-tight mb-2">
+                            {listing.product_name}
+                          </h3>
+
+                          <p className="text-xs text-[#660708]/60 line-clamp-2 leading-relaxed mb-3">
+                            {listing.description}
+                          </p>
+
+                          {/* Footer Stats */}
+                          <div className="flex items-center justify-between pt-3 border-t border-[#F5F3F4]">
+                            <div className="flex items-center gap-1 text-[#660708]/50">
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span className="text-xs truncate max-w-[70px]">
+                                {listing.city || listing.pin_code || 'India'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2.5">
+                              <div className="flex items-center gap-1 text-[#660708]/40">
+                                <Eye className="w-3.5 h-3.5" />
+                                <span className="text-xs">{listing.views || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-0.5 text-[#E5383B]">
+                                <Star className="w-3.5 h-3.5 fill-current" />
+                                <span className="text-xs font-semibold">{listing.rating?.toFixed(1) || "5.0"}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <Button className="w-full bg-gradient-to-r from-[#E5383B] to-[#BA181B] hover:from-[#BA181B] hover:to-[#660708] text-white font-medium rounded-xl py-2 shadow-md transition-all duration-300">
-                      Contact Owner
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="pagination-container">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="pagination-btn"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  {/* Page Numbers */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      // Show first, last, current, and adjacent pages
+                      return page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1;
+                    })
+                    .map((page, idx, arr) => (
+                      <span key={page} className="flex items-center">
+                        {idx > 0 && arr[idx - 1] !== page - 1 && (
+                          <span className="px-2 text-[#660708]/50">...</span>
+                        )}
+                        <button
+                          onClick={() => goToPage(page)}
+                          className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                        >
+                          {page}
+                        </button>
+                      </span>
+                    ))}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="pagination-btn"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      <Dialog
-        open={!!selectedListing}
-        onOpenChange={() => setSelectedListing(null)}
-      >
-        <DialogContent className="max-w-5xl w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-[#B1A7A6]/30 bg-gradient-to-br from-[#F5F3F4]/90 to-white/80 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.15)] transition-all duration-300">
-          {selectedListing && (
-            <>
-              {/* Header */}
-              <DialogHeader className="pb-4 border-b border-[#B1A7A6]/30">
-                <DialogTitle className="text-3xl font-serif text-[#161A1D] tracking-wide">
-                  {selectedListing.product_name}
-                </DialogTitle>
-                <div className="flex items-center gap-2 text-sm text-[#660708]/70 mt-1">
-                  <User size={16} />
-                  <span>{selectedListing.owner_name || "Unknown"}</span>
-                </div>
-                <div className="mt-4 flex items-center gap-4">
-                  <ShareButtons
-                    url={`${window.location.origin}/listings?id=${selectedListing.id}`}
-                    title={selectedListing.product_name}
-                  />
-                  <ListingQRCode listingId={selectedListing.id} productName={selectedListing.product_name} />
-                </div>
-              </DialogHeader>
-
-              {/* Main Content */}
-              <div className="grid md:grid-cols-2 gap-8 pt-6">
-                {/* Left - Image Carousel */}
-                <div className="space-y-4">
-                  {selectedListing.images?.length > 0 ? (
-                    <Carousel className="rounded-2xl overflow-hidden shadow-md">
-                      <CarouselContent>
-                        {selectedListing.images.map(
-                          (image: string, index: number) => (
-                            <CarouselItem key={index}>
-                              <img
-                                src={image}
-                                alt={`${selectedListing.product_name}-${index + 1
-                                  }`}
-                                className="w-full h-[400px] object-cover transition-transform duration-500 hover:scale-105"
-                              />
-                            </CarouselItem>
-                          )
-                        )}
-                      </CarouselContent>
-                      <CarouselPrevious className="bg-white/80 hover:bg-white text-[#161A1D]" />
-                      <CarouselNext className="bg-white/80 hover:bg-white text-[#161A1D]" />
-                    </Carousel>
-                  ) : (
-                    <div className="flex items-center justify-center h-[400px] bg-[#F5F3F4] rounded-2xl text-[#B1A7A6] text-sm">
-                      No images available
-                    </div>
-                  )}
-                </div>
-
-                {/* Right - Details */}
-                <div className="flex flex-col justify-between space-y-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#161A1D]">
-                        Description
-                      </h3>
-                      <p className="text-[#660708]/80 leading-relaxed">
-                        {selectedListing.description ||
-                          "No description provided."}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#161A1D]">
-                        Pricing
-                      </h3>
-                      <p className="text-4xl font-bold text-[#E5383B]">
-                        ₹{selectedListing.rent_price || 0}{selectedListing.product_type === 'sale' ? '' : '/day'}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#161A1D]">
-                        Location
-                      </h3>
-                      <div className="flex items-center gap-2 text-[#660708]/80">
-                        <MapPin size={16} />
-                        <span>{selectedListing.address || "Not provided"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Chat Card */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-r from-[#F5F3F4] to-[#D3D3D3]/40 border border-[#B1A7A6]/20 shadow-inner space-y-3">
-                    <h3 className="font-semibold text-lg text-[#161A1D]">
-                      Contact Owner
-                    </h3>
-                    <p className="text-sm text-[#660708]/70">
-                      Start a conversation with the owner to discuss this listing
-                    </p>
-                    <Button
-                      onClick={handleStartChat}
-                      className="w-full bg-gradient-to-r from-[#E5383B] via-[#BA181B] to-[#660708] hover:opacity-90 text-white rounded-xl py-2 font-medium shadow-md transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle size={18} />
-                      {existingConversation ? "Open Chat" : "Start Chat"}
-                    </Button>
-                    {existingConversation && (
-                      <p className="text-xs text-[#660708]/60 text-center">
-                        You have an existing conversation
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="my-6 border-t border-[#B1A7A6]/30"></div>
-
-              {/* Rating Section */}
-              <div className="pb-2">
-                <RatingCard
-                  listingId={selectedListing.id}
-                  currentUserId={user?.id}
-                />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Chat Dialog */}
-      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="max-w-4xl p-0 border-0 bg-transparent" aria-describedby="chat-description">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Chat with {otherUserProfile?.name || (selectedListing?.owner_user_id === user?.id ? "Leaser" : "Owner")}</DialogTitle>
-            <DialogDescription id="chat-description">
-              Start a conversation about {selectedListing?.product_name || 'this listing'}
-            </DialogDescription>
-          </DialogHeader>
-          {currentConversationId && selectedListing && otherUserProfile && (
-            <ChatWindow
-              conversationId={currentConversationId}
-              listingName={selectedListing.product_name}
-              otherUserName={otherUserProfile.name || (selectedListing.owner_user_id === user?.id ? "Leaser" : "Owner")}
-              otherUserAvatar={otherUserProfile.avatar_url}
-              onClose={() => {
-                setChatOpen(false);
-                setCurrentConversationId(null);
-                setOtherUserProfile(null);
-              }}
-              isOwner={selectedListing.owner_user_id === user?.id}
-              contactRequestStatus={existingConversation?.contact_request_status}
-              ownerPhone={selectedListing.phone}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
       <style>{`
       @keyframes float {
             0%, 100% { transform: translate(0, 0) scale(1); }

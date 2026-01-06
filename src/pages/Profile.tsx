@@ -16,7 +16,7 @@ const Profile = () => {
   const { user, authReady } = useAuth();
   const navigate = useNavigate();
   const listingsEnabled = Boolean(user?.id) && Boolean(authReady);
-  const { listings, loading } = useListings(undefined, user?.id, listingsEnabled);
+  const { listings, loading, refetch } = useListings(undefined, user?.id, listingsEnabled);
   const { data: streakData } = useUserStreak(user?.id || '');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
@@ -119,7 +119,7 @@ const Profile = () => {
               <OwnerReviewAnalytics userId={user.id} />
             </div>
 
-            <ListingCardOnProfile listings={listings} />
+            <ListingCardOnProfile listings={listings} onListingUpdated={refetch} />
 
             <WishlistSection listings={wishlistItems} />
           </>

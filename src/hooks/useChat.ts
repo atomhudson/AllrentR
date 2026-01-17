@@ -3,6 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+// Helper to bypass TypeScript for tables not in generated types
+const db = supabase as any;
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -359,7 +362,7 @@ export const useChat = () => {
 
     try {
       // First, get conversations
-      const { data: conversationsData, error: convError } = await supabase
+      const { data: conversationsData, error: convError } = await db
         .from('conversations')
         .select(`
           *,
@@ -431,27 +434,28 @@ export const useChat = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
-        .is('deleted_at', null) // Only load non-deleted messages
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
       setMessages(prev => ({
         ...prev,
-        [conversationId]: data || []
+        [conversationId]: (data || []) as Message[]
       }));
 
       // Mark messages as read
-      const unreadIds = (data || [])
+      const loadedMessages = (data || []) as Message[];
+      const unreadIds = loadedMessages
         .filter(m => m.sender_id !== user.id && !m.read_at && !m.deleted_at)
         .map(m => m.id);
 
       if (unreadIds.length > 0) {
-        await supabase
+        await db
           .from('messages')
           .update({ read_at: new Date().toISOString() })
           .in('id', unreadIds);
@@ -479,7 +483,7 @@ export const useChat = () => {
 
     try {
       // Check if conversation exists
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('conversations')
         .select('*')
         .eq('listing_id', listingId)
@@ -491,7 +495,7 @@ export const useChat = () => {
       }
 
       // Create new conversation
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('conversations')
         .insert({
           listing_id: listingId,
@@ -691,7 +695,7 @@ export const useChat = () => {
 
     try {
       // Update conversation status
-      const { error: convError } = await supabase
+      const { error: convError } = await db
         .from('conversations')
         .update({
           contact_request_status: 'approved',
@@ -725,7 +729,7 @@ export const useChat = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('conversations')
         .update({ contact_request_status: 'rejected' })
         .eq('id', conversationId)
@@ -781,7 +785,7 @@ export const useChat = () => {
 
     const updateOnlineStatus = async () => {
       try {
-        await supabase
+        await db
           .from('online_status')
           .upsert({
             user_id: user.id,
@@ -799,10 +803,9 @@ export const useChat = () => {
 
     return () => {
       clearInterval(interval);
-      // Set offline on unmount
       (async () => {
         try {
-          await supabase
+          await db
             .from('online_status')
             .upsert({
               user_id: user.id,

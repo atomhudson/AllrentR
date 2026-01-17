@@ -5,24 +5,29 @@ import { Star } from "lucide-react";
 import TeamCarousel from "./TeamCarousel";
 
 const InfluencerPartnersSection = () => {
-  const [visible, setVisible] = useState(false);
+  const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Always fetch visibility first - not dependent on intersection
+  const { data: visibility, isLoading: visibilityLoading } = useSectionVisibility("influencer_partners");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
+      ([entry]) => setInView(entry.isIntersecting),
       { threshold: 0.1 }
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => sectionRef.current && observer.unobserve(sectionRef.current);
   }, []);
 
-  const { data: partners, isLoading } = useInfluencerPartners({ enabled: visible });
-  // Wait, I didn't update useInfluencerPartners hook yet. I should do that first or concurrently.
-  // Assuming I will update it next.
-  const { data: visibility } = useSectionVisibility("influencer_partners", { enabled: visible });
+  // Fetch partners only when section is in view AND visibility is enabled
+  const { data: partners, isLoading } = useInfluencerPartners({ 
+    enabled: inView && visibility?.is_visible === true 
+  });
 
-  if (!visibility?.is_visible || isLoading || !partners?.length) return null;
+  // Don't render if visibility is explicitly false (after loading)
+  if (!visibilityLoading && visibility?.is_visible === false) return null;
+  if (isLoading || !partners?.length) return null;
 
   const teamMembers = partners.map(partner => ({
     id: partner.id,

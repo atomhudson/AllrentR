@@ -25,8 +25,8 @@ export const OwnerReviewAnalytics = ({ userId }: { userId: string }) => {
         const fetchAnalytics = async () => {
             try {
                 // Get all listings for this user
-                const { data: listings } = await supabase
-                    .from('listings')
+                const { data: listings } = await (supabase
+                    .from('listings') as any)
                     .select('id')
                     .eq('user_id', userId);
 

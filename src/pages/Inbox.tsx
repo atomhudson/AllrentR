@@ -74,7 +74,7 @@ const Inbox = () => {
         
         // Fetch unread counts from database for accuracy
         // Get all messages in these conversations that are unread and not from the current user
-        const { data: unreadData, error } = await supabase
+        const { data: unreadData, error } = await (supabase as any)
           .from('messages')
           .select('conversation_id')
           .in('conversation_id', convIds)
@@ -134,7 +134,7 @@ const Inbox = () => {
     
     // Mark all messages in this conversation as read
     try {
-      const { data: convMessages } = await supabase
+      const { data: convMessages } = await (supabase as any)
         .from('messages')
         .select('id')
         .eq('conversation_id', conversation.id)
@@ -143,10 +143,10 @@ const Inbox = () => {
         .is('deleted_at', null);
       
       if (convMessages && convMessages.length > 0) {
-        await supabase
+        await (supabase as any)
           .from('messages')
           .update({ read_at: new Date().toISOString() })
-          .in('id', convMessages.map(m => m.id));
+          .in('id', convMessages.map((m: any) => m.id));
       }
     } catch (error) {
       console.error('Error marking messages as read:', error);

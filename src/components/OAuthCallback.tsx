@@ -25,7 +25,7 @@ const OAuthCallback = () => {
         if (data.session) {
           try {
             // Ensure user has proper profile and role setup
-            // @ts-expect-error: 'ensure_user_setup' is a custom Postgres function not yet in TypeScript types
+            // @ts-ignore - 'ensure_user_setup' is a custom Postgres function not yet in TypeScript types
             await supabase.rpc('ensure_user_setup', {
               user_id: data.session.user.id
             });

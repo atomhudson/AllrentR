@@ -117,12 +117,11 @@ const ListingDetail = () => {
                 const normalizedId = displayIdFromUrl.replace('PROD-', 'PROD_');
                 let fetchedListing: any = null;
 
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('listings')
                     .select('*')
                     .eq('display_id', normalizedId)
                     .eq('listing_status', 'approved')
-                    .returns<any>()
                     .single();
 
                 if (error) {
@@ -240,7 +239,7 @@ const ListingDetail = () => {
                     description: editForm.description,
                     rent_price: editForm.rent_price,
                     original_price: editForm.original_price,
-                    product_type: editForm.product_type,
+                    product_type: editForm.product_type as "rent" | "sale" | "both",
                     address: editForm.address,
                     city: editForm.city,
                     pin_code: editForm.pin_code,

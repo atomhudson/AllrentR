@@ -47,11 +47,11 @@ export const BlogComments = ({ blogId }: BlogCommentsProps) => {
     }, [blogId, user?.id]);
 
     const fetchComments = async () => {
+        const db = supabase as any;
         try {
             // Fetch comments
-            // @ts-ignore
-            const { data: commentsData, error } = await (supabase
-                .from('blog_comments') as any)
+            const { data: commentsData, error } = await db
+                .from('blog_comments')
                 .select(`
           *,
           profiles:user_id (name, avatar_url)
@@ -65,9 +65,8 @@ export const BlogComments = ({ blogId }: BlogCommentsProps) => {
             // Fetch user votes if logged in
             let userVotes: any[] = [];
             if (user) {
-                // @ts-ignore
-                const { data: votes } = await (supabase
-                    .from('blog_comment_votes') as any)
+                const { data: votes } = await db
+                    .from('blog_comment_votes')
                     .select('*')
                     .eq('user_id', user.id);
                 userVotes = votes || [];
@@ -132,10 +131,10 @@ export const BlogComments = ({ blogId }: BlogCommentsProps) => {
         }
 
         setLoading(true);
+        const db = supabase as any;
         try {
-            // @ts-ignore
-            const { error } = await (supabase
-                .from('blog_comments') as any)
+            const { error } = await db
+                .from('blog_comments')
                 .insert({
                     blog_id: blogId,
                     user_id: user.id,
@@ -173,19 +172,18 @@ export const BlogComments = ({ blogId }: BlogCommentsProps) => {
             const currentVote = comments.find(c => c.id === commentId)?.user_vote ||
                 comments.flatMap(c => c.replies || []).find(r => r.id === commentId)?.user_vote;
 
+            const db = supabase as any;
             if (currentVote === type) {
                 // Remove vote
-                // @ts-ignore
-                await (supabase
-                    .from('blog_comment_votes') as any)
+                await db
+                    .from('blog_comment_votes')
                     .delete()
                     .eq('comment_id', commentId)
                     .eq('user_id', user.id);
             } else {
                 // Upsert vote
-                // @ts-ignore
-                await (supabase
-                    .from('blog_comment_votes') as any)
+                await db
+                    .from('blog_comment_votes')
                     .upsert({
                         comment_id: commentId,
                         user_id: user.id,
@@ -201,10 +199,10 @@ export const BlogComments = ({ blogId }: BlogCommentsProps) => {
     };
 
     const handleDelete = async (commentId: string) => {
+        const db = supabase as any;
         try {
-            // @ts-ignore
-            const { error } = await (supabase
-                .from('blog_comments') as any)
+            const { error } = await db
+                .from('blog_comments')
                 .delete()
                 .eq('id', commentId);
 

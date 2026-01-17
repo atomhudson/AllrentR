@@ -126,12 +126,11 @@ const ListingDetail = () => {
 
                 if (error) {
                     const altId = displayIdFromUrl.replace('PROD_', 'PROD-');
-                    const { data: altData, error: altError } = await supabase
+                    const { data: altData, error: altError } = await (supabase as any)
                         .from('listings')
                         .select('*')
                         .eq('display_id', altId)
                         .eq('listing_status', 'approved')
-                        .returns<any>()
                         .single();
 
                     if (altError) {

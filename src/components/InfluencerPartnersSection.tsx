@@ -1,33 +1,26 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useInfluencerPartners } from "@/hooks/useInfluencerPartners";
 import { useSectionVisibility } from "@/hooks/useTopProfiles";
 import { Star } from "lucide-react";
 import TeamCarousel from "./TeamCarousel";
 
 const InfluencerPartnersSection = () => {
-  const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Always fetch visibility first - not dependent on intersection
+  // Always fetch visibility first
   const { data: visibility, isLoading: visibilityLoading } = useSectionVisibility("influencer_partners");
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => sectionRef.current && observer.unobserve(sectionRef.current);
-  }, []);
-
-  // Fetch partners only when section is in view AND visibility is enabled
+  // Always fetch partners when visibility is enabled (no lazy-load dependency)
   const { data: partners, isLoading } = useInfluencerPartners({ 
-    enabled: inView && visibility?.is_visible === true 
+    enabled: visibility?.is_visible === true 
   });
 
   // Don't render if visibility is explicitly false (after loading)
   if (!visibilityLoading && visibility?.is_visible === false) return null;
-  if (isLoading || !partners?.length) return null;
+  
+  // Show nothing if still loading or no partners
+  if (visibilityLoading || isLoading) return null;
+  if (!partners?.length) return null;
 
   const teamMembers = partners.map(partner => ({
     id: partner.id,
@@ -37,6 +30,7 @@ const InfluencerPartnersSection = () => {
     avatar_url: partner.avatar_url,
     profile_url: partner.profile_url,
   }));
+  
   return (
     <section ref={sectionRef} className="relative py-32 overflow-hidden bg-gradient-to-b from-white via-[#F5F3F4] to-white">
       {/* Decorative Background */}

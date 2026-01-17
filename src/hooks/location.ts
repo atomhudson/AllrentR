@@ -1,11 +1,8 @@
 // utils/location.ts
 import ngeohash from 'ngeohash';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const db = supabase as any;
 
 type GeocodeResult = {
   lat: number;
@@ -67,7 +64,7 @@ export async function insertListing(listing: {
 
   const geohash = ngeohash.encode(geo.lat, geo.lon, 9);
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('listings')
     .insert([
       {

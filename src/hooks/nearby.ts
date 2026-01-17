@@ -1,12 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const db = supabase as any;
 
 export async function fetchNearbyListings(userLat: number, userLng: number, radiusMeters = 5000) {
-  const { data, error } = await supabase.rpc('get_nearby_listings', {
+  const { data, error } = await db.rpc('get_nearby_listings', {
     user_lat: userLat,
     user_lng: userLng,
     radius_meters: radiusMeters

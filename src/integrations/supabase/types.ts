@@ -260,6 +260,62 @@ export type Database = {
         }
         Relationships: []
       }
+      item_verifications: {
+        Row: {
+          created_at: string
+          declaration_accepted: boolean
+          id: string
+          images: string[]
+          listing_id: string
+          owner_aadhar_masked: string
+          owner_id: string
+          owner_phone: string
+          renter_id: string | null
+          status: string
+          updated_at: string
+          verification_type: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          declaration_accepted?: boolean
+          id?: string
+          images?: string[]
+          listing_id: string
+          owner_aadhar_masked: string
+          owner_id: string
+          owner_phone: string
+          renter_id?: string | null
+          status?: string
+          updated_at?: string
+          verification_type?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          declaration_accepted?: boolean
+          id?: string
+          images?: string[]
+          listing_id?: string
+          owner_aadhar_masked?: string
+          owner_id?: string
+          owner_phone?: string
+          renter_id?: string | null
+          status?: string
+          updated_at?: string
+          verification_type?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_verifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string
@@ -285,6 +341,7 @@ export type Database = {
           product_type: Database["public"]["Enums"]["product_type"]
           rating: number | null
           rent_price: number
+          verification_enabled: boolean | null
           views: number
         }
         Insert: {
@@ -311,6 +368,7 @@ export type Database = {
           product_type?: Database["public"]["Enums"]["product_type"]
           rating?: number | null
           rent_price: number
+          verification_enabled?: boolean | null
           views?: number
         }
         Update: {
@@ -337,6 +395,7 @@ export type Database = {
           product_type?: Database["public"]["Enums"]["product_type"]
           rating?: number | null
           rent_price?: number
+          verification_enabled?: boolean | null
           views?: number
         }
         Relationships: [
@@ -620,6 +679,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verification_ratings: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          from_user_id: string
+          id: string
+          rating: number
+          to_user_id: string
+          verification_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          from_user_id: string
+          id?: string
+          rating: number
+          to_user_id: string
+          verification_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          from_user_id?: string
+          id?: string
+          rating?: number
+          to_user_id?: string
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_ratings_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "item_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

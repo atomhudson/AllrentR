@@ -10,6 +10,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ListingQRCode } from "@/components/ListingQRCode";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { ChatWindow } from "@/components/ChatWindow";
+import { ItemVerificationModal } from "@/components/ItemVerificationModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +62,7 @@ import {
     Save,
     X,
     AlertTriangle,
+    ClipboardCheck,
 } from "lucide-react";
 
 const ListingDetail = () => {
@@ -94,6 +96,9 @@ const ListingDetail = () => {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
+    // Verification modal state
+    const [verificationOpen, setVerificationOpen] = useState(false);
+    const [verificationEnabled, setVerificationEnabled] = useState(false);
     const displayIdFromUrl = useMemo(() => {
         if (!slugId) return null;
         const match = slugId.match(/PROD[-_][a-z0-9-]+$/i);
@@ -158,7 +163,7 @@ const ListingDetail = () => {
         fetchListing();
     }, [displayIdFromUrl, navigate]);
 
-    // Initialize edit form when listing loads
+    // Initialize edit form and verification enabled when listing loads
     useEffect(() => {
         if (listing) {
             setEditForm({
@@ -171,6 +176,7 @@ const ListingDetail = () => {
                 city: listing.city || '',
                 pin_code: listing.pin_code || '',
             });
+            setVerificationEnabled(listing.verification_enabled || false);
         }
     }, [listing]);
 
@@ -533,6 +539,15 @@ const ListingDetail = () => {
                                             <Trash2 className="w-5 h-5 mr-2" />
                                             Delete Listing
                                         </Button>
+                                        {/* Owner Verification Button */}
+                                        <Button
+                                            onClick={() => setVerificationOpen(true)}
+                                            variant="outline"
+                                            className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl py-5 text-base font-semibold"
+                                        >
+                                            <ClipboardCheck className="w-5 h-5 mr-2" />
+                                            Item Condition & Verification
+                                        </Button>
                                     </div>
                                 ) : (
                                     <>
@@ -545,6 +560,18 @@ const ListingDetail = () => {
                                         </Button>
                                         {existingConversation && (
                                             <p className="text-xs text-center text-gray-400 mt-2">You have an existing conversation</p>
+                                        )}
+                                        
+                                        {/* Item Condition & Verification Button */}
+                                        {verificationEnabled && (
+                                            <Button
+                                                onClick={() => setVerificationOpen(true)}
+                                                variant="outline"
+                                                className="w-full mt-3 border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl py-5 text-base font-semibold"
+                                            >
+                                                <ClipboardCheck className="w-5 h-5 mr-2" />
+                                                Item Condition & Verification
+                                            </Button>
                                         )}
                                     </>
                                 )}
@@ -758,6 +785,23 @@ const ListingDetail = () => {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* Item Verification Modal */}
+            {listing && user && (
+                <ItemVerificationModal
+                    open={verificationOpen}
+                    onOpenChange={setVerificationOpen}
+                    listingId={listing.id}
+                    ownerId={listing.owner_user_id}
+                    currentUserId={user.id}
+                    isOwner={isOwner}
+                    verificationEnabled={verificationEnabled}
+                    onVerificationEnabledChange={(enabled) => {
+                        setVerificationEnabled(enabled);
+                        setListing((prev: any) => ({ ...prev, verification_enabled: enabled }));
+                    }}
+                />
+            )}
         </div>
     );
 };

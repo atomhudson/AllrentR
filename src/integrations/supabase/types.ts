@@ -325,6 +325,7 @@ export type Database = {
           created_at: string
           description: string
           discount_amount: number
+          display_id: string | null
           final_price: number
           id: string
           images: string[] | null
@@ -352,6 +353,7 @@ export type Database = {
           created_at?: string
           description: string
           discount_amount?: number
+          display_id?: string | null
           final_price?: number
           id?: string
           images?: string[] | null
@@ -379,6 +381,7 @@ export type Database = {
           created_at?: string
           description?: string
           discount_amount?: number
+          display_id?: string | null
           final_price?: number
           id?: string
           images?: string[] | null

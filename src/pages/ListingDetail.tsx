@@ -563,16 +563,14 @@ const ListingDetail = () => {
                                         )}
                                         
                                         {/* Item Condition & Verification Button */}
-                                        {verificationEnabled && (
-                                            <Button
-                                                onClick={() => setVerificationOpen(true)}
-                                                variant="outline"
-                                                className="w-full mt-3 border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl py-5 text-base font-semibold"
-                                            >
-                                                <ClipboardCheck className="w-5 h-5 mr-2" />
-                                                Item Condition & Verification
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={() => setVerificationOpen(true)}
+                                            variant="outline"
+                                            className="w-full mt-3 border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-xl py-5 text-base font-semibold"
+                                        >
+                                            <ClipboardCheck className="w-5 h-5 mr-2" />
+                                            Item Condition & Verification
+                                        </Button>
                                     </>
                                 )}
                             </div>

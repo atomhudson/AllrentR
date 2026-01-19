@@ -264,12 +264,15 @@ export type Database = {
         Row: {
           created_at: string
           declaration_accepted: boolean
+          expires_at: string | null
           id: string
           images: string[]
           listing_id: string
           owner_aadhar_masked: string
           owner_id: string
           owner_phone: string
+          rental_cost: number
+          rental_days: number
           renter_id: string | null
           status: string
           updated_at: string
@@ -279,12 +282,15 @@ export type Database = {
         Insert: {
           created_at?: string
           declaration_accepted?: boolean
+          expires_at?: string | null
           id?: string
           images?: string[]
           listing_id: string
           owner_aadhar_masked: string
           owner_id: string
           owner_phone: string
+          rental_cost?: number
+          rental_days?: number
           renter_id?: string | null
           status?: string
           updated_at?: string
@@ -294,12 +300,15 @@ export type Database = {
         Update: {
           created_at?: string
           declaration_accepted?: boolean
+          expires_at?: string | null
           id?: string
           images?: string[]
           listing_id?: string
           owner_aadhar_masked?: string
           owner_id?: string
           owner_phone?: string
+          rental_cost?: number
+          rental_days?: number
           renter_id?: string | null
           status?: string
           updated_at?: string

@@ -1,14 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import {
-  Shield,
-  Zap,
-  Users,
-  TrendingUp,
-  ArrowRight,
-  Sparkles,
-  Star,
-} from "lucide-react";
+import { Shield, Zap, Users, TrendingUp, ArrowRight, Sparkles, Star } from "lucide-react";
 import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 import Footer from "@/components/Footer";
 import { LoginNavbar } from "@/components/LoginNavbar";
@@ -16,45 +8,32 @@ import { Suspense, lazy } from "react";
 import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-
 const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
 const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
-
-
 const Landing = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: Shield,
-      title: "Secure & Verified",
-      description:
-        "All listings are verified by our team before going live. Your safety is our priority.",
-    },
-    {
-      icon: Zap,
-      title: "Quick & Easy",
-      description:
-        "List your items in minutes and start earning. Renting is just as simple!",
-    },
-    {
-      icon: Users,
-      title: "Community Driven",
-      description:
-        "Join thousands of Indians sharing and renting items in their neighborhood.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Earn More",
-      description:
-        "Turn your unused items into income. Track your earnings with detailed analytics.",
-    },
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">
+  const features = [{
+    icon: Shield,
+    title: "Secure & Verified",
+    description: "All listings are verified by our team before going live. Your safety is our priority."
+  }, {
+    icon: Zap,
+    title: "Quick & Easy",
+    description: "List your items in minutes and start earning. Renting is just as simple!"
+  }, {
+    icon: Users,
+    title: "Community Driven",
+    description: "Join thousands of Indians sharing and renting items in their neighborhood."
+  }, {
+    icon: TrendingUp,
+    title: "Earn More",
+    description: "Turn your unused items into income. Track your earnings with detailed analytics."
+  }];
+  return <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">
       <LoginNavbar />
 
       <HeroSection />
@@ -67,32 +46,33 @@ const Landing = () => {
         <InfluencerPartnersSection />
       </Suspense>
 
-      <section
-        id="features"
-        className="relative py-28 overflow-hidden bg-gradient-to-b from-[#F5F3F4] via-white to-[#F5F3F4]"
-      >
+      <section id="features" className="relative py-28 overflow-hidden bg-gradient-to-b from-[#F5F3F4] via-white to-[#F5F3F4]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#E5383B]/10 blur-[160px] rounded-full animate-pulse" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#BA181B]/10 blur-[180px] rounded-full animate-pulse-slow" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="text-center mb-20"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
+          <motion.div className="text-center mb-20" initial={{
+          opacity: 0,
+          y: 40
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8,
+          ease: "easeOut"
+        }} viewport={{
+          once: true
+        }}>
             <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#E5383B]/10 to-[#BA181B]/10 rounded-full mb-6">
               <span className="text-sm font-semibold tracking-wider text-[#660708] uppercase">
                 Premium Features
               </span>
             </div>
 
-            <h2 className="text-5xl font-extrabold text-[#161A1D] mb-6 leading-tight">
-              Why Thousands Choose Us for
-              <br />
+            <h2 className="text-5xl font-extrabold text-[#161A1D] mb-6 leading-tight">Why Choose Us for
+Renting & Earning<br />
               <span className="bg-gradient-to-r from-[#E5383B] via-[#BA181B] to-[#E5383B] bg-clip-text text-transparent">
                 Renting & Earning
               </span>
@@ -103,22 +83,25 @@ const Landing = () => {
               industry-leading platform built for trust and growth.
             </p>
           </motion.div>
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ staggerChildren: 0.15 }}
-          >
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 40 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
+          <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8" initial="hidden" whileInView="visible" viewport={{
+          once: true,
+          amount: 0.2
+        }} transition={{
+          staggerChildren: 0.15
+        }}>
+            {features.map((feature, index) => <motion.div key={index} variants={{
+            hidden: {
+              opacity: 0,
+              y: 40
+            },
+            visible: {
+              opacity: 1,
+              y: 0
+            }
+          }} transition={{
+            duration: 0.6,
+            ease: "easeOut"
+          }}>
                 <Card className="group relative p-8 rounded-2xl bg-white border border-[#E5383B]/10 hover:border-[#E5383B]/30 shadow-md hover:shadow-[0_0_40px_rgba(229,56,59,0.15)] transition-all duration-500 hover:-translate-y-3 overflow-hidden">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-[#E5383B]/10 via-transparent to-[#BA181B]/10 transition-all duration-700" />
                   <div className="relative z-10">
@@ -134,8 +117,7 @@ const Landing = () => {
                   </div>
                   <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-t from-[#E5383B]/10 to-transparent rounded-full blur-3xl group-hover:opacity-70 transition-opacity duration-700" />
                 </Card>
-              </motion.div>
-            ))}
+              </motion.div>)}
           </motion.div>
         </div>
       </section>
@@ -152,20 +134,15 @@ const Landing = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(245,243,244,0.08),transparent_50%)]" />
         </div>
         <div className="absolute inset-0 opacity-30">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, rgba(245,243,244,0.15) 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
-            }}
-          />
+          <div className="absolute inset-0" style={{
+          backgroundImage: "radial-gradient(circle, rgba(245,243,244,0.15) 1px, transparent 1px)",
+          backgroundSize: "40px 40px"
+        }} />
         </div>
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#F5F3F4]/5 rounded-full blur-3xl animate-pulse" />
-        <div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-[#F5F3F4]/5 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#F5F3F4]/5 rounded-full blur-3xl animate-pulse" style={{
+        animationDelay: "1s"
+      }} />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-5xl mx-auto text-center space-y-10">
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#F5F3F4]/10 backdrop-blur-md rounded-full border border-[#F5F3F4]/20 shadow-lg hover:bg-[#F5F3F4]/15 transition-all duration-300">
@@ -174,12 +151,7 @@ const Landing = () => {
                 Join 10,000+ Happy Users
               </span>
               <div className="flex -space-x-2 ml-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5F3F4] to-[#F5F3F4]/70 border-2 border-[#BA181B]"
-                  />
-                ))}
+                {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5F3F4] to-[#F5F3F4]/70 border-2 border-[#BA181B]" />)}
               </div>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-[#F5F3F4] leading-tight tracking-tight">
@@ -193,15 +165,9 @@ const Landing = () => {
               <Star className="w-6 h-6 text-[#F5F3F4] fill-[#F5F3F4]" />
               <div className="h-1 w-16 bg-gradient-to-l from-transparent to-[#F5F3F4]/50 rounded-full" />
             </div>
-            <p className="text-base md:text-xl lg:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed">
-              Join thousands earning from unused items or finding exactly what
-              they need at unbeatable prices.
-            </p>
+            <p className="text-base md:text-xl lg:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed">Join earning from unused items or finding exactly what they need at unbeatable prices.</p>
             <div className="flex flex-wrap justify-center gap-5 pt-6">
-              <button
-                onClick={() => !user && navigate("/signup")}
-                className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden"
-              >
+              <button onClick={() => !user && navigate("/signup")} className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/90 transition-transform duration-300 group-hover:scale-110" />
                 <span className="relative flex items-center gap-3">
                   Create Free Account
@@ -209,10 +175,7 @@ const Landing = () => {
                 </span>
               </button>
 
-              <button
-                onClick={() => navigate("/submit-listing")}
-                className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden"
-              >
+              <button onClick={() => navigate("/submit-listing")} className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden">
                 <span className="relative flex items-center gap-3">
                   List Your First Item
                   <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
@@ -255,20 +218,8 @@ const Landing = () => {
                   </div>
                 </div>
               ))}
-            </div> */}
-            <div className="pt-8 flex items-center justify-center gap-2 text-[#F5F3F4]/80">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 text-[#F5F3F4] fill-[#F5F3F4]"
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-medium ml-2">
-                4.9/5 from 2,500+ reviews
-              </span>
-            </div>
+             </div> */}
+            
           </div>
         </div>
       </section>
@@ -334,8 +285,6 @@ const Landing = () => {
                     animation: bounce-slow 3s ease-in-out infinite;
                 }
             `}</style>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;

@@ -51,6 +51,9 @@ interface Verification {
   verification_type: string;
   status: string;
   created_at: string;
+  rental_days: number;
+  rental_cost: number;
+  expires_at: string;
 }
 
 interface VerificationRating {
@@ -86,6 +89,8 @@ export const ItemVerificationModal = ({
   const [video, setVideo] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
+  const [rentalDays, setRentalDays] = useState(1);
+  const [rentalCost, setRentalCost] = useState(0);
 
   // Rating state
   const [rating, setRating] = useState(0);
@@ -261,6 +266,8 @@ export const ItemVerificationModal = ({
           declaration_accepted: true,
           verification_type: "handover",
           status: "completed",
+          rental_days: rentalDays,
+          rental_cost: rentalCost,
         })
         .select()
         .single();
@@ -370,6 +377,35 @@ export const ItemVerificationModal = ({
           />
           <p className="text-xs text-gray-500">Only last 4 digits will be stored for security</p>
         </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="rentalDays">Rental Duration (Days) *</Label>
+            <Input
+              id="rentalDays"
+              type="number"
+              min="1"
+              max="365"
+              placeholder="No. of days"
+              value={rentalDays}
+              onChange={(e) => setRentalDays(Math.max(1, parseInt(e.target.value) || 1))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="rentalCost">Total Cost (₹) *</Label>
+            <Input
+              id="rentalCost"
+              type="number"
+              min="0"
+              placeholder="Rental cost"
+              value={rentalCost}
+              onChange={(e) => setRentalCost(Math.max(0, parseFloat(e.target.value) || 0))}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+          ⚠️ Data will be automatically deleted 30 days after rental ends
+        </p>
       </div>
 
       {/* Image Upload */}
@@ -488,6 +524,24 @@ export const ItemVerificationModal = ({
             <h4 className="font-medium text-gray-700">Owner Details</h4>
             <p className="text-sm text-gray-600">Phone: {verification.owner_phone}</p>
             <p className="text-sm text-gray-600">Aadhar: {verification.owner_aadhar_masked}</p>
+          </div>
+
+          {/* Rental Details */}
+          <div className="p-4 bg-blue-50 rounded-lg space-y-2 border border-blue-200">
+            <h4 className="font-medium text-blue-700">Rental Details</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-blue-600">Duration:</span>
+                <p className="font-semibold text-blue-800">{verification.rental_days} Days</p>
+              </div>
+              <div>
+                <span className="text-blue-600">Total Cost:</span>
+                <p className="font-semibold text-blue-800">₹{verification.rental_cost}</p>
+              </div>
+            </div>
+            <p className="text-xs text-amber-600 mt-2">
+              ⚠️ Data expires on: {new Date(verification.expires_at).toLocaleDateString()}
+            </p>
           </div>
 
           {/* Images Grid */}

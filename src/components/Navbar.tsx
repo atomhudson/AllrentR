@@ -24,9 +24,6 @@ export const Navbar = () => {
 
   const NavLinks = () => (
     <>
-
-
-
       <Link to="/listings" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           Browse Items
@@ -45,9 +42,6 @@ export const Navbar = () => {
           Blog
         </Button>
       </Link>
-
-
-
 
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">

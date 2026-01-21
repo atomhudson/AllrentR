@@ -29,6 +29,7 @@ const SubmitListing = () => {
   const navigate = useNavigate();
   const { user, authReady } = useAuth();
   const [showChoiceDialog, setShowChoiceDialog] = useState(true);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<'free' | 'paid'>('free');
@@ -275,8 +276,7 @@ const SubmitListing = () => {
     if (error) throw error;
 
     setLoading(false);
-    toast({ title: "Free listing submitted!", description: "Your listing is pending admin approval." });
-    navigate('/profile');
+    setShowSuccessDialog(true);
   };
 
   const handlePaidListing = async () => {
@@ -567,13 +567,13 @@ const SubmitListing = () => {
                         setDiscount(0);
                       }
                     }}>
-                      {/* <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer"> */}
-                      {/* <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
+                      <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 transition-all cursor-pointer">
+                        <RadioGroupItem value="free" id="free" className="border-primary text-primary" />
                         <Label htmlFor="free" className="cursor-pointer flex-1">
-                          <span className="font-semibold text-foreground">Free Listing</span>
+                          <span className="font-semibold text-foreground">Unpaid Listing</span>
                           <span className="text-muted-foreground ml-2">- ₹0 (Standard Visibility)</span>
-                        </Label> */}
-                      {/* </div> */}
+                        </Label>
+                      </div>
                       <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 mt-3 transition-all cursor-pointer">
                         <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
                         <Label htmlFor="paid" className="cursor-pointer flex-1">
@@ -773,6 +773,41 @@ const SubmitListing = () => {
                 </p>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Success Dialog for Free Listing */}
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex justify-center mb-4">
+                <div className="p-4 bg-primary/10 rounded-full">
+                  <CheckCircle className="w-12 h-12 text-primary" />
+                </div>
+              </div>
+              <DialogTitle className="text-2xl font-bold text-center text-primary">
+                Successfully Created Listing!
+              </DialogTitle>
+              <DialogDescription className="text-center mt-2">
+                Your listing has been submitted and is pending admin approval.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 p-4 bg-secondary border border-border rounded-lg">
+              <p className="text-sm text-muted-foreground text-center">
+                <strong className="text-foreground">Note:</strong> We only connect people. We are not responsible for your product or any transactions. Please verify all details before renting/selling.
+              </p>
+            </div>
+            <DialogFooter className="mt-6">
+              <Button 
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate('/profile');
+                }}
+                className="w-full bg-primary hover:bg-accent text-primary-foreground"
+              >
+                Go to My Profile
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

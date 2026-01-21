@@ -147,7 +147,7 @@ export default function Login() {
               "linear-gradient(135deg, rgba(229,56,59,0.4), rgba(11,9,10,0.8))",
           }}
         />
-        <div className="relative z-10 flex flex-col justify-end p-12 lg:p-16">
+        <div className="relative z-10 flex flex-col justify-end p-8 lg:p-12 xl:p-16">
           <div className="space-y-6">
             <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-xl"
@@ -162,7 +162,7 @@ export default function Login() {
               </span>
             </div>
 
-            <h1 className="text-6xl font-black text-[#F5F3F4] leading-tight">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black text-[#F5F3F4] leading-tight">
               Continue Your <br />
               <span
                 style={{
@@ -182,8 +182,8 @@ export default function Login() {
       </div>
 
       {/* Right Section (Form) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative z-10 mt-10">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-12 relative z-10 mt-16 sm:mt-10">
+        <div className="w-full max-w-sm sm:max-w-md">
           {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex items-center justify-center gap-4">
@@ -222,7 +222,7 @@ export default function Login() {
           </div>
 
           {/* Step Content */}
-          <div className="rounded-3xl p-8 backdrop-blur-2xl border border-[#E5383B]/20 bg-white/5">
+          <div className="rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 backdrop-blur-2xl border border-[#E5383B]/20 bg-white/5">
             {step === 1 && (
               <div className="space-y-6 animate-fade-in">
                 {/* Email Input */}

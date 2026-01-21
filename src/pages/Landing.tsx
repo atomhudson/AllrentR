@@ -71,8 +71,8 @@ const Landing = () => {
               </span>
             </div>
 
-            <h2 className="text-5xl font-extrabold text-[#161A1D] mb-6 leading-tight">Why Choose Us for
-Renting & Earning<br />
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#161A1D] mb-6 leading-tight">Why Choose Us for
+<br className="hidden sm:block" />
               <span className="bg-gradient-to-r from-[#E5383B] via-[#BA181B] to-[#E5383B] bg-clip-text text-transparent">
                 Renting & Earning
               </span>
@@ -154,7 +154,7 @@ Renting & Earning<br />
                 {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5F3F4] to-[#F5F3F4]/70 border-2 border-[#BA181B]" />)}
               </div>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-[#F5F3F4] leading-tight tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-[#F5F3F4] leading-tight tracking-tight">
               Ready to Start Your
               <span className="block mt-2 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/70 bg-clip-text text-transparent">
                 Rental Journey?
@@ -165,20 +165,20 @@ Renting & Earning<br />
               <Star className="w-6 h-6 text-[#F5F3F4] fill-[#F5F3F4]" />
               <div className="h-1 w-16 bg-gradient-to-l from-transparent to-[#F5F3F4]/50 rounded-full" />
             </div>
-            <p className="text-base md:text-xl lg:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed">Join earning from unused items or finding exactly what they need at unbeatable prices.</p>
-            <div className="flex flex-wrap justify-center gap-5 pt-6">
-              <button onClick={() => !user && navigate("/signup")} className="group relative px-12 py-5 bg-[#F5F3F4] text-[#E5383B] text-lg font-bold rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed px-4">Join earning from unused items or finding exactly what they need at unbeatable prices.</p>
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 pt-4 sm:pt-6 px-4">
+              <button onClick={() => !user && navigate("/signup")} className="group relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 bg-[#F5F3F4] text-[#E5383B] text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden w-full sm:w-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/90 transition-transform duration-300 group-hover:scale-110" />
-                <span className="relative flex items-center gap-3">
+                <span className="relative flex items-center justify-center gap-2 sm:gap-3">
                   Create Free Account
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform duration-300" />
                 </span>
               </button>
 
-              <button onClick={() => navigate("/submit-listing")} className="group relative px-12 py-5 bg-transparent border-3 border-[#F5F3F4] text-[#F5F3F4] text-lg font-bold rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden">
-                <span className="relative flex items-center gap-3">
+              <button onClick={() => navigate("/submit-listing")} className="group relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 bg-transparent border-2 sm:border-3 border-[#F5F3F4] text-[#F5F3F4] text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl hover:bg-[#F5F3F4] hover:text-[#E5383B] transition-all duration-300 hover:scale-105 overflow-hidden w-full sm:w-auto">
+                <span className="relative flex items-center justify-center gap-2 sm:gap-3">
                   List Your First Item
-                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform duration-300" />
                 </span>
               </button>
             </div>

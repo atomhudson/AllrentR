@@ -8,7 +8,7 @@ const Footer = () => {
 
       {/* Main container */}
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid md:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-12">
           {/* Brand Info */}
           <div>
             <h3 className="text-2xl font-bold bg-gradient-to-r from-[#E5383B] to-[#BA181B] bg-clip-text text-transparent mb-4">

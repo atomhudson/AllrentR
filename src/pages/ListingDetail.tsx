@@ -371,13 +371,13 @@ const ListingDetail = () => {
         <div className="min-h-screen bg-[#FAFAFA]">
             <Navbar />
 
-            <div className="max-w-6xl mx-auto px-4 pt-20 pb-8">
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-6 sm:pb-8">
                 {/* Navigation */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
                     <Button variant="ghost" size="sm" onClick={() => navigate('/listings')} className="text-gray-600 hover:text-primary hover:bg-primary/5 -ml-2">
                         <ArrowLeft className="w-4 h-4 mr-1.5" />Back to Listings
                     </Button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         {/* Owner Controls */}
                         {isOwner && (
                             <>
@@ -388,7 +388,7 @@ const ListingDetail = () => {
                                     className="gap-1.5 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                                 >
                                     <Pencil className="w-3.5 h-3.5" />
-                                    Edit
+                                    <span className="hidden xs:inline">Edit</span>
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -397,7 +397,7 @@ const ListingDetail = () => {
                                     className="gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
-                                    Delete
+                                    <span className="hidden xs:inline">Delete</span>
                                 </Button>
                             </>
                         )}
@@ -415,9 +415,9 @@ const ListingDetail = () => {
                 )}
 
                 {/* Main Grid - 60/40 Split */}
-                <div className="grid lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
                     {/* Left Column - Images & Details */}
-                    <div className="lg:col-span-3 space-y-4">
+                    <div className="lg:col-span-3 space-y-3 sm:space-y-4">
                         {/* Image Gallery */}
                         <div className="relative rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
                             <div className="aspect-[16/10] relative">
@@ -478,37 +478,37 @@ const ListingDetail = () => {
                         </div>
 
                         {/* Info Cards Row */}
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-center">
-                                <Eye className="w-5 h-5 text-primary mx-auto mb-1" />
-                                <p className="text-lg font-bold text-gray-800">{listing.views || 0}</p>
-                                <p className="text-xs text-gray-500">Views</p>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center">
+                                <Eye className="w-4 sm:w-5 h-4 sm:h-5 text-primary mx-auto mb-1" />
+                                <p className="text-base sm:text-lg font-bold text-gray-800">{listing.views || 0}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500">Views</p>
                             </div>
-                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-center">
-                                <Star className="w-5 h-5 text-amber-500 fill-amber-500 mx-auto mb-1" />
-                                <p className="text-lg font-bold text-gray-800">{listing.rating?.toFixed(1) || "5.0"}</p>
-                                <p className="text-xs text-gray-500">Rating</p>
+                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center">
+                                <Star className="w-4 sm:w-5 h-4 sm:h-5 text-amber-500 fill-amber-500 mx-auto mb-1" />
+                                <p className="text-base sm:text-lg font-bold text-gray-800">{listing.rating?.toFixed(1) || "5.0"}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500">Rating</p>
                             </div>
-                            <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-center">
-                                <MapPin className="w-5 h-5 text-primary mx-auto mb-1" />
-                                <p className="text-lg font-bold text-gray-800 truncate">{listing.city || "—"}</p>
-                                <p className="text-xs text-gray-500">Location</p>
+                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center">
+                                <MapPin className="w-4 sm:w-5 h-4 sm:h-5 text-primary mx-auto mb-1" />
+                                <p className="text-base sm:text-lg font-bold text-gray-800 truncate">{listing.city || "—"}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500">Location</p>
                             </div>
                         </div>
 
                         {/* Description */}
-                        <div className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-2 mb-3">
+                        <div className="p-4 sm:p-5 bg-white rounded-xl border border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2 sm:mb-3">
                                 <FileText className="w-4 h-4 text-primary" />
                                 <h3 className="font-semibold text-gray-800">Description</h3>
                             </div>
-                            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
                                 {listing.description || "No description provided."}
                             </p>
                         </div>
 
                         {/* Location & Contact Section */}
-                        <div className="grid md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
@@ -558,31 +558,31 @@ const ListingDetail = () => {
                     </div>
 
                     {/* Right Column - Sticky Sidebar */}
-                    <div className="lg:col-span-2">
-                        <div className="lg:sticky lg:top-20 space-y-4">
+                    <div className="lg:col-span-2 order-first lg:order-last">
+                        <div className="lg:sticky lg:top-20 space-y-3 sm:space-y-4">
                             {/* Product Info Card */}
-                            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                                <h1 className="text-xl font-bold text-gray-900 mb-2">{listing.product_name}</h1>
-                                <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                            <div className="p-4 sm:p-5 bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm">
+                                <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{listing.product_name}</h1>
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                                     <div className="flex items-center gap-1">
-                                        <User className="w-4 h-4" />
+                                        <User className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                                         <span>{listing.owner_name || "Verified Owner"}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <Calendar className="w-4 h-4" />
+                                        <Calendar className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                                         <span>{new Date(listing.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
 
                                 {/* Price */}
-                                <div className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl mb-4">
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Price</p>
+                                <div className="p-3 sm:p-4 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg sm:rounded-xl mb-3 sm:mb-4">
+                                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-1">Price</p>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-primary">₹{listing.rent_price || 0}</span>
-                                        <span className="text-gray-500">{listing.product_type === 'sale' ? '' : '/day'}</span>
+                                        <span className="text-2xl sm:text-3xl font-bold text-primary">₹{listing.rent_price || 0}</span>
+                                        <span className="text-sm text-gray-500">{listing.product_type === 'sale' ? '' : '/day'}</span>
                                     </div>
                                     {listing.original_price > listing.rent_price && (
-                                        <p className="text-sm text-gray-400 line-through mt-1">₹{listing.original_price}</p>
+                                        <p className="text-xs sm:text-sm text-gray-400 line-through mt-1">₹{listing.original_price}</p>
                                     )}
                                 </div>
 

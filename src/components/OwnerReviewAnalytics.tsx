@@ -28,7 +28,7 @@ export const OwnerReviewAnalytics = ({ userId }: { userId: string }) => {
                 const { data: listings } = await (supabase
                     .from('listings') as any)
                     .select('id')
-                    .eq('user_id', userId);
+                    .eq('owner_user_id', userId);
 
                 if (!listings?.length) {
                     setLoading(false);

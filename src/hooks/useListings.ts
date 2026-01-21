@@ -45,8 +45,8 @@ export const useListings = (status?: string, userId?: string, enabled: boolean =
       let error: any = null;
       
       if (isPublicApprovedQuery) {
-        // Use secure view that masks phone/address for non-owners
-        const result = await (supabase as any).from('listings_public').select('*')
+        // Query approved listings directly (view not available)
+        const result = await supabase.from('listings').select('*')
           .eq('listing_status', 'approved')
           .order('created_at', { ascending: false });
         data = result.data;

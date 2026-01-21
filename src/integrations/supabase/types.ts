@@ -323,6 +323,13 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "item_verifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       listings: {
@@ -552,6 +559,13 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ratings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       section_visibility: {
@@ -743,11 +757,113 @@ export type Database = {
         }
         Relationships: []
       }
+      listings_public: {
+        Row: {
+          address: string | null
+          availability: boolean | null
+          category: string | null
+          coupon_code: string | null
+          created_at: string | null
+          description: string | null
+          discount_amount: number | null
+          display_id: string | null
+          final_price: number | null
+          id: string | null
+          images: string[] | null
+          listing_status: string | null
+          listing_type: string | null
+          original_price: number | null
+          owner_user_id: string | null
+          package_id: string | null
+          payment_transaction: string | null
+          payment_verified: boolean | null
+          phone: string | null
+          pin_code: string | null
+          product_name: string | null
+          product_type: Database["public"]["Enums"]["product_type"] | null
+          rating: number | null
+          rent_price: number | null
+          verification_enabled: boolean | null
+          views: number | null
+        }
+        Insert: {
+          address?: never
+          availability?: boolean | null
+          category?: string | null
+          coupon_code?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          display_id?: string | null
+          final_price?: number | null
+          id?: string | null
+          images?: string[] | null
+          listing_status?: string | null
+          listing_type?: string | null
+          original_price?: number | null
+          owner_user_id?: string | null
+          package_id?: string | null
+          payment_transaction?: string | null
+          payment_verified?: boolean | null
+          phone?: never
+          pin_code?: string | null
+          product_name?: string | null
+          product_type?: Database["public"]["Enums"]["product_type"] | null
+          rating?: number | null
+          rent_price?: number | null
+          verification_enabled?: boolean | null
+          views?: number | null
+        }
+        Update: {
+          address?: never
+          availability?: boolean | null
+          category?: string | null
+          coupon_code?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          display_id?: string | null
+          final_price?: number | null
+          id?: string | null
+          images?: string[] | null
+          listing_status?: string | null
+          listing_type?: string | null
+          original_price?: number | null
+          owner_user_id?: string | null
+          package_id?: string | null
+          payment_transaction?: string | null
+          payment_verified?: boolean | null
+          phone?: never
+          pin_code?: string | null
+          product_name?: string | null
+          product_type?: Database["public"]["Enums"]["product_type"] | null
+          rating?: number | null
+          rent_price?: number | null
+          verification_enabled?: boolean | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_listing_rating: {
         Args: { listing_id_param: string }
         Returns: number
+      }
+      get_listing_contact: {
+        Args: { listing_id_param: string }
+        Returns: {
+          address: string
+          phone: string
+        }[]
       }
       has_role: {
         Args: {

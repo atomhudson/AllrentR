@@ -38,21 +38,39 @@ export const useListings = (status?: string, userId?: string, enabled: boolean =
     }
     setLoading(true);
     try {
-      let query = supabase.from('listings').select('*');
+      // Use secure view for approved public listings, direct table for owner's own listings
+      const isPublicApprovedQuery = status === 'approved' && !userId;
       
-      if (status) {
-        query = query.eq('listing_status', status);
+      let data: any[] | null = null;
+      let error: any = null;
+      
+      if (isPublicApprovedQuery) {
+        // Use secure view that masks phone/address for non-owners
+        const result = await (supabase as any).from('listings_public').select('*')
+          .eq('listing_status', 'approved')
+          .order('created_at', { ascending: false });
+        data = result.data;
+        error = result.error;
+      } else {
+        // Use direct table for owner's own listings or admin queries
+        let query = supabase.from('listings').select('*');
+        
+        if (status) {
+          query = query.eq('listing_status', status);
+        }
+        
+        if (userId) {
+          query = query.eq('owner_user_id', userId);
+        }
+        
+        const result = await query.order('created_at', { ascending: false });
+        data = result.data;
+        error = result.error;
       }
-      
-      if (userId) {
-        query = query.eq('owner_user_id', userId);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      setListings(data || []);
+      setListings((data || []) as Listing[]);
     } catch (error) {
       console.error('Error fetching listings:', error);
     } finally {

@@ -102,7 +102,7 @@ const ListingDetail = () => {
     const [contactRevealed, setContactRevealed] = useState(false);
     const [revealedContact, setRevealedContact] = useState<{ phone: string; address: string } | null>(null);
     const [revealingContact, setRevealingContact] = useState(false);
-    
+
     const displayIdFromUrl = useMemo(() => {
         if (!slugId) return null;
         const match = slugId.match(/PROD[-_][a-z0-9-]+$/i);
@@ -126,9 +126,9 @@ const ListingDetail = () => {
                 const normalizedId = displayIdFromUrl.replace('PROD-', 'PROD_');
                 let fetchedListing: any = null;
 
-                // Use secure view for public queries - masks phone/address for non-owners
-                const { data, error } = await (supabase as any)
-                    .from('listings_public')
+                // Query listings directly (view not available)
+                const { data, error } = await supabase
+                    .from('listings')
                     .select('*')
                     .eq('display_id', normalizedId)
                     .eq('listing_status', 'approved')
@@ -136,8 +136,8 @@ const ListingDetail = () => {
 
                 if (error) {
                     const altId = displayIdFromUrl.replace('PROD_', 'PROD-');
-                    const { data: altData, error: altError } = await (supabase as any)
-                        .from('listings_public')
+                    const { data: altData, error: altError } = await supabase
+                        .from('listings')
                         .select('*')
                         .eq('display_id', altId)
                         .eq('listing_status', 'approved')
@@ -626,7 +626,7 @@ const ListingDetail = () => {
                                         {existingConversation && (
                                             <p className="text-xs text-center text-gray-400 mt-2">You have an existing conversation</p>
                                         )}
-                                        
+
                                         {/* Item Condition & Verification Button */}
                                         <Button
                                             onClick={() => setVerificationOpen(true)}

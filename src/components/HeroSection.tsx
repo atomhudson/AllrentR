@@ -172,8 +172,7 @@ export default function StartupHeroSection() {
                   src={heroPoster}
                   alt="Hero Poster"
                   className="absolute inset-0 w-full h-full object-cover -z-10"
-                  // @ts-ignore
-                  fetchPriority="high"
+                  {...{ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>}
                 />
 
                 <video

@@ -236,22 +236,6 @@ const SubmitListing = () => {
   };
 
   const handleFreeListing = async () => {
-    // Geocode first - combine address + pin + country for better accuracy
-    const primaryQuery = [formData.address, formData.pin_code, 'India'].filter(Boolean).join(', ');
-    let geo = await geocodeWithNominatim(primaryQuery);
-    if (!geo && formData.address && formData.pin_code) {
-      geo = await geocodeWithNominatim(`${formData.address}, ${formData.pin_code}, India`);
-    }
-    if (!geo && formData.pin_code) {
-      geo = await geocodeWithNominatim(`${formData.pin_code}, India`);
-    }
-    if (!geo) {
-      toast({ title: 'Location not found', description: 'Please refine address or PIN code', variant: 'destructive' });
-      setLoading(false);
-      return;
-    }
-    const gh = ngeohash.encode(geo.lat, geo.lon, 9);
-
     const listingData = {
       owner_user_id: user.id,
       ...formData,
@@ -262,13 +246,6 @@ const SubmitListing = () => {
       discount_amount: 0,
       final_price: 0,
       coupon_code: null,
-      // location fields
-      latitude: geo.lat,
-      longitude: geo.lon,
-      city: geo.city,
-      state: geo.state,
-      locality: geo.locality,
-      geohash: gh
     };
 
     const { error } = await supabase.from('listings').insert([listingData]);

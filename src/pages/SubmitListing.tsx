@@ -258,8 +258,13 @@ const SubmitListing = () => {
 
   const handlePaidListing = async () => {
     const selectedPkg = packages.find(p => p.id === selectedPackage);
-    const originalPrice = selectedPkg ? selectedPkg.price : 20;
-    const finalPrice = originalPrice - discount;
+    if (!selectedPkg) {
+      toast({ title: 'Please select a package', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+    const originalPrice = selectedPkg.price;
+    const finalPrice = Math.max(1, originalPrice - discount); // Ensure minimum ₹1
 
     // Create Razorpay order
     const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {

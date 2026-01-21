@@ -11,29 +11,29 @@ const AboutPage = () => {
       {/* ===== HERO SECTION ===== */}
       <br></br>
       <section className="w-full bg-background">
-        <div className="container mx-auto px-6 py-12 md:py-16">
-          <div className="flex flex-col items-center gap-8">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-16">
+          <div className="flex flex-col items-center gap-6 sm:gap-8">
             <div className="w-full text-center">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 sm:mb-6">
                 Find Your Tribe,
                 <br />
                 Build Your Network.
               </h1>
-              <p className="text-lg md:text-xl text-foreground/70 mb-8 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-foreground/70 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
                 Connect with like-minded students for fun,
-                <br />
+                <br className="hidden sm:block" />
                 friendships, and future opportunities.
               </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                <Button size="lg" className="min-w-[160px]">
+              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
+                <Button size="lg" className="min-w-[140px] sm:min-w-[160px] w-full sm:w-auto">
                   Join for Free →
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
-                  className="gap-3 min-w-[220px]"
+                  className="gap-2 sm:gap-3 min-w-[200px] sm:min-w-[220px] w-full sm:w-auto"
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0">
                     <img
                       src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"
                       alt="User avatar"
@@ -44,7 +44,7 @@ const AboutPage = () => {
                 </Button>
               </div>
             </div>
-            <div className="w-full max-w-5xl mt-4">
+            <div className="w-full max-w-5xl mt-4 px-2 sm:px-0">
               <img
                 src={heroImage}
                 alt="Diverse group of happy students networking and building friendships"
@@ -56,20 +56,20 @@ const AboutPage = () => {
       </section>
 
       {/* ===== ABOUT SECTION ===== */}
-      <section id="about" className="w-full py-20 md:py-32 bg-card">
-        <div className="container mx-auto px-6">
+      <section id="about" className="w-full py-12 sm:py-16 md:py-20 lg:py-32 bg-card">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               About AllRentR
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2">
               AllRentR is a modern platform designed to help people connect,
               share, and rent gadgets, tools, and everyday items easily. Whether
               you're a student, freelancer, or creator — our goal is to make
               collaboration, community, and convenience accessible to everyone.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-8 mt-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-12 md:mt-16">
               {/* Card 1 */}
               <div className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">

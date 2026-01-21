@@ -99,6 +99,10 @@ const ListingDetail = () => {
     // Verification modal state
     const [verificationOpen, setVerificationOpen] = useState(false);
     const [verificationEnabled, setVerificationEnabled] = useState(false);
+    const [contactRevealed, setContactRevealed] = useState(false);
+    const [revealedContact, setRevealedContact] = useState<{ phone: string; address: string } | null>(null);
+    const [revealingContact, setRevealingContact] = useState(false);
+    
     const displayIdFromUrl = useMemo(() => {
         if (!slugId) return null;
         const match = slugId.match(/PROD[-_][a-z0-9-]+$/i);
@@ -122,8 +126,9 @@ const ListingDetail = () => {
                 const normalizedId = displayIdFromUrl.replace('PROD-', 'PROD_');
                 let fetchedListing: any = null;
 
+                // Use secure view for public queries - masks phone/address for non-owners
                 const { data, error } = await (supabase as any)
-                    .from('listings')
+                    .from('listings_public')
                     .select('*')
                     .eq('display_id', normalizedId)
                     .eq('listing_status', 'approved')
@@ -132,7 +137,7 @@ const ListingDetail = () => {
                 if (error) {
                     const altId = displayIdFromUrl.replace('PROD_', 'PROD-');
                     const { data: altData, error: altError } = await (supabase as any)
-                        .from('listings')
+                        .from('listings_public')
                         .select('*')
                         .eq('display_id', altId)
                         .eq('listing_status', 'approved')
@@ -186,6 +191,36 @@ const ListingDetail = () => {
             conv => conv.listing_id === listing.id && (conv.owner_id === user.id || conv.leaser_id === user.id)
         );
     }, [conversations, listing, user]);
+
+    // Function to reveal full contact details
+    const handleRevealContact = async () => {
+        if (!user) {
+            toast({ title: "Login Required", description: "Please login to view contact details", variant: "destructive" });
+            navigate("/login");
+            return;
+        }
+
+        if (!listing) return;
+
+        setRevealingContact(true);
+        try {
+            const { data, error } = await supabase.rpc('get_listing_contact', {
+                listing_id_param: listing.id
+            });
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                setRevealedContact({ phone: data[0].phone, address: data[0].address });
+                setContactRevealed(true);
+            }
+        } catch (error) {
+            console.error('Error revealing contact:', error);
+            toast({ title: "Error", description: "Could not retrieve contact details", variant: "destructive" });
+        } finally {
+            setRevealingContact(false);
+        }
+    };
 
     const handleStartChat = async () => {
         if (!user) {
@@ -472,15 +507,45 @@ const ListingDetail = () => {
                             </p>
                         </div>
 
-                        {/* Location & Price History Side by Side */}
+                        {/* Location & Contact Section */}
                         <div className="grid md:grid-cols-2 gap-3">
                             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <MapPin className="w-4 h-4 text-primary" />
-                                    <h3 className="font-semibold text-gray-800 text-sm">Location</h3>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-primary" />
+                                        <h3 className="font-semibold text-gray-800 text-sm">Location & Contact</h3>
+                                    </div>
+                                    {!isOwner && !contactRevealed && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={handleRevealContact}
+                                            disabled={revealingContact}
+                                            className="text-xs h-7 px-2 border-primary text-primary hover:bg-primary/10"
+                                        >
+                                            {revealingContact ? "Loading..." : "Reveal Contact"}
+                                        </Button>
+                                    )}
                                 </div>
-                                <p className="text-sm text-gray-600">{listing.address || "Not provided"}</p>
-                                {listing.city && <p className="text-xs text-gray-400 mt-1">{listing.city}{listing.pin_code ? ` • PIN: ${listing.pin_code}` : ''}</p>}
+                                <p className="text-sm text-gray-600">
+                                    {contactRevealed && revealedContact ? revealedContact.address : listing.address || "Not provided"}
+                                </p>
+                                {listing.pin_code && (
+                                    <p className="text-xs text-gray-400 mt-1">PIN: {listing.pin_code}</p>
+                                )}
+                                {(contactRevealed && revealedContact) ? (
+                                    <p className="text-sm text-primary font-medium mt-2">
+                                        📞 {revealedContact.phone}
+                                    </p>
+                                ) : !isOwner && listing.phone?.startsWith('******') ? (
+                                    <p className="text-xs text-muted-foreground mt-2 italic">
+                                        Contact hidden • Click "Reveal Contact" to view
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-primary font-medium mt-2">
+                                        📞 {listing.phone}
+                                    </p>
+                                )}
                             </div>
                             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                                 <div className="flex items-center gap-2 mb-2">

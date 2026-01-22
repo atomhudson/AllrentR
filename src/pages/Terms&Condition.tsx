@@ -71,31 +71,31 @@ const TermsAndConditionPage = () => {
             <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold mb-3 text-destructive">7. Platform Role & Liability Disclaimer</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                <strong>AllRentr केवल एक Person-to-Person Connection Platform है।</strong> हम सिर्फ Owner (मालिक) और Renter (किराएदार) को connect करते हैं।
+                <strong>AllRentr is solely a Person-to-Person Connection Platform.</strong> We only connect Owners and Renters with each other.
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mb-4">
-                <li><strong>कोई Commission नहीं</strong> - AllRentr कोई भी commission charge नहीं करता</li>
-                <li><strong>कोई Security Charges नहीं</strong> - हम किसी भी प्रकार का security deposit नहीं लेते</li>
-                <li><strong>कोई Hidden Charges नहीं</strong> - किसी भी प्रकार का अतिरिक्त charge नहीं है</li>
+                <li><strong>No Commission</strong> - AllRentr does not charge any commission on transactions</li>
+                <li><strong>No Security Charges</strong> - We do not collect any security deposit or fees</li>
+                <li><strong>No Hidden Charges</strong> - There are no additional or hidden charges of any kind</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                <strong className="text-destructive">महत्वपूर्ण सूचना:</strong> अगर किराए पर दिया गया product damage होता है, खो जाता है, चोरी होता है, या कोई भी समस्या उत्पन्न होती है, तो <strong>AllRentr इसके लिए जिम्मेदार नहीं है।</strong>
+                <strong className="text-destructive">Important Notice:</strong> If any rented product gets damaged, lost, stolen, or any issue arises during the rental period, <strong>AllRentr is NOT responsible for it.</strong>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                यह मामला पूर्णतः <strong>Owner और Renter के बीच का है।</strong> दोनों पक्षों को आपसी समझौते से इसे सुलझाना होगा। AllRentr किसी भी विवाद, नुकसान या क्षति के लिए उत्तरदायी नहीं होगा।
+                This is entirely a matter <strong>between the Owner and Renter.</strong> Both parties must resolve any disputes through mutual agreement. AllRentr will not be liable for any disputes, damages, or losses.
               </p>
             </div>
 
             <div className="bg-primary/10 border border-primary/30 rounded-lg p-6">
               <h3 className="text-xl font-semibold mb-3 text-primary">8. User Agreement</h3>
               <p className="text-muted-foreground leading-relaxed">
-                इस platform का उपयोग करके, आप स्वीकार करते हैं कि:
+                By using this platform, you acknowledge and agree that:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-3">
-                <li>आप किसी भी rental transaction के लिए स्वयं जिम्मेदार हैं</li>
-                <li>Product की condition verify करना आपकी जिम्मेदारी है</li>
-                <li>Owner और Renter के बीच होने वाले किसी भी विवाद में AllRentr शामिल नहीं होगा</li>
-                <li>सभी लेन-देन आपके own risk पर हैं</li>
+                <li>You are solely responsible for any rental transaction you engage in</li>
+                <li>Verifying the product's condition before and after rental is your responsibility</li>
+                <li>AllRentr will not be involved in any disputes between Owner and Renter</li>
+                <li>All transactions are conducted at your own risk</li>
               </ul>
             </div>
           </div>

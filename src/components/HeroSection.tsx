@@ -35,7 +35,7 @@ export default function StartupHeroSection() {
   }, []);
 
   return (
-    <div className="pt-4 relative min-h-screen overflow-hidden bg-gradient-to-br from-[#660708] via-[#A4161A] to-[#BA181B]">
+    <div className="pt-4 relative min-h-screen min-h-[100dvh] overflow-hidden bg-gradient-to-br from-[#660708] via-[#A4161A] to-[#BA181B]">
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute top-20 left-10 w-96 h-96 bg-[#E5383B] rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-slow"
@@ -182,8 +182,10 @@ export default function StartupHeroSection() {
                   loop
                   muted
                   playsInline
+                  webkit-playsinline="true"
                   className="w-full h-full object-cover rounded-2xl"
                   aria-label="AllRentR promotional video showing simplified rental process"
+                  style={{ WebkitTransform: 'translateZ(0)' }}
                 >
                   Your browser does not support the video tag.
                 </video>

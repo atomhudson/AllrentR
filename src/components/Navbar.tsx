@@ -112,7 +112,7 @@ export const Navbar = () => {
   );
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F5F3F4]/95 backdrop-blur-xl border-b border-[#D3D3D3]/70 shadow-lg shadow-[#161A1D]/5">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F5F3F4]/95 border-b border-[#D3D3D3]/70 shadow-lg shadow-[#161A1D]/5" style={{ WebkitBackdropFilter: 'blur(20px)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-between h-20">
           {/* Brand */}

@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TeamMember {
   id: string;
@@ -18,6 +24,19 @@ interface TeamCarouselProps {
 const TeamCarousel = ({ members }: TeamCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp") {
+        handlePrevious();
+      } else if (e.key === "ArrowDown") {
+        handleNext();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex]);
 
   if (!members || members.length === 0) {
     return null;
@@ -64,18 +83,6 @@ const TeamCarousel = ({ members }: TeamCarouselProps) => {
     return count.toString();
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp") {
-        handlePrevious();
-      } else if (e.key === "ArrowDown") {
-        handleNext();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex]);
 
   return (
     <div className="w-full flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 py-12 px-4">
@@ -173,6 +180,45 @@ const TeamCarousel = ({ members }: TeamCarouselProps) => {
             </Button>
           )}
         </div>
+
+        {/* Profile Avatars Row */}
+        <TooltipProvider delayDuration={100}>
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
+            {members.map((member, index) => (
+              <Tooltip key={member.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      updateCarousel(index);
+                      if (member.profile_url) {
+                        window.open(member.profile_url, "_blank");
+                      }
+                    }}
+                    className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 transition-all duration-300 hover:scale-110 hover:shadow-lg ${
+                      index === currentIndex
+                        ? "border-primary ring-2 ring-primary/30 scale-110"
+                        : "border-gray-200 grayscale hover:grayscale-0"
+                    }`}
+                    aria-label={`View ${member.name}'s profile`}
+                  >
+                    <img
+                      src={member.avatar_url}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="bottom" 
+                  className="bg-[#161A1D] text-white border-none px-3 py-2 rounded-lg shadow-xl"
+                >
+                  <p className="font-semibold text-sm">{member.name}</p>
+                  <p className="text-xs text-gray-300">Click to visit profile</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
 
         {/* Dots Navigation */}
         <div className="flex gap-3">

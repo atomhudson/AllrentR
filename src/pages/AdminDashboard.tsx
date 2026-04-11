@@ -292,6 +292,59 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Feature Toggles */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <ToggleLeft className="w-6 h-6 text-primary" />
+            Feature Toggles
+          </h2>
+          <Card className="p-6">
+            <p className="text-sm text-muted-foreground mb-6">
+              Turn features on or off across the website. Changes take effect immediately.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {sections?.map((section) => {
+                const info = featureLabels[section.section_name] || {
+                  label: section.section_name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                  description: '',
+                };
+                return (
+                  <div
+                    key={section.id}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                      section.is_visible
+                        ? 'bg-green-500/5 border-green-500/20'
+                        : 'bg-muted/30 border-border/50'
+                    }`}
+                  >
+                    <div className="flex-1 mr-3">
+                      <p className="font-semibold text-sm">{info.label}</p>
+                      {info.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{info.description}</p>
+                      )}
+                    </div>
+                    <Switch
+                      checked={section.is_visible}
+                      onCheckedChange={(checked) => {
+                        toggleVisibility.mutate(
+                          { sectionName: section.section_name, isVisible: checked },
+                          {
+                            onSuccess: () =>
+                              toast({
+                                title: `${info.label} ${checked ? 'enabled' : 'disabled'}`,
+                                description: `${info.label} is now ${checked ? 'visible' : 'hidden'} on the website.`,
+                              }),
+                          }
+                        );
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
         {/* Quick Actions */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">

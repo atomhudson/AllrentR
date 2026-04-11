@@ -29,6 +29,7 @@ declare global {
 const SubmitListing = () => {
   const navigate = useNavigate();
   const { user, authReady } = useAuth();
+  const { isVisible: aiEnabled } = useSectionVisibility('ai_listing');
   const [showChoiceDialog, setShowChoiceDialog] = useState(true);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 
 interface Banner {
   id: string;

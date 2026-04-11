@@ -124,11 +124,13 @@ const Landing = () => {
         </div>
       </section>
 
-      <div id="how-it-works" className="content-visibility-auto">
-        <Suspense fallback={<div className="h-96 w-full" />}>
-          <HowItWorks />
-        </Suspense>
-      </div>
+      {showHowItWorks && (
+        <div id="how-it-works" className="content-visibility-auto">
+          <Suspense fallback={<div className="h-96 w-full" />}>
+            <HowItWorks />
+          </Suspense>
+        </div>
+      )}
 
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B] via-[#BA181B] to-[#660708]">

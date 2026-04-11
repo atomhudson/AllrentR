@@ -5,11 +5,14 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListings, approveListing, rejectListing } from '@/hooks/useListings';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell, Tag, Activity, BarChart3, Package, Flag, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell, Tag, Activity, BarChart3, Package, Flag, AlertTriangle, ToggleLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useAllSectionVisibility } from '@/hooks/useSectionVisibility';
 
 interface ActivityLog {
   id: string;
@@ -30,6 +33,18 @@ const AdminDashboard = () => {
   const [syncing, setSyncing] = useState(false);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [flaggedReviews, setFlaggedReviews] = useState<any[]>([]);
+  const { sections, isLoading: visibilityLoading, toggleVisibility } = useAllSectionVisibility();
+
+  const featureLabels: Record<string, { label: string; description: string }> = {
+    ai_listing: { label: 'AI Listing', description: 'AI-powered listing creation page' },
+    blog: { label: 'Blog Section', description: 'Blog page visibility' },
+    how_it_works: { label: 'How It Works', description: 'How it works section on landing page' },
+    chat_widget: { label: 'Chat Widget', description: 'Voice chat floating button' },
+    banner_carousel: { label: 'Banner Carousel', description: 'Banner carousel on listings page' },
+    top_profiles: { label: 'Top Profiles', description: 'Top profiles section on landing page' },
+    influencer_partners: { label: 'Influencer Partners', description: 'Influencer section on landing page' },
+    leaderboard: { label: 'Leaderboard', description: 'Leaderboard page visibility' },
+  };
 
   const refetchActivityLogs = async () => {
     try {
@@ -274,6 +289,59 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="h-1 w-full bg-gradient-to-r from-primary/30 to-accent/30 rounded-full" />
+          </Card>
+        </div>
+
+        {/* Feature Toggles */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <ToggleLeft className="w-6 h-6 text-primary" />
+            Feature Toggles
+          </h2>
+          <Card className="p-6">
+            <p className="text-sm text-muted-foreground mb-6">
+              Turn features on or off across the website. Changes take effect immediately.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {sections?.map((section) => {
+                const info = featureLabels[section.section_name] || {
+                  label: section.section_name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                  description: '',
+                };
+                return (
+                  <div
+                    key={section.id}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                      section.is_visible
+                        ? 'bg-green-500/5 border-green-500/20'
+                        : 'bg-muted/30 border-border/50'
+                    }`}
+                  >
+                    <div className="flex-1 mr-3">
+                      <p className="font-semibold text-sm">{info.label}</p>
+                      {info.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{info.description}</p>
+                      )}
+                    </div>
+                    <Switch
+                      checked={section.is_visible}
+                      onCheckedChange={(checked) => {
+                        toggleVisibility.mutate(
+                          { sectionName: section.section_name, isVisible: checked },
+                          {
+                            onSuccess: () =>
+                              toast({
+                                title: `${info.label} ${checked ? 'enabled' : 'disabled'}`,
+                                description: `${info.label} is now ${checked ? 'visible' : 'hidden'} on the website.`,
+                              }),
+                          }
+                        );
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </Card>
         </div>
 

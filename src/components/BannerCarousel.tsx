@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 
 interface Banner {
   id: string;
@@ -17,6 +18,7 @@ export default function BannerCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [direction, setDirection] = useState(0);
+  const { isVisible } = useSectionVisibility('banner_carousel');
 
   // Fetch banners from Supabase
   useEffect(() => {
@@ -83,6 +85,8 @@ export default function BannerCarousel() {
   const handleBannerClick = (banner: Banner) => {
     if (banner.link_url) window.open(banner.link_url, "_blank");
   };
+
+  if (!isVisible) return null;
 
   // 🧱 Skeleton Loading State
   if (loading) {

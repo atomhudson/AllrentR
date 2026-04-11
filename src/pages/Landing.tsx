@@ -8,6 +8,7 @@ import { Suspense, lazy } from "react";
 import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
 const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
@@ -16,6 +17,7 @@ const Landing = () => {
     user
   } = useAuth();
   const navigate = useNavigate();
+  const { isVisible: showHowItWorks } = useSectionVisibility('how_it_works');
   const features = [{
     icon: Shield,
     title: "Secure & Verified",
@@ -122,11 +124,13 @@ const Landing = () => {
         </div>
       </section>
 
-      <div id="how-it-works" className="content-visibility-auto">
-        <Suspense fallback={<div className="h-96 w-full" />}>
-          <HowItWorks />
-        </Suspense>
-      </div>
+      {showHowItWorks && (
+        <div id="how-it-works" className="content-visibility-auto">
+          <Suspense fallback={<div className="h-96 w-full" />}>
+            <HowItWorks />
+          </Suspense>
+        </div>
+      )}
 
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B] via-[#BA181B] to-[#660708]">

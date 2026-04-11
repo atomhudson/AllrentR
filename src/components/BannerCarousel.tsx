@@ -18,6 +18,7 @@ export default function BannerCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [direction, setDirection] = useState(0);
+  const { isVisible } = useSectionVisibility('banner_carousel');
 
   // Fetch banners from Supabase
   useEffect(() => {

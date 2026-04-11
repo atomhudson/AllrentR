@@ -741,20 +741,23 @@ const SubmitListing = () => {
                 </p>
               </div>
 
-              <div
-                className="flex flex-col items-center p-6 border-2 border-primary/20 rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all group relative overflow-hidden"
-                onClick={() => navigate('/submit-listing-ai')}
-              >
-                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-bl-lg font-medium">
-                  NEW
+              {aiEnabled && (
+                <div
+                  className="flex flex-col items-center p-6 border-2 border-primary/20 rounded-xl hover:border-primary hover:bg-primary/5 cursor-pointer transition-all group relative overflow-hidden"
+                  onClick={() => navigate('/submit-listing-ai')}
+                >
+                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-bl-lg font-medium">
+                    NEW
+                  </div>
+                  <div className="p-4 bg-primary/10 rounded-full mb-4">
+                    <Bot className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">AI Smart Listing</h3>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Upload a photo and let AI fill in the details for you.
+                  </p>
                 </div>
-                <div className="p-4 bg-primary/10 rounded-full mb-4">
-                  <Bot className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">AI Smart Listing</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Upload a photo and let AI fill in the details for you.
-                </p>
+              )}
               </div>
             </div>
           </DialogContent>

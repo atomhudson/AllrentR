@@ -86,6 +86,8 @@ export default function BannerCarousel() {
     if (banner.link_url) window.open(banner.link_url, "_blank");
   };
 
+  if (!isVisible) return null;
+
   // 🧱 Skeleton Loading State
   if (loading) {
     return (

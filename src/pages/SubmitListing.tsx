@@ -758,7 +758,6 @@ const SubmitListing = () => {
                   </p>
                 </div>
               )}
-              </div>
             </div>
           </DialogContent>
         </Dialog>

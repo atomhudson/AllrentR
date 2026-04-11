@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,7 @@ const extractJSON = (str: string) => {
 const AIListing = () => {
   const navigate = useNavigate();
   const { user, authReady } = useAuth();
+  const { isVisible: aiEnabled } = useSectionVisibility('ai_listing');
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [images, setImages] = useState<string[]>([]);
@@ -91,6 +93,13 @@ const AIListing = () => {
   useEffect(() => {
     if (authReady && !user) navigate('/login');
   }, [authReady, user, navigate]);
+
+  useEffect(() => {
+    if (authReady && !aiEnabled) {
+      toast({ title: 'Feature Disabled', description: 'AI Listing is currently disabled.', variant: 'destructive' });
+      navigate('/submit-listing');
+    }
+  }, [authReady, aiEnabled, navigate]);
 
   useEffect(() => {
     if (scrollRef.current) {

@@ -33,6 +33,18 @@ const AdminDashboard = () => {
   const [syncing, setSyncing] = useState(false);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [flaggedReviews, setFlaggedReviews] = useState<any[]>([]);
+  const { sections, isLoading: visibilityLoading, toggleVisibility } = useAllSectionVisibility();
+
+  const featureLabels: Record<string, { label: string; description: string }> = {
+    ai_listing: { label: 'AI Listing', description: 'AI-powered listing creation page' },
+    blog: { label: 'Blog Section', description: 'Blog page visibility' },
+    how_it_works: { label: 'How It Works', description: 'How it works section on landing page' },
+    chat_widget: { label: 'Chat Widget', description: 'Voice chat floating button' },
+    banner_carousel: { label: 'Banner Carousel', description: 'Banner carousel on listings page' },
+    top_profiles: { label: 'Top Profiles', description: 'Top profiles section on landing page' },
+    influencer_partners: { label: 'Influencer Partners', description: 'Influencer section on landing page' },
+    leaderboard: { label: 'Leaderboard', description: 'Leaderboard page visibility' },
+  };
 
   const refetchActivityLogs = async () => {
     try {

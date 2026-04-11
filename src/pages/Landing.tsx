@@ -17,6 +17,7 @@ const Landing = () => {
     user
   } = useAuth();
   const navigate = useNavigate();
+  const { isVisible: showHowItWorks } = useSectionVisibility('how_it_works');
   const features = [{
     icon: Shield,
     title: "Secure & Verified",

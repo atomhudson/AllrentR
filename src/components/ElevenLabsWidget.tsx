@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSectionVisibility } from '@/hooks/useSectionVisibility';
 
 const ElevenLabsWidget = () => {
   const widgetRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { isVisible } = useSectionVisibility('chat_widget');
+
+  if (!isVisible) return null;
 
   useEffect(() => {
     if (isOpen) {

@@ -8,6 +8,7 @@ import { Suspense, lazy } from "react";
 import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
 const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));

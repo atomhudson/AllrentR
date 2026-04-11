@@ -748,6 +748,7 @@ export type Database = {
     Views: {
       leaderboard: {
         Row: {
+          avatar_url: string | null
           current_streak: number | null
           id: string | null
           last_active_at: string | null

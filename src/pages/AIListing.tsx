@@ -12,13 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Send, Bot, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
-import Groq from "groq-sdk";
 import { motion } from 'framer-motion';
 import ngeohash from 'ngeohash';
-
-// Initialize Groq API
-// NOTE: In a real app, you should proxy this through a backend to hide the key
-const API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
 
 const extractJSON = (str: string) => {
   if (!str) return null;
@@ -107,8 +102,6 @@ const AIListing = () => {
     }
   }, [messages]);
 
-  const groq = new Groq({ apiKey: API_KEY, dangerouslyAllowBrowser: true });
-
   const fetchImageAsBase64 = async (url: string): Promise<{ base64Data: string, mimeType: string }> => {
     const response = await fetch(url);
     const blob = await response.blob();
@@ -116,8 +109,6 @@ const AIListing = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        // Extract mime type and base64 data
-        // Format: data:image/jpeg;base64,/9j/4AAQSkZJRg...
         const matches = base64String.match(/^data:(.+);base64,(.+)$/);
         if (matches && matches.length === 3) {
           resolve({
@@ -142,111 +133,33 @@ const AIListing = () => {
       toast({ title: "Please provide a description", variant: "destructive" });
       return;
     }
-    if (!API_KEY) {
-      toast({ title: "Groq API Key missing", description: "Please check your .env file and restart the server.", variant: "destructive" });
-      return;
-    }
 
     setAnalyzing(true);
 
     try {
       const { base64Data, mimeType } = await fetchImageAsBase64(images[0]);
 
-      // Common prompt structure
-      const systemPrompt = `
-        You are an AI assistant helping a user list an item for rent or sale on a marketplace.
-        Your goal is to extract the following information to populate a listing form:
-        - product_name (string)
-        - description (string, enhanced version of user input)
-        - category (one of: electronics, vehicles, furniture, tools, sports, books, clothing, other)
-        - product_type (one of: rent, sale, both)
-        - rent_price (number, the price amount. If rent, per day. If sale, total price)
-        - pin_code (string, 6 digits)
-        - address (string)
-        - phone (string)
-
-        If any critical information is missing (especially price, location/pin_code, phone, product type), ask the user for it in a conversational way.
-        
-        Return your response in this JSON format (do not use markdown code blocks, just raw JSON):
-        {
-          "extracted_data": {
-            "product_name": "...",
-            "description": "...",
-            "category": "one of: electronics, vehicles, furniture, tools, sports, books, clothing, other",
-            "product_type": "one of: rent, sale, both",
-            "rent_price": 0,
-            "pin_code": "...",
-            "address": "...",
-            "phone": "..."
-          },
-          "next_question": "Your question here if info is missing, else null",
-          "is_complete": boolean (true if all necessary info is gathered)
+      const { data, error } = await supabase.functions.invoke('ai-listing-generate', {
+        body: {
+          mode: 'initial',
+          description: initialDescription,
+          imageBase64: base64Data,
+          imageMimeType: mimeType,
         }
-        IMPORTANT: 'rent_price' must be a number (e.g. 500). Do not include currency symbols or text. If the user says "500 per day", rent_price is 500.
-      `;
+      });
 
-      let text = "";
+      if (error) throw new Error(error.message || 'AI analysis failed');
 
-      try {
-        console.log("Attempting vision analysis with llama-3.2-90b-vision-preview...");
-        const completion = await groq.chat.completions.create({
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: systemPrompt + `\nUser Description: "${initialDescription}"` },
-                { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Data}` } }
-              ]
-            }
-          ],
-          model: "llama-3.2-90b-vision-preview",
-          temperature: 0.5,
-          max_tokens: 1024,
-        });
-        text = completion.choices[0]?.message?.content || "";
-      } catch (visionError: any) {
-        console.error("Vision model failed:", visionError);
-        console.log("Falling back to text-only analysis with llama-3.3-70b-versatile...");
-
-        toast({
-          title: "Image Analysis Failed",
-          description: "Could not analyze image. Proceeding with text description only.",
-          variant: "default"
-        });
-
-        // Fallback to text-only model
-        const completion = await groq.chat.completions.create({
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
-            {
-              role: "user",
-              content: `User Description: "${initialDescription}"`
-            }
-          ],
-          model: "llama-3.3-70b-versatile",
-          temperature: 0.5,
-          max_tokens: 1024,
-          response_format: { type: "json_object" }
-        });
-        text = completion.choices[0]?.message?.content || "";
-      }
-
-      console.log("AI Response:", text);
-
-      // Parse JSON
-      const data = extractJSON(text);
-      if (data) {
-        setExtractedData(data.extracted_data);
+      const text = data?.result || "";
+      const parsed = extractJSON(text);
+      if (parsed) {
+        setExtractedData(parsed.extracted_data);
         setMessages([
           { role: 'user', text: initialDescription },
-          { role: 'model', text: data.next_question || "Great! I have all the information. Please review the details below." }
+          { role: 'model', text: parsed.next_question || "Great! I have all the information. Please review the details below." }
         ]);
-        setIsComplete(data.is_complete);
+        setIsComplete(parsed.is_complete);
       } else {
-        console.error("Failed to parse JSON from:", text);
         throw new Error("AI response was not in the expected format.");
       }
 
@@ -272,50 +185,25 @@ const AIListing = () => {
     setAnalyzing(true);
 
     try {
-      // Construct history for context
-      const prompt = `
-        You are an AI assistant helping a user list an item.
-        
-        Current Extracted Data: ${JSON.stringify(extractedData)}
-        
-        The user just said: "${currentInput}"
-        
-        Update the extracted data based on the new input.
-        If information is still missing (price, pin_code, phone, address, product_type), ask for it.
-        IMPORTANT: 'rent_price' should be the price amount. If rent, per day. If sale, total price.
-        
-        Return JSON:
-        {
-          "extracted_data": { ...updated fields... },
-          "next_question": "...",
-          "is_complete": boolean
+      const { data, error } = await supabase.functions.invoke('ai-listing-generate', {
+        body: {
+          mode: 'chat',
+          currentInput,
+          extractedData,
         }
-        IMPORTANT: 'rent_price' must be a number. Do not include currency symbols.
-      `;
-
-      const completion = await groq.chat.completions.create({
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.5,
-        max_tokens: 1024,
-        response_format: { type: "json_object" }
       });
 
-      const text = completion.choices[0]?.message?.content || "";
+      if (error) throw new Error(error.message || 'Failed to process response');
 
-      const data = extractJSON(text);
-      if (data) {
-        setExtractedData((prev: any) => ({ ...prev, ...data.extracted_data }));
+      const text = data?.result || "";
+      const parsed = extractJSON(text);
+      if (parsed) {
+        setExtractedData((prev: any) => ({ ...prev, ...parsed.extracted_data }));
         setMessages([
           ...newMessages,
-          { role: 'model', text: data.next_question || "Great! I have all the information. Ready to list?" }
+          { role: 'model', text: parsed.next_question || "Great! I have all the information. Ready to list?" }
         ]);
-        setIsComplete(data.is_complete);
+        setIsComplete(parsed.is_complete);
       }
     } catch (error: any) {
       console.error("Chat Error:", error);
@@ -332,7 +220,6 @@ const AIListing = () => {
   const handleFinalSubmit = async () => {
     setLoading(true);
     try {
-      // Geocode logic similar to SubmitListing
       const geocodeWithNominatim = async (query: string) => {
         try {
           const url = new URL('https://nominatim.openstreetmap.org/search');
@@ -369,13 +256,13 @@ const AIListing = () => {
         phone: extractedData.phone,
         address: extractedData.address,
         payment_transaction: 'AI_LISTING',
-        listing_type: 'free', // Default to free for AI flow for now
+        listing_type: 'free',
         original_price: 0,
         discount_amount: 0,
         final_price: 0,
         latitude: geo?.lat || 0,
         longitude: geo?.lon || 0,
-        city: geo?.city || extractedData.address, // Fallback
+        city: geo?.city || extractedData.address,
         state: geo?.state || '',
         geohash: geo ? ngeohash.encode(geo.lat, geo.lon, 9) : ''
       };

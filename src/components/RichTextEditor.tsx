@@ -62,7 +62,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
     }), []);
 
     return (
-        <div className="bg-white text-black rounded-md">
+        <div className="bg-white text-black rounded-md border border-input" style={{ position: 'relative' }}>
             <ReactQuill
                 ref={quillRef}
                 theme="snow"
@@ -70,8 +70,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
                 onChange={onChange}
                 modules={modules}
                 placeholder={placeholder}
-                className="h-[400px] mb-12"
+                style={{ height: '350px' }}
             />
+            {/* Spacer for Quill toolbar + padding so nothing overlaps below */}
+            <div style={{ height: '50px' }} />
         </div>
     );
 };

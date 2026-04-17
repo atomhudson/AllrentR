@@ -262,7 +262,7 @@ export default function Login() {
                         <Mail className="w-5 h-5 text-[#E5383B]" />
                         <input
                           name="email"
-                          type="text"
+                          type="email"
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="your@email.com"
@@ -272,6 +272,9 @@ export default function Login() {
                       </div>
                     </div>
                   </div>
+                  {emailError && (
+                    <p className="text-xs text-[#E5383B] mt-2 ml-2">{emailError}</p>
+                  )}
                 </div>
 
                 {/* Continue Button */}

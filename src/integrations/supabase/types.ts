@@ -883,6 +883,17 @@ export type Database = {
       }
       sync_top_profiles: { Args: never; Returns: undefined }
       update_user_activity: { Args: never; Returns: undefined }
+      validate_coupon_code: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          discount_amount: number
+          discount_percentage: number
+          error_message: string
+          is_percentage: boolean
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

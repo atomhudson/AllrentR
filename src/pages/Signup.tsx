@@ -229,7 +229,7 @@ export default function Signup() {
     if (step > 1) setStep(step - 1);
   };
 
-  const canProceedStep1 = formData.name && formData.email;
+  const canProceedStep1 = formData.name && formData.email && validateEmail(formData.email);
   const canProceedStep2 = formData.phone && formData.pin_code;
   const canProceedStep3 = formData.password && formData.confirmPassword && validatePassword(formData.password) && formData.password === formData.confirmPassword;
 

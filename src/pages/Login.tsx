@@ -28,11 +28,19 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [emailError, setEmailError] = useState("");
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    if (e.target.name === "email") setEmailError("");
   };
 
   const handleSubmit = async () => {
@@ -100,7 +108,22 @@ export default function Login() {
   };
 
   const nextStep = () => {
-    if (step === 1 && formData.email) setStep(2);
+    if (step === 1) {
+      if (!formData.email) {
+        setEmailError("Please enter your email address");
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        setEmailError("Please enter a valid email address");
+        toast({
+          title: "Invalid email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        });
+        return;
+      }
+      setStep(2);
+    }
   };
 
   const prevStep = () => {
@@ -239,7 +262,7 @@ export default function Login() {
                         <Mail className="w-5 h-5 text-[#E5383B]" />
                         <input
                           name="email"
-                          type="text"
+                          type="email"
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="your@email.com"
@@ -249,6 +272,9 @@ export default function Login() {
                       </div>
                     </div>
                   </div>
+                  {emailError && (
+                    <p className="text-xs text-[#E5383B] mt-2 ml-2">{emailError}</p>
+                  )}
                 </div>
 
                 {/* Continue Button */}
@@ -273,6 +299,15 @@ export default function Login() {
                       toast({
                         title: "Email Required",
                         description: "Please enter your email address first",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    if (!validateEmail(formData.email)) {
+                      setEmailError("Please enter a valid email address");
+                      toast({
+                        title: "Invalid email",
+                        description: "Please enter a valid email address",
                         variant: "destructive",
                       });
                       return;

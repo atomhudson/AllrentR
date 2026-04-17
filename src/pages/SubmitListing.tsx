@@ -30,6 +30,7 @@ const SubmitListing = () => {
   const navigate = useNavigate();
   const { user, authReady } = useAuth();
   const { isVisible: aiEnabled } = useSectionVisibility('ai_listing');
+  const { isVisible: paidListingEnabled } = useSectionVisibility('listing_type_selection');
   const [showChoiceDialog, setShowChoiceDialog] = useState(true);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -558,13 +559,15 @@ const SubmitListing = () => {
                           <span className="text-muted-foreground ml-2">- ₹0 (Standard Visibility)</span>
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 mt-3 transition-all cursor-pointer">
-                        <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
-                        <Label htmlFor="paid" className="cursor-pointer flex-1">
-                          <span className="font-semibold text-foreground">Paid Listing</span>
-                          <span className="text-muted-foreground ml-2">- Select Package Below</span>
-                        </Label>
-                      </div>
+                      {paidListingEnabled && (
+                        <div className="flex items-center space-x-3 border border-border bg-card hover:bg-secondary/50 rounded-lg p-4 mt-3 transition-all cursor-pointer">
+                          <RadioGroupItem value="paid" id="paid" className="border-primary text-primary" />
+                          <Label htmlFor="paid" className="cursor-pointer flex-1">
+                            <span className="font-semibold text-foreground">Paid Listing</span>
+                            <span className="text-muted-foreground ml-2">- Select Package Below</span>
+                          </Label>
+                        </div>
+                      )}
                     </RadioGroup>
 
                     {listingType === 'paid' && (

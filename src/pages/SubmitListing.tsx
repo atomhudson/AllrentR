@@ -43,6 +43,16 @@ const SubmitListing = () => {
   const [selectedPackage, setSelectedPackage] = useState<string>('');
   const { packages } = usePackages();
 
+  useEffect(() => {
+    if (!paidListingEnabled && listingType === 'paid') {
+      setListingType('free');
+      setSelectedPackage('');
+      setCouponCode('');
+      setCouponApplied(false);
+      setDiscount(0);
+    }
+  }, [paidListingEnabled, listingType]);
+
   const [formData, setFormData] = useState({
     product_name: '',
     description: '',

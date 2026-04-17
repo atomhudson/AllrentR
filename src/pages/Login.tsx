@@ -108,7 +108,22 @@ export default function Login() {
   };
 
   const nextStep = () => {
-    if (step === 1 && formData.email) setStep(2);
+    if (step === 1) {
+      if (!formData.email) {
+        setEmailError("Please enter your email address");
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        setEmailError("Please enter a valid email address");
+        toast({
+          title: "Invalid email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        });
+        return;
+      }
+      setStep(2);
+    }
   };
 
   const prevStep = () => {

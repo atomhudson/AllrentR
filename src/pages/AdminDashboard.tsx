@@ -44,6 +44,7 @@ const AdminDashboard = () => {
     top_profiles: { label: 'Top Profiles', description: 'Top profiles section on landing page' },
     influencer_partners: { label: 'Influencer Partners', description: 'Influencer section on landing page' },
     leaderboard: { label: 'Leaderboard', description: 'Leaderboard page visibility' },
+    listing_type_selection: { label: 'Paid Listing Option', description: 'Allow users to choose paid listings & packages on submit form' },
   };
 
   const refetchActivityLogs = async () => {

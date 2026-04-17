@@ -35,7 +35,7 @@ export default function StartupHeroSection() {
   }, []);
 
   return (
-    <div className="pt-4 relative min-h-screen min-h-[100dvh] overflow-hidden bg-gradient-to-br from-[#660708] via-[#A4161A] to-[#BA181B]">
+    <div className="pt-20 sm:pt-24 lg:pt-4 relative min-h-screen min-h-[100dvh] overflow-hidden bg-gradient-to-br from-[#660708] via-[#A4161A] to-[#BA181B]">
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute top-20 left-10 w-96 h-96 bg-[#E5383B] rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-slow"
@@ -68,11 +68,11 @@ export default function StartupHeroSection() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full py-12 sm:py-16 lg:py-20">
-          <div className="space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass-card border border-[#E5383B]/30">
-              <Sparkles className="w-5 h-5 text-[#E5383B]" />
-              <span className="text-sm font-semibold text-[#F5F3F4] tracking-wide">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full py-8 sm:py-16 lg:py-20">
+          <div className="space-y-5 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full glass-card border border-[#E5383B]/30 max-w-full">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#E5383B] flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-[#F5F3F4] tracking-wide whitespace-nowrap">
                 India's Newest Rental Revolution
               </span>
             </div>

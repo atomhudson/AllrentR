@@ -68,11 +68,11 @@ export default function StartupHeroSection() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full py-12 sm:py-16 lg:py-20">
-          <div className="space-y-6 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass-card border border-[#E5383B]/30">
-              <Sparkles className="w-5 h-5 text-[#E5383B]" />
-              <span className="text-sm font-semibold text-[#F5F3F4] tracking-wide">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full py-8 sm:py-16 lg:py-20">
+          <div className="space-y-5 sm:space-y-8 animate-slide-in-left text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full glass-card border border-[#E5383B]/30 max-w-full">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#E5383B] flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-[#F5F3F4] tracking-wide whitespace-nowrap">
                 India's Newest Rental Revolution
               </span>
             </div>

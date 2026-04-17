@@ -51,34 +51,28 @@ export const validateCoupon = async (code: string): Promise<{
   error?: string;
 }> => {
   try {
-    const { data, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .eq('active', true)
-      .single();
+    const { data, error } = await supabase.rpc('validate_coupon_code', {
+      _code: code.toUpperCase(),
+    });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       return { valid: false, error: 'Invalid coupon code' };
     }
 
-    const now = new Date();
-    const validFrom = new Date(data.valid_from);
-    const validUntil = data.valid_until ? new Date(data.valid_until) : null;
-
-    if (now < validFrom) {
-      return { valid: false, error: 'Coupon not yet valid' };
+    const result = data[0];
+    if (!result.valid) {
+      return { valid: false, error: result.error_message || 'Invalid coupon code' };
     }
 
-    if (validUntil && now > validUntil) {
-      return { valid: false, error: 'Coupon has expired' };
-    }
-
-    if (data.usage_limit && data.used_count >= data.usage_limit) {
-      return { valid: false, error: 'Coupon usage limit reached' };
-    }
-
-    return { valid: true, coupon: data };
+    return {
+      valid: true,
+      coupon: {
+        code: result.code,
+        discount_percentage: result.discount_percentage,
+        discount_amount: result.discount_amount,
+        is_percentage: result.is_percentage,
+      } as Coupon,
+    };
   } catch (error) {
     return { valid: false, error: 'Error validating coupon' };
   }

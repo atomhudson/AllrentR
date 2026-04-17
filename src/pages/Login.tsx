@@ -28,11 +28,19 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [emailError, setEmailError] = useState("");
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    if (e.target.name === "email") setEmailError("");
   };
 
   const handleSubmit = async () => {

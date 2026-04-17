@@ -303,6 +303,15 @@ export default function Login() {
                       });
                       return;
                     }
+                    if (!validateEmail(formData.email)) {
+                      setEmailError("Please enter a valid email address");
+                      toast({
+                        title: "Invalid email",
+                        description: "Please enter a valid email address",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
                     supabase.auth
                       .resetPasswordForEmail(formData.email, {
                         redirectTo: `${window.location.origin}/reset-password`,

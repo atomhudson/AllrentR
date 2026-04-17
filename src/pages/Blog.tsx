@@ -34,37 +34,26 @@ const Blog = () => {
       ? blogs
       : blogs?.filter((b) => b.category === selectedCategory);
 
-  // --- Featured blogs logic
+  // --- Featured blogs: top 3 most recent (only split when there are enough blogs)
   const featuredBlogs = useMemo(() => {
     if (!filteredBlogs?.length) return [];
-
-    // Get all blog dates in "YYYY-MM-DD" format
-    const dateGroups = filteredBlogs.reduce((acc, blog) => {
-      const dateKey = new Date(blog.created_at).toISOString().split("T")[0];
-      if (!acc[dateKey]) acc[dateKey] = [];
-      acc[dateKey].push(blog);
-      return acc;
-    }, {});
-
-    // Sort dates (latest first)
-    const sortedDates = Object.keys(dateGroups).sort((a, b) =>
-      b.localeCompare(a)
-    );
-
-    // Find today or most recent available date
-    const today = new Date().toISOString().split("T")[0];
-    const featuredDate = dateGroups[today]
-      ? today
-      : sortedDates.length > 0
-      ? sortedDates[0]
-      : null;
-
-    return featuredDate ? dateGroups[featuredDate] : [];
+    // Need at least 4 blogs to split into featured + recent
+    if (filteredBlogs.length < 4) {
+      return [...filteredBlogs]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, Math.min(filteredBlogs.length, 3));
+    }
+    return [...filteredBlogs]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3);
   }, [filteredBlogs]);
 
-  // --- Remaining blogs (non-featured)
+  // --- Recent blogs: show ALL when total is small, otherwise exclude featured
   const featuredIds = new Set(featuredBlogs.map((b) => b.id));
-  const recentBlogs = filteredBlogs?.filter((b) => !featuredIds.has(b.id));
+  const recentBlogs =
+    !filteredBlogs || filteredBlogs.length < 4
+      ? filteredBlogs
+      : filteredBlogs.filter((b) => !featuredIds.has(b.id));
 
   return (
     <div className="min-h-screen bg-background">

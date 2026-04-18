@@ -855,6 +855,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_delete_user: { Args: { _user_id: string }; Returns: undefined }
       admin_get_all_users: {
         Args: never
         Returns: {
@@ -870,6 +871,22 @@ export type Database = {
           phone: string
           pin_code: string
         }[]
+      }
+      admin_toggle_admin_role: {
+        Args: { _make_admin: boolean; _user_id: string }
+        Returns: undefined
+      }
+      admin_update_user: {
+        Args: {
+          _avatar_url?: string
+          _current_streak?: number
+          _longest_streak?: number
+          _name?: string
+          _phone?: string
+          _pin_code?: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       calculate_listing_rating: {
         Args: { listing_id_param: string }

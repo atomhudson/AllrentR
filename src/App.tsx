@@ -83,6 +83,7 @@ const App = () => (
               <Route path="/admin/notifications" element={<NotificationManagement />} />
               <Route path="/admin/coupons" element={<CouponManagement />} />
               <Route path="/admin/boost-packages" element={<BoostPackageManagement />} />
+              <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/manage-packages" element={<PackageManagement />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/about" element={<AboutPage />} />

@@ -527,24 +527,36 @@ const ListingDetail = () => {
                                         </Button>
                                     )}
                                 </div>
-                                <p className="text-sm text-gray-600">
-                                    {contactRevealed && revealedContact ? revealedContact.address : listing.address || "Not provided"}
-                                </p>
-                                {listing.pin_code && (
-                                    <p className="text-xs text-gray-400 mt-1">PIN: {listing.pin_code}</p>
-                                )}
-                                {(contactRevealed && revealedContact) ? (
-                                    <p className="text-sm text-primary font-medium mt-2">
-                                        📞 {revealedContact.phone}
-                                    </p>
-                                ) : !isOwner && listing.phone?.startsWith('******') ? (
-                                    <p className="text-xs text-muted-foreground mt-2 italic">
-                                        Contact hidden • Click "Reveal Contact" to view
-                                    </p>
+                                {!user && !isOwner ? (
+                                    <>
+                                        <p className="text-sm text-gray-400 select-none blur-sm">Hidden address</p>
+                                        <p className="text-xs text-gray-400 mt-1 select-none blur-sm">PIN: ••••••</p>
+                                        <p className="text-xs text-muted-foreground mt-2 italic">
+                                            🔒 Login to view location & contact details
+                                        </p>
+                                    </>
                                 ) : (
-                                    <p className="text-sm text-primary font-medium mt-2">
-                                        📞 {listing.phone}
-                                    </p>
+                                    <>
+                                        <p className="text-sm text-gray-600">
+                                            {contactRevealed && revealedContact ? revealedContact.address : listing.address || "Not provided"}
+                                        </p>
+                                        {listing.pin_code && (
+                                            <p className="text-xs text-gray-400 mt-1">PIN: {listing.pin_code}</p>
+                                        )}
+                                        {(contactRevealed && revealedContact) ? (
+                                            <p className="text-sm text-primary font-medium mt-2">
+                                                📞 {revealedContact.phone}
+                                            </p>
+                                        ) : !isOwner && listing.phone?.startsWith('******') ? (
+                                            <p className="text-xs text-muted-foreground mt-2 italic">
+                                                Contact hidden • Click "Reveal Contact" to view
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-primary font-medium mt-2">
+                                                📞 {listing.phone}
+                                            </p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">

@@ -38,6 +38,7 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const TermsAndConditionPage = lazy(() => import("./pages/Terms&Condition"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const BoostPackageManagement = lazy(() => import("./pages/BoostPackageManagement"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen w-full bg-background">
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="/admin/notifications" element={<NotificationManagement />} />
               <Route path="/admin/coupons" element={<CouponManagement />} />
               <Route path="/admin/boost-packages" element={<BoostPackageManagement />} />
+              <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/manage-packages" element={<PackageManagement />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/about" element={<AboutPage />} />

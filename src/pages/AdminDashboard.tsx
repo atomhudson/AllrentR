@@ -353,6 +353,10 @@ const AdminDashboard = () => {
             Management Tools
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <Button onClick={() => navigate('/admin/users')} variant="outline" className="h-24 flex-col gap-2 border-primary/40 bg-primary/5 hover:bg-primary/10">
+              <Users className="w-6 h-6 text-primary" />
+              <span className="text-sm font-medium">All Users</span>
+            </Button>
             <Button onClick={() => navigate('/admin/terms')} variant="outline" className="h-24 flex-col gap-2">
               <ScrollText className="w-6 h-6" />
               <span className="text-sm font-medium">Terms</span>

@@ -302,18 +302,19 @@ const AdminDashboard = () => {
           <Card className="p-6">
             <p className="text-sm text-muted-foreground mb-6">
               Turn features on or off across the website. Changes take effect immediately.
+              {visibilityLoading && ' Loading…'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {sections?.map((section) => {
-                const info = featureLabels[section.section_name] || {
-                  label: section.section_name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                  description: '',
-                };
+              {Object.entries(featureLabels).map(([sectionName, info]) => {
+                const dbRow = sections?.find((s) => s.section_name === sectionName);
+                // Default ON if missing from DB; OFF defaults for ai_listing & listing_type_selection
+                const defaultVisible = !['ai_listing', 'listing_type_selection'].includes(sectionName);
+                const isVisible = dbRow ? dbRow.is_visible : defaultVisible;
                 return (
                   <div
-                    key={section.id}
+                    key={sectionName}
                     className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
-                      section.is_visible
+                      isVisible
                         ? 'bg-green-500/5 border-green-500/20'
                         : 'bg-muted/30 border-border/50'
                     }`}
@@ -323,17 +324,27 @@ const AdminDashboard = () => {
                       {info.description && (
                         <p className="text-xs text-muted-foreground mt-0.5">{info.description}</p>
                       )}
+                      {!dbRow && (
+                        <p className="text-[10px] text-amber-600 mt-1">Not yet saved · toggle to sync</p>
+                      )}
                     </div>
                     <Switch
-                      checked={section.is_visible}
+                      checked={isVisible}
+                      disabled={toggleVisibility.isPending}
                       onCheckedChange={(checked) => {
                         toggleVisibility.mutate(
-                          { sectionName: section.section_name, isVisible: checked },
+                          { sectionName, isVisible: checked },
                           {
                             onSuccess: () =>
                               toast({
                                 title: `${info.label} ${checked ? 'enabled' : 'disabled'}`,
                                 description: `${info.label} is now ${checked ? 'visible' : 'hidden'} on the website.`,
+                              }),
+                            onError: (err: any) =>
+                              toast({
+                                title: 'Update failed',
+                                description: err?.message || 'Try again',
+                                variant: 'destructive',
                               }),
                           }
                         );

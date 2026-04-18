@@ -44,10 +44,13 @@ export const useAllSectionVisibility = () => {
   const toggleVisibility = useMutation({
     mutationFn: async ({ sectionName, isVisible }: { sectionName: string; isVisible: boolean }) => {
       const { data: { user } } = await supabase.auth.getUser();
+      // Upsert so missing rows are created automatically (fixes "only 3 toggles in production")
       const { error } = await supabase
         .from('section_visibility')
-        .update({ is_visible: isVisible, updated_by: user?.id })
-        .eq('section_name', sectionName);
+        .upsert(
+          { section_name: sectionName, is_visible: isVisible, updated_by: user?.id },
+          { onConflict: 'section_name' }
+        );
       if (error) throw error;
     },
     onSuccess: () => {

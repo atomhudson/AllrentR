@@ -855,6 +855,22 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_all_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          current_streak: number
+          email: string
+          id: string
+          is_admin: boolean
+          last_active_at: string
+          longest_streak: number
+          name: string
+          phone: string
+          pin_code: string
+        }[]
+      }
       calculate_listing_rating: {
         Args: { listing_id_param: string }
         Returns: number

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,11 +20,34 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Search, Users as UsersIcon, ArrowLeft, Loader2, Shield, User as UserIcon } from 'lucide-react';
+import {
+  Search,
+  Users as UsersIcon,
+  ArrowLeft,
+  Loader2,
+  Shield,
+  User as UserIcon,
+  Pencil,
+  Trash2,
+  Plus,
+  Minus,
+  ShieldOff,
+} from 'lucide-react';
 
 interface UserRow {
   id: string;
@@ -46,6 +70,19 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<UserRow | null>(null);
+  const [deleting, setDeleting] = useState<UserRow | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Edit form state
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    pin_code: '',
+    avatar_url: '',
+    current_streak: 0,
+    longest_streak: 0,
+  });
 
   useEffect(() => {
     if (!authReady) return;
@@ -72,6 +109,103 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openEdit = (u: UserRow) => {
+    setEditing(u);
+    setForm({
+      name: u.name || '',
+      phone: u.phone || '',
+      pin_code: u.pin_code || '',
+      avatar_url: u.avatar_url || '',
+      current_streak: u.current_streak ?? 0,
+      longest_streak: u.longest_streak ?? 0,
+    });
+  };
+
+  const handleSave = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase.rpc as any)('admin_update_user', {
+        _user_id: editing.id,
+        _name: form.name,
+        _phone: form.phone,
+        _pin_code: form.pin_code,
+        _avatar_url: form.avatar_url || null,
+        _current_streak: form.current_streak,
+        _longest_streak: Math.max(form.longest_streak, form.current_streak),
+      });
+      if (error) throw error;
+      toast({ title: 'User updated successfully' });
+      setEditing(null);
+      setSelected(null);
+      await fetchUsers();
+    } catch (err: any) {
+      toast({
+        title: 'Update failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleting) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase.rpc as any)('admin_delete_user', {
+        _user_id: deleting.id,
+      });
+      if (error) throw error;
+      toast({ title: 'User deleted permanently' });
+      setDeleting(null);
+      setSelected(null);
+      await fetchUsers();
+    } catch (err: any) {
+      toast({
+        title: 'Delete failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleAdmin = async (u: UserRow) => {
+    try {
+      const { error } = await (supabase.rpc as any)('admin_toggle_admin_role', {
+        _user_id: u.id,
+        _make_admin: !u.is_admin,
+      });
+      if (error) throw error;
+      toast({
+        title: u.is_admin ? 'Admin role revoked' : 'User promoted to admin',
+      });
+      await fetchUsers();
+      // refresh selection
+      setSelected((prev) => (prev ? { ...prev, is_admin: !u.is_admin } : prev));
+    } catch (err: any) {
+      toast({
+        title: 'Action failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const adjustStreak = (delta: number) => {
+    setForm((f) => {
+      const next = Math.max(0, f.current_streak + delta);
+      return {
+        ...f,
+        current_streak: next,
+        longest_streak: Math.max(f.longest_streak, next),
+      };
+    });
   };
 
   const filtered = useMemo(() => {
@@ -113,7 +247,7 @@ const UserManagement = () => {
                 User Management
               </h1>
               <p className="text-sm text-muted-foreground">
-                {users.length} total users · Click a row to view full details
+                {users.length} total users · Click a row to view, edit or delete
               </p>
             </div>
           </div>
@@ -158,8 +292,8 @@ const UserManagement = () => {
                     <TableHead>Phone</TableHead>
                     <TableHead>PIN</TableHead>
                     <TableHead>Streak</TableHead>
-                    <TableHead>Joined</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -189,9 +323,6 @@ const UserManagement = () => {
                       <TableCell className="text-sm">{u.phone || '—'}</TableCell>
                       <TableCell className="text-sm">{u.pin_code || '—'}</TableCell>
                       <TableCell className="text-sm">{u.current_streak ?? 0}🔥</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(u.created_at).toLocaleDateString()}
-                      </TableCell>
                       <TableCell>
                         {u.is_admin ? (
                           <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">
@@ -202,6 +333,27 @@ const UserManagement = () => {
                             <UserIcon className="w-3 h-3 mr-1" /> User
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => openEdit(u)}
+                            title="Edit user"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setDeleting(u)}
+                            title="Delete user"
+                            disabled={u.id === user?.id}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -274,10 +426,180 @@ const UserManagement = () => {
                   </p>
                 </div>
               </div>
+
+              <div className="flex flex-wrap gap-2 pt-3 border-t">
+                <Button variant="outline" onClick={() => openEdit(selected)}>
+                  <Pencil className="w-4 h-4" /> Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleToggleAdmin(selected)}
+                  disabled={selected.id === user?.id && selected.is_admin}
+                >
+                  {selected.is_admin ? (
+                    <>
+                      <ShieldOff className="w-4 h-4" /> Revoke Admin
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4" /> Make Admin
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleting(selected)}
+                  disabled={selected.id === user?.id}
+                  className="ml-auto"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit dialog */}
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  maxLength={100}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })
+                    }
+                    placeholder="10-digit phone"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>PIN Code</Label>
+                  <Input
+                    value={form.pin_code}
+                    onChange={(e) =>
+                      setForm({ ...form, pin_code: e.target.value.replace(/\D/g, '').slice(0, 6) })
+                    }
+                    placeholder="6-digit PIN"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Avatar URL</Label>
+                <Input
+                  value={form.avatar_url}
+                  onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Current Streak 🔥</Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => adjustStreak(-1)}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.current_streak}
+                      onChange={(e) => {
+                        const v = Math.max(0, parseInt(e.target.value || '0', 10));
+                        setForm((f) => ({
+                          ...f,
+                          current_streak: v,
+                          longest_streak: Math.max(f.longest_streak, v),
+                        }));
+                      }}
+                      className="text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => adjustStreak(1)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Longest Streak</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.longest_streak}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        longest_streak: Math.max(0, parseInt(e.target.value || '0', 10)),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Note: Email cannot be changed from here. Longest streak is auto-bumped if current
+                streak exceeds it.
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this user permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleting?.name}</strong> ({deleting?.email}),
+              their profile, roles, and account. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={saving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

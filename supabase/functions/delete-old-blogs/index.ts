@@ -16,17 +16,17 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Starting deletion of blogs older than 30 days...');
+    console.log('Starting deletion of blogs older than 15 days...');
 
-    // Calculate date 30 days ago
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Calculate date 15 days ago
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
-    // Delete blogs older than 30 days
+    // Delete blogs older than 15 days
     const { data: deletedBlogs, error } = await supabase
       .from('blogs')
       .delete()
-      .lt('created_at', thirtyDaysAgo.toISOString())
+      .lt('created_at', fifteenDaysAgo.toISOString())
       .select();
 
     if (error) {
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         deletedCount: deletedBlogs?.length || 0,
-        message: `Deleted ${deletedBlogs?.length || 0} blogs older than 30 days`,
+        message: `Deleted ${deletedBlogs?.length || 0} blogs older than 15 days`,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

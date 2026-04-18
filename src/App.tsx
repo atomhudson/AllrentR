@@ -38,6 +38,7 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const TermsAndConditionPage = lazy(() => import("./pages/Terms&Condition"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const BoostPackageManagement = lazy(() => import("./pages/BoostPackageManagement"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen w-full bg-background">

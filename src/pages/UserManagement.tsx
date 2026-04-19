@@ -65,6 +65,9 @@ import {
 
 type SortKey = 'name' | 'streak' | 'created_at' | 'last_active_at';
 type SortDir = 'asc' | 'desc';
+type QuickFilter = 'all' | 'admins' | 'active_7d' | 'inactive_30d';
+
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface UserRow {
   id: string;

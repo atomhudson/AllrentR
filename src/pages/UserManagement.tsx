@@ -344,7 +344,21 @@ const UserManagement = () => {
       }
     });
     return arr;
-  }, [users, search, sortKey, sortDir]);
+  }, [users, search, sortKey, sortDir, quickFilter]);
+
+  // Reset to page 1 whenever filters/search/sort change
+  useEffect(() => {
+    setPage(1);
+  }, [search, quickFilter, sortKey, sortDir, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const pageEnd = Math.min(pageStart + pageSize, filtered.length);
+  const paginated = useMemo(
+    () => filtered.slice(pageStart, pageEnd),
+    [filtered, pageStart, pageEnd],
+  );
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {

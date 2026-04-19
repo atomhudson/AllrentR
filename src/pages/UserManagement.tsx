@@ -680,9 +680,22 @@ const UserManagement = () => {
         {/* Bulk action bar */}
         {selectionCount > 0 && (
           <Card className="p-3 mb-4 bg-primary/5 border-primary/30 flex items-center justify-between flex-wrap gap-3">
-            <p className="text-sm font-medium">
-              {selectionCount} user{selectionCount > 1 ? 's' : ''} selected
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium">
+                {selectionCount} user{selectionCount > 1 ? 's' : ''} selected
+              </p>
+              {allPageSelected &&
+                filtered.filter((u) => u.id !== user?.id).length > selectionCount && (
+                  <button
+                    type="button"
+                    onClick={selectAllAcrossFilter}
+                    className="text-xs text-primary hover:underline text-left"
+                  >
+                    Select all {filtered.filter((u) => u.id !== user?.id).length}{' '}
+                    matching users across all pages
+                  </button>
+                )}
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={clearSelection}>
                 Clear

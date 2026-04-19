@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -47,6 +48,8 @@ import {
   Plus,
   Minus,
   ShieldOff,
+  Package,
+  Eye,
 } from 'lucide-react';
 
 interface UserRow {
@@ -63,6 +66,11 @@ interface UserRow {
   is_admin: boolean;
 }
 
+interface UserStats {
+  listings_count: number;
+  total_views: number;
+}
+
 const UserManagement = () => {
   const { user, isAdmin, authReady } = useAuth();
   const navigate = useNavigate();
@@ -70,9 +78,17 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<UserRow | null>(null);
+  const [selectedStats, setSelectedStats] = useState<UserStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [editing, setEditing] = useState<UserRow | null>(null);
   const [deleting, setDeleting] = useState<UserRow | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Bulk-selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkPromoteOpen, setBulkPromoteOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Edit form state
   const [form, setForm] = useState({
@@ -110,6 +126,40 @@ const UserManagement = () => {
       setLoading(false);
     }
   };
+
+  // Fetch stats whenever a user is selected
+  useEffect(() => {
+    if (!selected) {
+      setSelectedStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setStatsLoading(true);
+      setSelectedStats(null);
+      try {
+        const { data, error } = await (supabase.rpc as any)('admin_get_user_stats', {
+          _user_id: selected.id,
+        });
+        if (error) throw error;
+        if (!cancelled) {
+          const row = Array.isArray(data) ? data[0] : data;
+          setSelectedStats({
+            listings_count: Number(row?.listings_count ?? 0),
+            total_views: Number(row?.total_views ?? 0),
+          });
+        }
+      } catch (err: any) {
+        console.error('stats error', err);
+        if (!cancelled) setSelectedStats({ listings_count: 0, total_views: 0 });
+      } finally {
+        if (!cancelled) setStatsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
 
   const openEdit = (u: UserRow) => {
     setEditing(u);
@@ -186,7 +236,6 @@ const UserManagement = () => {
         title: u.is_admin ? 'Admin role revoked' : 'User promoted to admin',
       });
       await fetchUsers();
-      // refresh selection
       setSelected((prev) => (prev ? { ...prev, is_admin: !u.is_admin } : prev));
     } catch (err: any) {
       toast({
@@ -222,6 +271,88 @@ const UserManagement = () => {
     });
   }, [users, search]);
 
+  // Bulk-selection helpers
+  const selectableFiltered = filtered.filter((u) => u.id !== user?.id);
+  const allFilteredSelected =
+    selectableFiltered.length > 0 &&
+    selectableFiltered.every((u) => selectedIds.has(u.id));
+  const someFilteredSelected =
+    selectableFiltered.some((u) => selectedIds.has(u.id)) && !allFilteredSelected;
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = (checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        selectableFiltered.forEach((u) => next.add(u.id));
+      } else {
+        selectableFiltered.forEach((u) => next.delete(u.id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    setBulkBusy(true);
+    try {
+      const ids = Array.from(selectedIds).filter((id) => id !== user?.id);
+      const { data, error } = await (supabase.rpc as any)('admin_bulk_delete_users', {
+        _user_ids: ids,
+      });
+      if (error) throw error;
+      toast({ title: `Deleted ${data ?? ids.length} users` });
+      clearSelection();
+      setBulkDeleteOpen(false);
+      await fetchUsers();
+    } catch (err: any) {
+      toast({
+        title: 'Bulk delete failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleBulkPromote = async (makeAdmin: boolean) => {
+    setBulkBusy(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { data, error } = await (supabase.rpc as any)('admin_bulk_toggle_admin', {
+        _user_ids: ids,
+        _make_admin: makeAdmin,
+      });
+      if (error) throw error;
+      toast({
+        title: makeAdmin
+          ? `Promoted ${data ?? ids.length} users to admin`
+          : `Revoked admin from ${data ?? ids.length} users`,
+      });
+      clearSelection();
+      setBulkPromoteOpen(false);
+      await fetchUsers();
+    } catch (err: any) {
+      toast({
+        title: 'Bulk action failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   const initials = (name: string) =>
     name
       ?.split(' ')
@@ -231,6 +362,8 @@ const UserManagement = () => {
       .toUpperCase() || 'U';
 
   if (!authReady) return null;
+
+  const selectionCount = selectedIds.size;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -254,7 +387,7 @@ const UserManagement = () => {
         </div>
 
         {/* Search bar */}
-        <Card className="p-4 mb-6">
+        <Card className="p-4 mb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -270,6 +403,34 @@ const UserManagement = () => {
             </p>
           )}
         </Card>
+
+        {/* Bulk action bar */}
+        {selectionCount > 0 && (
+          <Card className="p-3 mb-4 bg-primary/5 border-primary/30 flex items-center justify-between flex-wrap gap-3">
+            <p className="text-sm font-medium">
+              {selectionCount} user{selectionCount > 1 ? 's' : ''} selected
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={clearSelection}>
+                Clear
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setBulkPromoteOpen(true)}
+              >
+                <Shield className="w-4 h-4" /> Bulk Role…
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                <Trash2 className="w-4 h-4" /> Delete Selected
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Table */}
         <Card className="overflow-hidden">
@@ -287,6 +448,19 @@ const UserManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          allFilteredSelected
+                            ? true
+                            : someFilteredSelected
+                              ? 'indeterminate'
+                              : false
+                        }
+                        onCheckedChange={(c) => toggleAllVisible(!!c)}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
@@ -297,66 +471,79 @@ const UserManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((u) => (
-                    <TableRow
-                      key={u.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => setSelected(u)}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-9 h-9">
-                            <AvatarImage src={u.avatar_url || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                              {initials(u.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium text-sm">{u.name || '—'}</p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {u.id.slice(0, 8)}…
-                            </p>
+                  {filtered.map((u) => {
+                    const isSelf = u.id === user?.id;
+                    const isChecked = selectedIds.has(u.id);
+                    return (
+                      <TableRow
+                        key={u.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setSelected(u)}
+                        data-state={isChecked ? 'selected' : undefined}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isChecked}
+                            disabled={isSelf}
+                            onCheckedChange={(c) => toggleOne(u.id, !!c)}
+                            aria-label={`Select ${u.name}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-9 h-9">
+                              <AvatarImage src={u.avatar_url || undefined} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                {initials(u.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{u.name || '—'}</p>
+                              <p className="text-xs text-muted-foreground font-mono">
+                                {u.id.slice(0, 8)}…
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">{u.email || '—'}</TableCell>
-                      <TableCell className="text-sm">{u.phone || '—'}</TableCell>
-                      <TableCell className="text-sm">{u.pin_code || '—'}</TableCell>
-                      <TableCell className="text-sm">{u.current_streak ?? 0}🔥</TableCell>
-                      <TableCell>
-                        {u.is_admin ? (
-                          <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">
-                            <Shield className="w-3 h-3 mr-1" /> Admin
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">
-                            <UserIcon className="w-3 h-3 mr-1" /> User
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => openEdit(u)}
-                            title="Edit user"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setDeleting(u)}
-                            title="Delete user"
-                            disabled={u.id === user?.id}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="text-sm">{u.email || '—'}</TableCell>
+                        <TableCell className="text-sm">{u.phone || '—'}</TableCell>
+                        <TableCell className="text-sm">{u.pin_code || '—'}</TableCell>
+                        <TableCell className="text-sm">{u.current_streak ?? 0}🔥</TableCell>
+                        <TableCell>
+                          {u.is_admin ? (
+                            <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">
+                              <Shield className="w-3 h-3 mr-1" /> Admin
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">
+                              <UserIcon className="w-3 h-3 mr-1" /> User
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => openEdit(u)}
+                              title="Edit user"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => setDeleting(u)}
+                              title="Delete user"
+                              disabled={isSelf}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -388,6 +575,35 @@ const UserManagement = () => {
                   )}
                 </div>
               </div>
+
+              {/* Listings stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 bg-primary/5 border-primary/20">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Package className="w-3.5 h-3.5" /> Listings
+                  </div>
+                  <p className="text-2xl font-bold mt-1">
+                    {statsLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      (selectedStats?.listings_count ?? 0)
+                    )}
+                  </p>
+                </Card>
+                <Card className="p-3 bg-primary/5 border-primary/20">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Eye className="w-3.5 h-3.5" /> Total Views
+                  </div>
+                  <p className="text-2xl font-bold mt-1">
+                    {statsLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      (selectedStats?.total_views ?? 0).toLocaleString()
+                    )}
+                  </p>
+                </Card>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">User ID</p>
@@ -600,6 +816,67 @@ const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk delete confirmation */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {selectionCount} user{selectionCount > 1 ? 's' : ''} permanently?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected accounts, profiles, and roles. Your own
+              account will be skipped automatically. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkBusy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkBusy && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Delete {selectionCount} Users
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk promote/revoke dialog */}
+      <Dialog open={bulkPromoteOpen} onOpenChange={setBulkPromoteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk Role Change</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Apply an admin role change to all {selectionCount} selected users. Your own account is
+            skipped on revoke.
+          </p>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleBulkPromote(false)}
+              disabled={bulkBusy}
+            >
+              {bulkBusy ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldOff className="w-4 h-4" />
+              )}
+              Revoke Admin
+            </Button>
+            <Button onClick={() => handleBulkPromote(true)} disabled={bulkBusy}>
+              {bulkBusy ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Shield className="w-4 h-4" />
+              )}
+              Make Admin
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

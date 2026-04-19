@@ -96,6 +96,11 @@ const UserManagement = () => {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkPromoteOpen, setBulkPromoteOpen] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  // Sorting state
+  const [sortKey, setSortKey] = useState<SortKey>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // Edit form state
   const [form, setForm] = useState({

@@ -378,13 +378,13 @@ const UserManagement = () => {
     );
   };
 
-  // Bulk-selection helpers
-  const selectableFiltered = filtered.filter((u) => u.id !== user?.id);
-  const allFilteredSelected =
-    selectableFiltered.length > 0 &&
-    selectableFiltered.every((u) => selectedIds.has(u.id));
-  const someFilteredSelected =
-    selectableFiltered.some((u) => selectedIds.has(u.id)) && !allFilteredSelected;
+  // Bulk-selection helpers (operate on the current page)
+  const selectablePage = paginated.filter((u) => u.id !== user?.id);
+  const allPageSelected =
+    selectablePage.length > 0 &&
+    selectablePage.every((u) => selectedIds.has(u.id));
+  const somePageSelected =
+    selectablePage.some((u) => selectedIds.has(u.id)) && !allPageSelected;
 
   const toggleOne = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
@@ -399,12 +399,18 @@ const UserManagement = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) {
-        selectableFiltered.forEach((u) => next.add(u.id));
+        selectablePage.forEach((u) => next.add(u.id));
       } else {
-        selectableFiltered.forEach((u) => next.delete(u.id));
+        selectablePage.forEach((u) => next.delete(u.id));
       }
       return next;
     });
+  };
+
+  const selectAllAcrossFilter = () => {
+    const next = new Set<string>();
+    filtered.filter((u) => u.id !== user?.id).forEach((u) => next.add(u.id));
+    setSelectedIds(next);
   };
 
   const clearSelection = () => setSelectedIds(new Set());

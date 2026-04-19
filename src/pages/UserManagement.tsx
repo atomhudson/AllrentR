@@ -630,20 +630,49 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Search bar */}
-        <Card className="p-4 mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, phone, user ID, or PIN code..."
-              className="pl-10 h-11"
-            />
+        {/* Search + filter bar */}
+        <Card className="p-4 mb-4 space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, email, phone, user ID, or PIN code..."
+                className="pl-10 h-11"
+              />
+            </div>
+            <Select
+              value={quickFilter}
+              onValueChange={(v) => setQuickFilter(v as QuickFilter)}
+            >
+              <SelectTrigger className="h-11 w-full sm:w-[220px]">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                <SelectItem value="admins">Admins only</SelectItem>
+                <SelectItem value="active_7d">Active in last 7 days</SelectItem>
+                <SelectItem value="inactive_30d">Inactive 30+ days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          {search && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Found {filtered.length} of {users.length} users
+          {(search || quickFilter !== 'all') && (
+            <p className="text-xs text-muted-foreground">
+              Showing {filtered.length} of {users.length} users
+              {quickFilter !== 'all' && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <button
+                    type="button"
+                    className="underline hover:text-foreground"
+                    onClick={() => setQuickFilter('all')}
+                  >
+                    Clear filter
+                  </button>
+                </>
+              )}
             </p>
           )}
         </Card>

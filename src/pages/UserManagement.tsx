@@ -271,17 +271,61 @@ const UserManagement = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) => {
-      return (
-        u.name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q) ||
-        u.phone?.toLowerCase().includes(q) ||
-        u.id.toLowerCase().includes(q) ||
-        u.pin_code?.toLowerCase().includes(q)
-      );
+    const base = !q
+      ? users
+      : users.filter(
+          (u) =>
+            u.name?.toLowerCase().includes(q) ||
+            u.email?.toLowerCase().includes(q) ||
+            u.phone?.toLowerCase().includes(q) ||
+            u.id.toLowerCase().includes(q) ||
+            u.pin_code?.toLowerCase().includes(q),
+        );
+
+    const arr = [...base];
+    const dir = sortDir === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      let av: any;
+      let bv: any;
+      switch (sortKey) {
+        case 'name':
+          av = (a.name || '').toLowerCase();
+          bv = (b.name || '').toLowerCase();
+          return av < bv ? -1 * dir : av > bv ? 1 * dir : 0;
+        case 'streak':
+          av = a.current_streak ?? 0;
+          bv = b.current_streak ?? 0;
+          return (av - bv) * dir;
+        case 'created_at':
+          av = a.created_at ? new Date(a.created_at).getTime() : 0;
+          bv = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return (av - bv) * dir;
+        case 'last_active_at':
+          av = a.last_active_at ? new Date(a.last_active_at).getTime() : 0;
+          bv = b.last_active_at ? new Date(b.last_active_at).getTime() : 0;
+          return (av - bv) * dir;
+      }
     });
-  }, [users, search]);
+    return arr;
+  }, [users, search, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortIcon = ({ k }: { k: SortKey }) => {
+    if (sortKey !== k) return <ArrowUpDown className="w-3 h-3 opacity-50" />;
+    return sortDir === 'asc' ? (
+      <ArrowUp className="w-3 h-3" />
+    ) : (
+      <ArrowDown className="w-3 h-3" />
+    );
+  };
 
   // Bulk-selection helpers
   const selectableFiltered = filtered.filter((u) => u.id !== user?.id);

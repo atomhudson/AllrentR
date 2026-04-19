@@ -94,6 +94,9 @@ const UserManagement = () => {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [selected, setSelected] = useState<UserRow | null>(null);
   const [selectedStats, setSelectedStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);

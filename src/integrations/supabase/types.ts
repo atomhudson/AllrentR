@@ -855,6 +855,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_bulk_delete_users: {
+        Args: { _user_ids: string[] }
+        Returns: number
+      }
+      admin_bulk_toggle_admin: {
+        Args: { _make_admin: boolean; _user_ids: string[] }
+        Returns: number
+      }
       admin_delete_user: { Args: { _user_id: string }; Returns: undefined }
       admin_get_all_users: {
         Args: never
@@ -870,6 +878,13 @@ export type Database = {
           name: string
           phone: string
           pin_code: string
+        }[]
+      }
+      admin_get_user_stats: {
+        Args: { _user_id: string }
+        Returns: {
+          listings_count: number
+          total_views: number
         }[]
       }
       admin_toggle_admin_role: {

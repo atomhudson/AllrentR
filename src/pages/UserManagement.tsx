@@ -545,6 +545,32 @@ const UserManagement = () => {
               </p>
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportCsv('all')}
+              disabled={exporting || loading || filtered.length === 0}
+            >
+              {exporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Export {search ? 'filtered' : 'all'} CSV
+            </Button>
+            {selectionCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportCsv('selected')}
+                disabled={exporting}
+              >
+                <Download className="w-4 h-4" />
+                Export selected ({selectionCount})
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Search bar */}

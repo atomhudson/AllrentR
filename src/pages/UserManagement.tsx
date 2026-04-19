@@ -695,9 +695,9 @@ const UserManagement = () => {
                     <TableHead className="w-10">
                       <Checkbox
                         checked={
-                          allFilteredSelected
+                          allPageSelected
                             ? true
-                            : someFilteredSelected
+                            : somePageSelected
                               ? 'indeterminate'
                               : false
                         }

@@ -648,11 +648,45 @@ const UserManagement = () => {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead>User</TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('name')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        User <SortIcon k="name" />
+                      </button>
+                    </TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>PIN</TableHead>
-                    <TableHead>Streak</TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('streak')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Streak <SortIcon k="streak" />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('created_at')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Joined <SortIcon k="created_at" />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('last_active_at')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Last Active <SortIcon k="last_active_at" />
+                      </button>
+                    </TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>

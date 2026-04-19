@@ -730,6 +730,16 @@ const UserManagement = () => {
                         <TableCell className="text-sm">{u.phone || '—'}</TableCell>
                         <TableCell className="text-sm">{u.pin_code || '—'}</TableCell>
                         <TableCell className="text-sm">{u.current_streak ?? 0}🔥</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {u.created_at
+                            ? new Date(u.created_at).toLocaleDateString()
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {u.last_active_at
+                            ? new Date(u.last_active_at).toLocaleDateString()
+                            : '—'}
+                        </TableCell>
                         <TableCell>
                           {u.is_admin ? (
                             <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">

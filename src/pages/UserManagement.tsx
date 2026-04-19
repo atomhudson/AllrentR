@@ -409,7 +409,111 @@ const UserManagement = () => {
     }
   };
 
-  const initials = (name: string) =>
+  const handleExportCsv = async (mode: 'all' | 'selected') => {
+    setExporting(true);
+    try {
+      const target =
+        mode === 'selected'
+          ? users.filter((u) => selectedIds.has(u.id))
+          : filtered;
+
+      if (target.length === 0) {
+        toast({ title: 'Nothing to export', variant: 'destructive' });
+        return;
+      }
+
+      // Fetch stats for each user in parallel (batched)
+      const stats = new Map<string, UserStats>();
+      const batchSize = 8;
+      for (let i = 0; i < target.length; i += batchSize) {
+        const chunk = target.slice(i, i + batchSize);
+        const results = await Promise.all(
+          chunk.map(async (u) => {
+            try {
+              const { data } = await (supabase.rpc as any)('admin_get_user_stats', {
+                _user_id: u.id,
+              });
+              const row = Array.isArray(data) ? data[0] : data;
+              return [
+                u.id,
+                {
+                  listings_count: Number(row?.listings_count ?? 0),
+                  total_views: Number(row?.total_views ?? 0),
+                },
+              ] as const;
+            } catch {
+              return [u.id, { listings_count: 0, total_views: 0 }] as const;
+            }
+          }),
+        );
+        results.forEach(([id, s]) => stats.set(id, s));
+      }
+
+      const escape = (val: unknown) => {
+        if (val === null || val === undefined) return '';
+        const s = String(val).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+
+      const headers = [
+        'id',
+        'name',
+        'email',
+        'phone',
+        'pin_code',
+        'is_admin',
+        'current_streak',
+        'longest_streak',
+        'listings_count',
+        'total_views',
+        'last_active_at',
+        'created_at',
+      ];
+
+      const rows = target.map((u) => {
+        const s = stats.get(u.id) || { listings_count: 0, total_views: 0 };
+        return [
+          u.id,
+          u.name,
+          u.email,
+          u.phone,
+          u.pin_code,
+          u.is_admin ? 'yes' : 'no',
+          u.current_streak ?? 0,
+          u.longest_streak ?? 0,
+          s.listings_count,
+          s.total_views,
+          u.last_active_at || '',
+          u.created_at || '',
+        ]
+          .map(escape)
+          .join(',');
+      });
+
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `users_${mode}_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: `Exported ${target.length} users to CSV` });
+    } catch (err: any) {
+      toast({
+        title: 'Export failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
     name
       ?.split(' ')
       .map((n) => n[0])

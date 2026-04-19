@@ -50,7 +50,14 @@ import {
   ShieldOff,
   Package,
   Eye,
+  Download,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react';
+
+type SortKey = 'name' | 'streak' | 'created_at' | 'last_active_at';
+type SortDir = 'asc' | 'desc';
 
 interface UserRow {
   id: string;
@@ -89,6 +96,11 @@ const UserManagement = () => {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkPromoteOpen, setBulkPromoteOpen] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  // Sorting state
+  const [sortKey, setSortKey] = useState<SortKey>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // Edit form state
   const [form, setForm] = useState({
@@ -259,17 +271,61 @@ const UserManagement = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) => {
-      return (
-        u.name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q) ||
-        u.phone?.toLowerCase().includes(q) ||
-        u.id.toLowerCase().includes(q) ||
-        u.pin_code?.toLowerCase().includes(q)
-      );
+    const base = !q
+      ? users
+      : users.filter(
+          (u) =>
+            u.name?.toLowerCase().includes(q) ||
+            u.email?.toLowerCase().includes(q) ||
+            u.phone?.toLowerCase().includes(q) ||
+            u.id.toLowerCase().includes(q) ||
+            u.pin_code?.toLowerCase().includes(q),
+        );
+
+    const arr = [...base];
+    const dir = sortDir === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      let av: any;
+      let bv: any;
+      switch (sortKey) {
+        case 'name':
+          av = (a.name || '').toLowerCase();
+          bv = (b.name || '').toLowerCase();
+          return av < bv ? -1 * dir : av > bv ? 1 * dir : 0;
+        case 'streak':
+          av = a.current_streak ?? 0;
+          bv = b.current_streak ?? 0;
+          return (av - bv) * dir;
+        case 'created_at':
+          av = a.created_at ? new Date(a.created_at).getTime() : 0;
+          bv = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return (av - bv) * dir;
+        case 'last_active_at':
+          av = a.last_active_at ? new Date(a.last_active_at).getTime() : 0;
+          bv = b.last_active_at ? new Date(b.last_active_at).getTime() : 0;
+          return (av - bv) * dir;
+      }
     });
-  }, [users, search]);
+    return arr;
+  }, [users, search, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortIcon = ({ k }: { k: SortKey }) => {
+    if (sortKey !== k) return <ArrowUpDown className="w-3 h-3 opacity-50" />;
+    return sortDir === 'asc' ? (
+      <ArrowUp className="w-3 h-3" />
+    ) : (
+      <ArrowDown className="w-3 h-3" />
+    );
+  };
 
   // Bulk-selection helpers
   const selectableFiltered = filtered.filter((u) => u.id !== user?.id);
@@ -353,6 +409,111 @@ const UserManagement = () => {
     }
   };
 
+  const handleExportCsv = async (mode: 'all' | 'selected') => {
+    setExporting(true);
+    try {
+      const target =
+        mode === 'selected'
+          ? users.filter((u) => selectedIds.has(u.id))
+          : filtered;
+
+      if (target.length === 0) {
+        toast({ title: 'Nothing to export', variant: 'destructive' });
+        return;
+      }
+
+      // Fetch stats for each user in parallel (batched)
+      const stats = new Map<string, UserStats>();
+      const batchSize = 8;
+      for (let i = 0; i < target.length; i += batchSize) {
+        const chunk = target.slice(i, i + batchSize);
+        const results = await Promise.all(
+          chunk.map(async (u) => {
+            try {
+              const { data } = await (supabase.rpc as any)('admin_get_user_stats', {
+                _user_id: u.id,
+              });
+              const row = Array.isArray(data) ? data[0] : data;
+              return [
+                u.id,
+                {
+                  listings_count: Number(row?.listings_count ?? 0),
+                  total_views: Number(row?.total_views ?? 0),
+                },
+              ] as const;
+            } catch {
+              return [u.id, { listings_count: 0, total_views: 0 }] as const;
+            }
+          }),
+        );
+        results.forEach(([id, s]) => stats.set(id, s));
+      }
+
+      const escape = (val: unknown) => {
+        if (val === null || val === undefined) return '';
+        const s = String(val).replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+
+      const headers = [
+        'id',
+        'name',
+        'email',
+        'phone',
+        'pin_code',
+        'is_admin',
+        'current_streak',
+        'longest_streak',
+        'listings_count',
+        'total_views',
+        'last_active_at',
+        'created_at',
+      ];
+
+      const rows = target.map((u) => {
+        const s = stats.get(u.id) || { listings_count: 0, total_views: 0 };
+        return [
+          u.id,
+          u.name,
+          u.email,
+          u.phone,
+          u.pin_code,
+          u.is_admin ? 'yes' : 'no',
+          u.current_streak ?? 0,
+          u.longest_streak ?? 0,
+          s.listings_count,
+          s.total_views,
+          u.last_active_at || '',
+          u.created_at || '',
+        ]
+          .map(escape)
+          .join(',');
+      });
+
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `users_${mode}_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: `Exported ${target.length} users to CSV` });
+    } catch (err: any) {
+      toast({
+        title: 'Export failed',
+        description: err.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const initials = (name: string) =>
     name
       ?.split(' ')
@@ -383,6 +544,32 @@ const UserManagement = () => {
                 {users.length} total users · Click a row to view, edit or delete
               </p>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportCsv('all')}
+              disabled={exporting || loading || filtered.length === 0}
+            >
+              {exporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Export {search ? 'filtered' : 'all'} CSV
+            </Button>
+            {selectionCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportCsv('selected')}
+                disabled={exporting}
+              >
+                <Download className="w-4 h-4" />
+                Export selected ({selectionCount})
+              </Button>
+            )}
           </div>
         </div>
 
@@ -461,11 +648,45 @@ const UserManagement = () => {
                         aria-label="Select all"
                       />
                     </TableHead>
-                    <TableHead>User</TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('name')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        User <SortIcon k="name" />
+                      </button>
+                    </TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>PIN</TableHead>
-                    <TableHead>Streak</TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('streak')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Streak <SortIcon k="streak" />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('created_at')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Joined <SortIcon k="created_at" />
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort('last_active_at')}
+                        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      >
+                        Last Active <SortIcon k="last_active_at" />
+                      </button>
+                    </TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -509,6 +730,16 @@ const UserManagement = () => {
                         <TableCell className="text-sm">{u.phone || '—'}</TableCell>
                         <TableCell className="text-sm">{u.pin_code || '—'}</TableCell>
                         <TableCell className="text-sm">{u.current_streak ?? 0}🔥</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {u.created_at
+                            ? new Date(u.created_at).toLocaleDateString()
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {u.last_active_at
+                            ? new Date(u.last_active_at).toLocaleDateString()
+                            : '—'}
+                        </TableCell>
                         <TableCell>
                           {u.is_admin ? (
                             <Badge className="bg-primary/10 text-primary border-primary/20" variant="outline">

@@ -284,16 +284,40 @@ const UserManagement = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const base = !q
-      ? users
-      : users.filter(
-          (u) =>
-            u.name?.toLowerCase().includes(q) ||
-            u.email?.toLowerCase().includes(q) ||
-            u.phone?.toLowerCase().includes(q) ||
-            u.id.toLowerCase().includes(q) ||
-            u.pin_code?.toLowerCase().includes(q),
-        );
+    const now = Date.now();
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
+    let base = users;
+
+    // Quick filter
+    if (quickFilter === 'admins') {
+      base = base.filter((u) => u.is_admin);
+    } else if (quickFilter === 'active_7d') {
+      base = base.filter(
+        (u) =>
+          u.last_active_at &&
+          now - new Date(u.last_active_at).getTime() <= SEVEN_DAYS,
+      );
+    } else if (quickFilter === 'inactive_30d') {
+      base = base.filter(
+        (u) =>
+          !u.last_active_at ||
+          now - new Date(u.last_active_at).getTime() >= THIRTY_DAYS,
+      );
+    }
+
+    // Search
+    if (q) {
+      base = base.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q) ||
+          u.phone?.toLowerCase().includes(q) ||
+          u.id.toLowerCase().includes(q) ||
+          u.pin_code?.toLowerCase().includes(q),
+      );
+    }
 
     const arr = [...base];
     const dir = sortDir === 'asc' ? 1 : -1;

@@ -749,7 +749,7 @@ const UserManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((u) => {
+                  {paginated.map((u) => {
                     const isSelf = u.id === user?.id;
                     const isChecked = selectedIds.has(u.id);
                     return (

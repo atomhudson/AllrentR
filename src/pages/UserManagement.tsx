@@ -878,6 +878,71 @@ const UserManagement = () => {
               </Table>
             </div>
           )}
+
+          {/* Pagination footer */}
+          {!loading && filtered.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {pageStart + 1}–{pageEnd} of {filtered.length}
+                </span>
+                <span className="text-muted-foreground/50">·</span>
+                <span>Per page</span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(v) => setPageSize(Number(v))}
+                >
+                  <SelectTrigger className="h-7 w-[70px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(1)}
+                  disabled={safePage === 1}
+                >
+                  «
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                >
+                  Prev
+                </Button>
+                <span className="text-xs text-muted-foreground px-2">
+                  Page {safePage} of {totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  Next
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(totalPages)}
+                  disabled={safePage >= totalPages}
+                >
+                  »
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 

@@ -17,6 +17,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -58,6 +65,9 @@ import {
 
 type SortKey = 'name' | 'streak' | 'created_at' | 'last_active_at';
 type SortDir = 'asc' | 'desc';
+type QuickFilter = 'all' | 'admins' | 'active_7d' | 'inactive_30d';
+
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface UserRow {
   id: string;
@@ -84,6 +94,9 @@ const UserManagement = () => {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [selected, setSelected] = useState<UserRow | null>(null);
   const [selectedStats, setSelectedStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -271,16 +284,40 @@ const UserManagement = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const base = !q
-      ? users
-      : users.filter(
-          (u) =>
-            u.name?.toLowerCase().includes(q) ||
-            u.email?.toLowerCase().includes(q) ||
-            u.phone?.toLowerCase().includes(q) ||
-            u.id.toLowerCase().includes(q) ||
-            u.pin_code?.toLowerCase().includes(q),
-        );
+    const now = Date.now();
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
+    let base = users;
+
+    // Quick filter
+    if (quickFilter === 'admins') {
+      base = base.filter((u) => u.is_admin);
+    } else if (quickFilter === 'active_7d') {
+      base = base.filter(
+        (u) =>
+          u.last_active_at &&
+          now - new Date(u.last_active_at).getTime() <= SEVEN_DAYS,
+      );
+    } else if (quickFilter === 'inactive_30d') {
+      base = base.filter(
+        (u) =>
+          !u.last_active_at ||
+          now - new Date(u.last_active_at).getTime() >= THIRTY_DAYS,
+      );
+    }
+
+    // Search
+    if (q) {
+      base = base.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q) ||
+          u.phone?.toLowerCase().includes(q) ||
+          u.id.toLowerCase().includes(q) ||
+          u.pin_code?.toLowerCase().includes(q),
+      );
+    }
 
     const arr = [...base];
     const dir = sortDir === 'asc' ? 1 : -1;
@@ -307,7 +344,21 @@ const UserManagement = () => {
       }
     });
     return arr;
-  }, [users, search, sortKey, sortDir]);
+  }, [users, search, sortKey, sortDir, quickFilter]);
+
+  // Reset to page 1 whenever filters/search/sort change
+  useEffect(() => {
+    setPage(1);
+  }, [search, quickFilter, sortKey, sortDir, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const pageEnd = Math.min(pageStart + pageSize, filtered.length);
+  const paginated = useMemo(
+    () => filtered.slice(pageStart, pageEnd),
+    [filtered, pageStart, pageEnd],
+  );
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -327,13 +378,13 @@ const UserManagement = () => {
     );
   };
 
-  // Bulk-selection helpers
-  const selectableFiltered = filtered.filter((u) => u.id !== user?.id);
-  const allFilteredSelected =
-    selectableFiltered.length > 0 &&
-    selectableFiltered.every((u) => selectedIds.has(u.id));
-  const someFilteredSelected =
-    selectableFiltered.some((u) => selectedIds.has(u.id)) && !allFilteredSelected;
+  // Bulk-selection helpers (operate on the current page)
+  const selectablePage = paginated.filter((u) => u.id !== user?.id);
+  const allPageSelected =
+    selectablePage.length > 0 &&
+    selectablePage.every((u) => selectedIds.has(u.id));
+  const somePageSelected =
+    selectablePage.some((u) => selectedIds.has(u.id)) && !allPageSelected;
 
   const toggleOne = (id: string, checked: boolean) => {
     setSelectedIds((prev) => {
@@ -348,12 +399,18 @@ const UserManagement = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) {
-        selectableFiltered.forEach((u) => next.add(u.id));
+        selectablePage.forEach((u) => next.add(u.id));
       } else {
-        selectableFiltered.forEach((u) => next.delete(u.id));
+        selectablePage.forEach((u) => next.delete(u.id));
       }
       return next;
     });
+  };
+
+  const selectAllAcrossFilter = () => {
+    const next = new Set<string>();
+    filtered.filter((u) => u.id !== user?.id).forEach((u) => next.add(u.id));
+    setSelectedIds(next);
   };
 
   const clearSelection = () => setSelectedIds(new Set());
@@ -573,20 +630,49 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Search bar */}
-        <Card className="p-4 mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, phone, user ID, or PIN code..."
-              className="pl-10 h-11"
-            />
+        {/* Search + filter bar */}
+        <Card className="p-4 mb-4 space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, email, phone, user ID, or PIN code..."
+                className="pl-10 h-11"
+              />
+            </div>
+            <Select
+              value={quickFilter}
+              onValueChange={(v) => setQuickFilter(v as QuickFilter)}
+            >
+              <SelectTrigger className="h-11 w-full sm:w-[220px]">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                <SelectItem value="admins">Admins only</SelectItem>
+                <SelectItem value="active_7d">Active in last 7 days</SelectItem>
+                <SelectItem value="inactive_30d">Inactive 30+ days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          {search && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Found {filtered.length} of {users.length} users
+          {(search || quickFilter !== 'all') && (
+            <p className="text-xs text-muted-foreground">
+              Showing {filtered.length} of {users.length} users
+              {quickFilter !== 'all' && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <button
+                    type="button"
+                    className="underline hover:text-foreground"
+                    onClick={() => setQuickFilter('all')}
+                  >
+                    Clear filter
+                  </button>
+                </>
+              )}
             </p>
           )}
         </Card>
@@ -594,9 +680,22 @@ const UserManagement = () => {
         {/* Bulk action bar */}
         {selectionCount > 0 && (
           <Card className="p-3 mb-4 bg-primary/5 border-primary/30 flex items-center justify-between flex-wrap gap-3">
-            <p className="text-sm font-medium">
-              {selectionCount} user{selectionCount > 1 ? 's' : ''} selected
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium">
+                {selectionCount} user{selectionCount > 1 ? 's' : ''} selected
+              </p>
+              {allPageSelected &&
+                filtered.filter((u) => u.id !== user?.id).length > selectionCount && (
+                  <button
+                    type="button"
+                    onClick={selectAllAcrossFilter}
+                    className="text-xs text-primary hover:underline text-left"
+                  >
+                    Select all {filtered.filter((u) => u.id !== user?.id).length}{' '}
+                    matching users across all pages
+                  </button>
+                )}
+            </div>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={clearSelection}>
                 Clear
@@ -638,9 +737,9 @@ const UserManagement = () => {
                     <TableHead className="w-10">
                       <Checkbox
                         checked={
-                          allFilteredSelected
+                          allPageSelected
                             ? true
-                            : someFilteredSelected
+                            : somePageSelected
                               ? 'indeterminate'
                               : false
                         }
@@ -692,7 +791,7 @@ const UserManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((u) => {
+                  {paginated.map((u) => {
                     const isSelf = u.id === user?.id;
                     const isChecked = selectedIds.has(u.id);
                     return (
@@ -777,6 +876,71 @@ const UserManagement = () => {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* Pagination footer */}
+          {!loading && filtered.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {pageStart + 1}–{pageEnd} of {filtered.length}
+                </span>
+                <span className="text-muted-foreground/50">·</span>
+                <span>Per page</span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(v) => setPageSize(Number(v))}
+                >
+                  <SelectTrigger className="h-7 w-[70px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(1)}
+                  disabled={safePage === 1}
+                >
+                  «
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                >
+                  Prev
+                </Button>
+                <span className="text-xs text-muted-foreground px-2">
+                  Page {safePage} of {totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  Next
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(totalPages)}
+                  disabled={safePage >= totalPages}
+                >
+                  »
+                </Button>
+              </div>
             </div>
           )}
         </Card>

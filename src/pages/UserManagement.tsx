@@ -50,7 +50,14 @@ import {
   ShieldOff,
   Package,
   Eye,
+  Download,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react';
+
+type SortKey = 'name' | 'streak' | 'created_at' | 'last_active_at';
+type SortDir = 'asc' | 'desc';
 
 interface UserRow {
   id: string;

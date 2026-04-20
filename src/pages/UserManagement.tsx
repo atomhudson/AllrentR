@@ -137,9 +137,22 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase.rpc as any)('admin_get_all_users');
+      // Querying profiles table directly instead of RPC
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      setUsers((data || []) as UserRow[]);
+
+      // Map the profiles data to match UserRow, adding placeholders for missing RPC data
+      const mappedUsers = (data || []).map((p: any) => ({
+        ...p,
+        email: 'Email Hidden (Requires SQL Setup)',
+        is_admin: false, // We can't determine admin status easily without RPC
+      }));
+
+      setUsers(mappedUsers as UserRow[]);
     } catch (err: any) {
       console.error(err);
       toast({

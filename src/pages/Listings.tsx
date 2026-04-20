@@ -8,6 +8,8 @@ import BannerCarousel from "@/components/BannerCarousel";
 import FilterSection from "@/components/FilterSection";
 import { useListings, incrementViews } from "@/hooks/useListings";
 import { useAuth } from "@/contexts/AuthContext";
+import GoogleAd from "@/components/GoogleAd";
+import Footer from "@/components/Footer";
 import {
   MapPin,
   Eye,
@@ -525,6 +527,8 @@ const Listings = () => {
           setSortBy={setSortBy}
         />
 
+        <GoogleAd slot="7233876092" />
+
         {/* Listings Section */}
         <div id="listings-section">
           {/* Show indicator when viewing cluster items */}
@@ -867,6 +871,7 @@ const Listings = () => {
         animation: shimmer 1.5s infinite;
       }
       `}</style>
+      <Footer />
     </div>
   );
 };

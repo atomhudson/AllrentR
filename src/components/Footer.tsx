@@ -1,8 +1,11 @@
 import { FaYoutube, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
+import GoogleAd from "./GoogleAd";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#161A1D] text-[#F5F3F4] py-16 relative overflow-hidden">
+    <>
+      <GoogleAd slot="2733876092" />
+      <footer className="bg-[#161A1D] text-[#F5F3F4] py-16 relative overflow-hidden">
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/5 to-[#BA181B]/5" />
 
@@ -149,6 +152,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    </>
   );
 };
 

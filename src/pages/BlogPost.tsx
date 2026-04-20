@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 import { SEOHead } from "@/components/SEOHead";
 import { Blog } from "@/hooks/useBlogs";
 import { BlogComments } from "@/components/BlogComments";
+import GoogleAd from "@/components/GoogleAd";
+import Footer from "@/components/Footer";
 
 // Helper function to calculate reading time
 const calculateReadingTime = (content: string): number => {
@@ -219,6 +221,8 @@ const BlogPost = () => {
             {blog.description}
           </p>
 
+          <GoogleAd slot="1807793922" layout="in-article" format="fluid" />
+
           {/* Divider */}
           <div className="w-20 h-1 bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full mb-8" />
 
@@ -230,6 +234,8 @@ const BlogPost = () => {
               dangerouslySetInnerHTML={{ __html: decodeHtml(blog.content) }}
             />
           </article>
+
+          <GoogleAd slot="7233876092" />
 
           {/* Reference Link */}
           {blog.reference_url && (
@@ -321,6 +327,7 @@ const BlogPost = () => {
           </div>
         </motion.article>
       </div>
+      <Footer />
     </div>
   );
 };

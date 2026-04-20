@@ -12,6 +12,7 @@ import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
 const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
+import GoogleAd from "@/components/GoogleAd";
 const Landing = () => {
   const {
     user
@@ -40,6 +41,8 @@ const Landing = () => {
 
       <HeroSection />
 
+      <GoogleAd slot="7233876092" />
+
       <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100/50 rounded-xl mx-4 my-8" />}>
         <TopProfilesSection />
       </Suspense>
@@ -47,6 +50,8 @@ const Landing = () => {
       <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100/50 rounded-xl mx-4 my-8" />}>
         <InfluencerPartnersSection />
       </Suspense>
+
+      <GoogleAd slot="1807793922" layout="in-article" format="fluid" />
 
       <section id="features" className="relative py-28 overflow-hidden bg-gradient-to-b from-[#F5F3F4] via-white to-[#F5F3F4]">
         <div className="absolute inset-0 pointer-events-none">

@@ -15,6 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import GoogleAd from "@/components/GoogleAd";
+import Footer from "@/components/Footer";
 import {
     Dialog,
     DialogContent,
@@ -506,6 +508,7 @@ const ListingDetail = () => {
                                 {listing.description || "No description provided."}
                             </p>
                         </div>
+                        <GoogleAd slot="1807793922" layout="in-article" format="fluid" />
 
                         {/* Location & Contact Section */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -651,6 +654,8 @@ const ListingDetail = () => {
                                     </>
                                 )}
                             </div>
+
+                            <GoogleAd slot="2733876092" />
 
                             {/* Trust Badges */}
                             <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -877,6 +882,7 @@ const ListingDetail = () => {
                     }}
                 />
             )}
+            <Footer />
         </div>
     );
 };

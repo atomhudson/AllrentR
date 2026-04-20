@@ -87,18 +87,7 @@
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
     <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
 
-    <script>
-        // Lazy load Google Ads
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const script = document.createElement('script');
-                script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5002603351055656";
-                script.async = true;
-                script.crossOrigin = "anonymous";
-                document.head.appendChild(script);
-            }, 3000); // 3 seconds delay to prioritize LCP/TTI
-        });
-    </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5002603351055656" crossorigin="anonymous"></script>
     <!-- Critical CSS to prevent FOUC -->
     <style>
         :root {

@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "0.0.0.0",
-      port: 8080,
+      port: 5173,
     },
     envPrefix: ["VITE_"],
     // Hard-define env vars used by the auto-generated backend client.

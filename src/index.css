@@ -298,6 +298,14 @@
   background: radial-gradient(circle at center, var(--tw-gradient-stops));
 }
 
+.bg-gradient-primary {
+  @apply bg-gradient-to-br from-[#E5383B] via-[#BA181B] to-[#660708];
+}
+
+.border-gradient-primary {
+  border-image: linear-gradient(to bottom right, #E5383B, #BA181B, #660708) 1;
+}
+
 .animate-float-slow-transform {
   animation: floatSlow 3.5s ease-in-out infinite;
 }

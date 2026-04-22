@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { LogIn, Package, DollarSign } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function HowItWorks() {
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
@@ -139,7 +141,7 @@ export default function HowItWorks() {
 
         {/* CTA Section */}
         <div className={`text-center ${isVisible ? 'animate-slideUp' : 'opacity-0'}`} style={{ animationDelay: '800ms' }}>
-          <button onClick={() => navigate("/signup")} className="group relative px-10 py-4 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#E5383B]/50">
+          <button onClick={() => navigate(user ? "/listings" : "/signup")} className="group relative px-10 py-4 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#E5383B]/50">
             <span className="relative z-10">Get Started Now</span>
             <div className="absolute inset-0 bg-gradient-to-r from-[#BA181B] to-[#A4161A] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>

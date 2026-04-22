@@ -12,8 +12,10 @@ import heroVideo from "@/assets/heroimage.mp4";
 import heroPoster from "@/assets/hero-image.webp";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function StartupHeroSection() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const features = [
@@ -123,7 +125,7 @@ export default function StartupHeroSection() {
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate(user ? "/listings" : "/login")}
                 className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-[#E5383B] text-white font-semibold text-base sm:text-lg rounded-2xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#E5383B]/50 hover:scale-105 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />

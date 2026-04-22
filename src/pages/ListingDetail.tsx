@@ -79,6 +79,8 @@ const ListingDetail = () => {
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [otherUserProfile, setOtherUserProfile] = useState<any>(null);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [avgRating, setAvgRating] = useState<number | null>(null);
+    const [numReviews, setNumReviews] = useState(0);
 
     // Edit modal state
     const [editOpen, setEditOpen] = useState(false);
@@ -159,6 +161,27 @@ const ListingDetail = () => {
 
                 if (fetchedListing?.id) {
                     await supabase.rpc('increment_listing_views', { listing_id: fetchedListing.id });
+                    
+                    // Fetch real-time rating info
+                    const { data: ratingData, error: ratingError } = await supabase
+                        .from('ratings')
+                        .select('rating');
+                        
+                    if (!ratingError && fetchedListing.id) {
+                        const { data: listingRatings } = await supabase
+                            .from('ratings')
+                            .select('rating')
+                            .eq('listing_id', fetchedListing.id);
+                        
+                        if (listingRatings && listingRatings.length > 0) {
+                            const sum = listingRatings.reduce((acc, curr) => acc + curr.rating, 0);
+                            setAvgRating(sum / listingRatings.length);
+                            setNumReviews(listingRatings.length);
+                        } else {
+                            setAvgRating(null);
+                            setNumReviews(0);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Error:', err);
@@ -486,14 +509,20 @@ const ListingDetail = () => {
                                 <p className="text-base sm:text-lg font-bold text-gray-800">{listing.views || 0}</p>
                                 <p className="text-[10px] sm:text-xs text-gray-500">Views</p>
                             </div>
-                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center">
-                                <Star className="w-4 sm:w-5 h-4 sm:h-5 text-amber-500 fill-amber-500 mx-auto mb-1" />
-                                <p className="text-base sm:text-lg font-bold text-gray-800">{listing.rating?.toFixed(1) || "5.0"}</p>
-                                <p className="text-[10px] sm:text-xs text-gray-500">Rating</p>
+                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center group hover:border-amber-100 transition-colors">
+                                <Star className={`w-4 sm:w-5 h-4 sm:h-5 mx-auto mb-1 ${(avgRating || 0) > 0 ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
+                                <p className="text-base sm:text-lg font-bold text-gray-800">
+                                    {(avgRating || 0) > 0 ? avgRating?.toFixed(1) : "New"}
+                                </p>
+                                <p className="text-[10px] sm:text-xs text-gray-500">
+                                    {numReviews > 0 ? `${numReviews} Reviews` : "Rating"}
+                                </p>
                             </div>
-                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center">
+                            <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center group hover:border-primary/20 transition-colors">
                                 <MapPin className="w-4 sm:w-5 h-4 sm:h-5 text-primary mx-auto mb-1" />
-                                <p className="text-base sm:text-lg font-bold text-gray-800 truncate">{listing.city || "—"}</p>
+                                <p className="text-base sm:text-lg font-bold text-gray-800 truncate px-1">
+                                    {listing.city || "Remote"}
+                                </p>
                                 <p className="text-[10px] sm:text-xs text-gray-500">Location</p>
                             </div>
                         </div>

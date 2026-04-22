@@ -9,6 +9,7 @@ interface DashboardHeroProps {
   streakData?: {
     current_streak?: number;
     longest_streak?: number;
+    last_active_at?: string | null;
   };
   avatarUrl?: string;
   userName?: string;
@@ -212,39 +213,45 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
               </div>
               
               {/* Streak Card */}
-              {streakData && streakData.current_streak > 0 && (
-                <div className="relative group w-full lg:w-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B] to-[#BA181B] rounded-2xl sm:rounded-3xl blur-2xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse-glow" />
-                  <div className="relative p-6 sm:p-8 md:p-10 bg-gradient-to-br from-[#BA181B] via-[#E5383B] to-[#A4161A] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden transform group-hover:scale-105 transition-transform duration-500">
-                    {/* Animated grid pattern */}
-                    <div className="absolute inset-0" style={{
-                      backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, transparent 1px, transparent 30px),
-                                       repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, transparent 1px, transparent 30px)`
-                    }} />
-                    
-                    {/* Shimmer overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                    
-                    <div className="relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl border-2 border-white/30 group-hover:rotate-12 transition-transform duration-500">
-                        <Flame className="w-10 h-10 sm:w-14 sm:h-14 text-white drop-shadow-2xl animate-pulse" />
-                      </div>
-                      <div className="text-center sm:text-left">
-                        <div className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-1 sm:mb-2 tracking-tighter drop-shadow-lg">
-                          {streakData.current_streak}
+              {(() => {
+                const isStreakValid = streakData && streakData.last_active_at && (
+                  new Date(streakData.last_active_at).getTime() >= new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 0)
+                );
+                
+                const displayStreak = isStreakValid ? (streakData?.current_streak || 0) : 0;
+                
+                return displayStreak >= 0 && streakData && (
+                  <div className="relative group w-full lg:w-auto">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B] to-[#BA181B] rounded-2xl sm:rounded-3xl blur-2xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse-glow" />
+                    <div className="relative p-6 sm:p-8 md:p-10 bg-gradient-to-br from-[#BA181B] via-[#E5383B] to-[#A4161A] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden transform group-hover:scale-105 transition-transform duration-500">
+                      <div className="absolute inset-0" style={{
+                        backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, transparent 1px, transparent 30px),
+                                         repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, transparent 1px, transparent 30px)`
+                      }} />
+                      
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                      
+                      <div className="relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl border-2 border-white/30 group-hover:rotate-12 transition-transform duration-500">
+                          <Flame className={`w-10 h-10 sm:w-14 sm:h-14 text-white drop-shadow-2xl ${displayStreak > 0 ? 'animate-pulse' : 'opacity-40'}`} />
                         </div>
-                        <div className="text-base sm:text-lg md:text-xl text-white font-bold mb-1 tracking-wide">
-                          Day Streak 🔥
-                        </div>
-                        <div className="text-xs sm:text-sm text-white/80 font-semibold flex items-center justify-center sm:justify-start gap-2">
-                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                          Best: {streakData.longest_streak} days
+                        <div className="text-center sm:text-left">
+                          <div className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-1 sm:mb-2 tracking-tighter drop-shadow-lg">
+                            {displayStreak}
+                          </div>
+                          <div className="text-base sm:text-lg md:text-xl text-white font-bold mb-1 tracking-wide">
+                            Day Streak 🔥
+                          </div>
+                          <div className="text-xs sm:text-sm text-white/80 font-semibold flex items-center justify-center sm:justify-start gap-2">
+                            <span className={`w-2 h-2 rounded-full bg-white ${displayStreak > 0 ? 'animate-pulse' : ''}`} />
+                            Best: {streakData.longest_streak || 0} days
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         </div>

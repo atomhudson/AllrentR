@@ -7,9 +7,10 @@ export const useLeaderboard = (limit = 50, offset = 0) => {
     queryFn: async () => {
       // Query from the leaderboard view instead of profiles table directly
       // This view only exposes non-sensitive columns (no phone/pin_code)
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('leaderboard')
-        .select('*')
+        .select('*', { count: 'exact' })
+        .order('current_streak', { ascending: false })
         .range(offset, offset + limit - 1);
 
       if (error) throw error;
@@ -19,7 +20,7 @@ export const useLeaderboard = (limit = 50, offset = 0) => {
           ...user,
           rank: offset + index + 1
         })) || [],
-        total: data?.length || 0
+        total: count || 0
       };
     },
   });

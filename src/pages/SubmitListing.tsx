@@ -249,6 +249,18 @@ const SubmitListing = () => {
   };
 
   const handleFreeListing = async () => {
+    // Geocode before insert
+    const primaryQuery = [formData.address, formData.pin_code, 'India'].filter(Boolean).join(', ');
+    let geo = await geocodeWithNominatim(primaryQuery);
+    if (!geo && formData.address && formData.pin_code) {
+      geo = await geocodeWithNominatim(`${formData.address}, ${formData.pin_code}, India`);
+    }
+    if (!geo && formData.pin_code) {
+      geo = await geocodeWithNominatim(`${formData.pin_code}, India`);
+    }
+
+    const gh = geo ? ngeohash.encode(geo.lat, geo.lon, 9) : null;
+
     const listingData = {
       owner_user_id: user.id,
       ...formData,
@@ -259,6 +271,12 @@ const SubmitListing = () => {
       discount_amount: 0,
       final_price: 0,
       coupon_code: null,
+      latitude: geo?.lat || null,
+      longitude: geo?.lon || null,
+      city: geo?.city || null,
+      state: geo?.state || null,
+      locality: geo?.locality || null,
+      geohash: gh
     };
 
     const { error } = await supabase.from('listings').insert([listingData]);

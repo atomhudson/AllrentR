@@ -176,7 +176,7 @@ const Landing = () => {
             </div>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#F5F3F4]/95 max-w-3xl mx-auto font-light leading-relaxed px-4">Join earning from unused items or finding exactly what they need at unbeatable prices.</p>
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 pt-4 sm:pt-6 px-4">
-              <button onClick={() => !user && navigate("/signup")} className="group relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 bg-[#F5F3F4] text-[#E5383B] text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden w-full sm:w-auto">
+              <button onClick={() => navigate(user ? "/listings" : "/signup")} className="group relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 bg-[#F5F3F4] text-[#E5383B] text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden w-full sm:w-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#F5F3F4] to-[#F5F3F4]/90 transition-transform duration-300 group-hover:scale-110" />
                 <span className="relative flex items-center justify-center gap-2 sm:gap-3">
                   Create Free Account

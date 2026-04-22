@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { motion } from 'framer-motion';
 import { useSectionVisibility } from '@/hooks/useTopProfiles';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,63 +72,87 @@ const Leaderboard = () => {
             ) : (
               <>
                 <div className="space-y-4">
-                  {leaderboardData?.data.map((user) => (
-                    <Card 
-                      key={user.id}
-                      className={`transition-all hover:shadow-lg ${
-                        user.rank <= 3 ? 'border-primary' : ''
-                      }`}
+                  {leaderboardData?.data.map((user, index) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      key={user.id || index}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 text-center">
-                              {getRankIcon(user.rank) || (
-                                <span className="text-2xl font-bold text-muted-foreground">
-                                  #{user.rank}
-                                </span>
-                              )}
+                      <Card 
+                        className={`overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                          user.rank <= 3 ? 'border-primary/50 bg-primary/5' : 'hover:border-primary/30'
+                        }`}
+                      >
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-center gap-3 sm:gap-6">
+                            <div className="flex items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
+                              <div className="w-8 sm:w-12 text-center">
+                                {getRankIcon(user.rank) || (
+                                  <span className="text-xl sm:text-2xl font-black text-muted-foreground/40">
+                                    #{user.rank}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative p-1 rounded-full bg-gradient-to-br from-[#E5383B] via-[#BA181B] to-[#660708]">
+                                <Avatar className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-white dark:border-gray-900">
+                                  <AvatarImage 
+                                    src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} 
+                                    alt={user.name || 'User'} 
+                                  />
+                                  <AvatarFallback className="bg-muted text-lg">
+                                    {(user.name || 'U').charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </div>
                             </div>
-                            <Avatar className="w-16 h-16 border-4 border-gradient-primary">
-                              <AvatarImage 
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} 
-                                alt={user.name} 
-                              />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                          
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-foreground">
-                              {user.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              Longest streak: {user.longest_streak} days
-                            </p>
-                          </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-lg font-bold text-foreground truncate">
+                                {user.name || 'Anonymous User'}
+                              </h3>
+                              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                                <span className="inline-block w-2 h-2 rounded-full bg-primary/40"></span>
+                                Longest streak: <span className="font-semibold text-foreground">{user.longest_streak || 0} days</span>
+                              </div>
+                            </div>
 
-                          <div className="flex items-center gap-2 bg-gradient-primary rounded-full px-4 py-2">
-                            <Flame className="w-5 h-5 text-accent" />
-                            <span className="text-xl font-bold text-foreground">
-                              {user.current_streak}
-                            </span>
+                            <div className="flex flex-col items-end gap-1">
+                              <div className="flex items-center gap-1.5 sm:gap-2 bg-gradient-primary rounded-xl px-3 sm:px-5 py-1.5 sm:py-2.5 shadow-lg shadow-primary/20">
+                                <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" fill="white" />
+                                <span className="text-lg sm:text-2xl font-black text-white">
+                                  {user.current_streak || 0}
+                                </span>
+                              </div>
+                              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                Current Streak
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   ))}
                 </div>
 
-                {leaderboardData && leaderboardData.data.length >= limit && (
-                  <div className="flex justify-center mt-8">
+                {leaderboardData && leaderboardData.data.length < leaderboardData.total && (
+                  <div className="flex justify-center mt-12 mb-8">
                     <Button
                       onClick={() => setPage(page + 1)}
                       variant="outline"
                       size="lg"
+                      className="px-12 py-6 rounded-2xl border-2 hover:bg-primary hover:text-white transition-all duration-300 font-bold text-lg hover:scale-105"
+                      disabled={isLoading}
                     >
-                      Load More
+                      {isLoading ? "Loading..." : "View More Legends"}
                     </Button>
                   </div>
+                )}
+                
+                {leaderboardData && leaderboardData.data.length >= leaderboardData.total && leaderboardData.total > 0 && (
+                  <p className="text-center text-muted-foreground mt-12 mb-8 font-medium italic">
+                    You've reached the end of the legends. Start your streak to join them!
+                  </p>
                 )}
               </>
             )}

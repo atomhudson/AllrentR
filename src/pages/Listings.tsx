@@ -1,12 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { AdPopup } from "@/components/AdPopup";
 import BannerCarousel from "@/components/BannerCarousel";
 import FilterSection from "@/components/FilterSection";
 import { useListings, incrementViews } from "@/hooks/useListings";
+import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleAd from "@/components/GoogleAd";
 import Footer from "@/components/Footer";
@@ -20,6 +24,20 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
+  Monitor,
+  Car,
+  Sofa,
+  Hammer,
+  Trophy,
+  BookOpen,
+  Shirt,
+  Box,
+  LayoutGrid,
+  Building2,
+  Home,
+  Store,
+  Hotel,
+  DoorOpen,
 } from "lucide-react";
 import {
   Carousel,
@@ -28,6 +46,15 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +64,8 @@ const Listings = () => {
   const { listings, loading } = useListings("approved");
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  
+  const { isVisible: isPropertyModeVisible } = useSectionVisibility('property_mode');
 
   const [searchQuery, setSearchQuery] = useState("");
   const [pinCodeFilter, setPinCodeFilter] = useState("");
@@ -59,9 +88,26 @@ const Listings = () => {
   // Wishlist state
   const [wishlist, setWishlist] = useState<string[]>([]);
 
+  // Mode state: Default is Items mode (ON)
+  const [isItemsMode, setIsItemsMode] = useState(true);
+
+  // Dialog state for no nearby results
+  const [showNoResultsDialog, setShowNoResultsDialog] = useState(false);
+  const [closestListingInfo, setClosestListingInfo] = useState<string>("");
+
+  // Reset to items mode if the feature is hidden by admin
+  useEffect(() => {
+    if (!isPropertyModeVisible) {
+      setIsItemsMode(true);
+      setCategoryFilter("");
+    }
+  }, [isPropertyModeVisible]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  const propertyCategoryValues = ['pg', 'room', 'flat', 'house', 'office', 'shop', 'warehouse'];
 
   useEffect(() => {
     if (user) {
@@ -114,6 +160,47 @@ const Listings = () => {
     }
   };
 
+  const requestLocation = () => {
+    if (!('geolocation' in navigator)) {
+      toast({
+        title: 'Geolocation not supported',
+        description: 'Your browser does not support location services.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+      return;
+    }
+    // Clear previous coordinates to ensure fresh location
+    setUserLat(null);
+    setUserLng(null);
+    setNearbyListings([]);
+    setDistanceById({});
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLat(pos.coords.latitude);
+        setUserLng(pos.coords.longitude);
+        setNearbyEnabled(true);
+        toast({
+          title: 'Location enabled',
+          description: 'Showing listings near you',
+          duration: 3000,
+        });
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        setNearbyEnabled(false);
+        // Silently fail for auto-fetch, don't show toast unless manual
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+    );
+  };
+
+  // Auto-fetch location on mount
+  useEffect(() => {
+    requestLocation();
+  }, []);
+
   const handleViewListing = (listing: any) => {
     incrementViews(listing.id);
     // Generate SEO-friendly slug from product name
@@ -136,8 +223,12 @@ const Listings = () => {
         listing.description.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesPinCode =
         debouncedPin === "" || listing.pin_code.includes(debouncedPin);
-      const matchesCategory =
-        categoryFilter === "" || listing.category === categoryFilter;
+      
+      const isProperty = propertyCategoryValues.includes(listing.category?.toLowerCase() || "");
+      const matchesCategory = categoryFilter === "" 
+        ? (isItemsMode ? !isProperty : isProperty)
+        : listing.category === categoryFilter;
+        
       const matchesPrice = (listing.rent_price || 0) >= minPrice && (listing.rent_price || 0) <= maxPrice;
 
       return matchesSearch && matchesPinCode && matchesCategory && matchesPrice;
@@ -156,7 +247,7 @@ const Listings = () => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
-  }, [listings, debouncedSearch, debouncedPin, categoryFilter, minPrice, maxPrice, sortBy]);
+  }, [listings, debouncedSearch, debouncedPin, categoryFilter, minPrice, maxPrice, sortBy, isItemsMode]);
 
   const nearbyFiltered = useMemo(() => {
     if (!nearbyEnabled) return [];
@@ -165,10 +256,15 @@ const Listings = () => {
         listing.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         (listing.description || "").toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesPinCode = debouncedPin === "" || (listing.pin_code || "").includes(debouncedPin);
-      const matchesCategory = categoryFilter === "" || listing.category === categoryFilter;
+      
+      const isProperty = propertyCategoryValues.includes(listing.category?.toLowerCase() || "");
+      const matchesCategory = categoryFilter === "" 
+        ? (isItemsMode ? !isProperty : isProperty)
+        : listing.category === categoryFilter;
+
       return matchesSearch && matchesPinCode && matchesCategory;
     }).sort((a, b) => (distanceById[a.id] || 0) - (distanceById[b.id] || 0));
-  }, [nearbyEnabled, nearbyListings, debouncedSearch, debouncedPin, categoryFilter, distanceById]);
+  }, [nearbyEnabled, nearbyListings, debouncedSearch, debouncedPin, categoryFilter, distanceById, isItemsMode]);
 
   // If a cluster is selected, show only those items
   const clusterFiltered = useMemo(() => {
@@ -178,10 +274,15 @@ const Listings = () => {
         listing.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         (listing.description || "").toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesPinCode = debouncedPin === "" || (listing.pin_code || "").includes(debouncedPin);
-      const matchesCategory = categoryFilter === "" || listing.category === categoryFilter;
+      
+      const isProperty = propertyCategoryValues.includes(listing.category?.toLowerCase() || "");
+      const matchesCategory = categoryFilter === "" 
+        ? (isItemsMode ? !isProperty : isProperty)
+        : listing.category === categoryFilter;
+
       return matchesSearch && matchesPinCode && matchesCategory;
     });
-  }, [selectedClusterItems, debouncedSearch, debouncedPin, categoryFilter]);
+  }, [selectedClusterItems, debouncedSearch, debouncedPin, categoryFilter, isItemsMode]);
 
   const filteredListings = clusterFiltered !== null
     ? clusterFiltered
@@ -324,15 +425,19 @@ const Listings = () => {
         setNearbyListings(within);
 
         if (within.length === 0) {
+          // If no listings at current radius, try expanding automatically once (from 5km to 10km)
+          if (radiusMeters < 10000) {
+            setRadiusMeters(10000);
+            return;
+          }
+
           // Find the closest listing to suggest increasing radius
           const allSorted = candidates.sort((a: any, b: any) => (distances[a.id] || 0) - (distances[b.id] || 0));
           const closestDistance = allSorted.length > 0 ? distances[allSorted[0].id] : null;
           const closestKm = closestDistance ? (closestDistance / 1000).toFixed(1) : 'unknown';
 
-          toast({
-            title: 'No listings within radius',
-            description: `No listings found within ${radiusMeters / 1000}km. ${closestDistance ? `Closest listing is ${closestKm}km away. ` : ''}Try increasing the radius.`,
-          });
+          setClosestListingInfo(closestDistance ? `Closest listing is ${closestKm}km away.` : "");
+          setShowNoResultsDialog(true);
         }
       } catch (err) {
         console.error('Nearby fallback failed', err);
@@ -358,8 +463,12 @@ const Listings = () => {
       return [] as any[];
     }
 
-    // Use base listings (not filtered) for clustering to ensure we have all data
-    const sourceListings = listings.length > 0 ? listings : filteredListings;
+    // Use base listings (not filtered) for clustering but respect the current mode (Items vs Properties)
+    const sourceListings = (listings.length > 0 ? listings : []).filter(listing => {
+      const isProperty = propertyCategoryValues.includes(listing.category?.toLowerCase() || "");
+      return isItemsMode ? !isProperty : isProperty;
+    });
+    
     if (!sourceListings || sourceListings.length === 0) {
       // console.log('No listings available for clustering');
       return [] as any[];
@@ -424,59 +533,32 @@ const Listings = () => {
     }
 
     return [] as any[];
-  }, [clusterMode, listings, filteredListings]);
+  }, [clusterMode, listings, filteredListings, isItemsMode]);
 
-  const requestLocation = () => {
-    if (!('geolocation' in navigator)) {
-      toast({
-        title: 'Geolocation not supported',
-        description: 'Your browser does not support location services.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    // Clear previous coordinates to ensure fresh location
-    setUserLat(null);
-    setUserLng(null);
-    setNearbyListings([]);
-    setDistanceById({});
-
-    // console.log('Requesting location...');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        // console.log('Location obtained:', pos.coords.latitude, pos.coords.longitude);
-        setUserLat(pos.coords.latitude);
-        setUserLng(pos.coords.longitude);
-        setNearbyEnabled(true);
-        toast({
-          title: 'Location enabled',
-          description: 'Showing listings near you',
-        });
-      },
-      (err) => {
-        console.error('Geolocation error:', err);
-        setNearbyEnabled(false);
-        toast({
-          title: 'Unable to get location',
-          description: err.message || 'Please enable location permissions in your browser.',
-          variant: 'destructive',
-        });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-    );
-  };
-
-  const categories = [
-    { value: "", label: "All" },
-    { value: "electronics", label: "Electronics" },
-    { value: "vehicles", label: "Vehicles" },
-    { value: "furniture", label: "Furniture" },
-    { value: "tools", label: "Tools" },
-    { value: "sports", label: "Sports" },
-    { value: "books", label: "Books" },
-    { value: "clothing", label: "Clothing" },
-    { value: "other", label: "Other" },
+  const itemCategories = [
+    { value: "", label: "All Items", icon: LayoutGrid },
+    { value: "electronics", label: "Electronics", icon: Monitor },
+    { value: "vehicles", label: "Vehicles", icon: Car },
+    { value: "furniture", label: "Furniture", icon: Sofa },
+    { value: "tools", label: "Tools", icon: Hammer },
+    { value: "sports", label: "Sports", icon: Trophy },
+    { value: "books", label: "Books", icon: BookOpen },
+    { value: "clothing", label: "Clothing", icon: Shirt },
+    { value: "other", label: "Other", icon: Box },
   ];
+
+  const accommodationCategories = [
+    { value: "", label: "All Properties", icon: LayoutGrid },
+    { value: "pg", label: "PG / Hostel", icon: Hotel },
+    { value: "room", label: "Single Room", icon: DoorOpen },
+    { value: "flat", label: "Flat / Apartment", icon: Building2 },
+    { value: "house", label: "Independent House", icon: Home },
+    { value: "office", label: "Office Space", icon: Store },
+    { value: "shop", label: "Shop", icon: Store },
+    { value: "warehouse", label: "Warehouse", icon: Package },
+  ];
+
+  const categoryConfig = isItemsMode ? itemCategories : accommodationCategories;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white relative">
@@ -491,11 +573,32 @@ const Listings = () => {
 
       <div className="container mx-auto px-4 pt-28 pb-20 relative z-10">
         <div className="mb-12 text-center space-y-4 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#161A1D]">
-            Browse Premium Items
-          </h1>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#161A1D]">
+              {isItemsMode ? "Browse Premium Items" : "Browse Accommodations"}
+            </h1>
+            
+            {isPropertyModeVisible && (
+              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-[#E5E5E5] shadow-sm">
+                <Switch 
+                  id="mode-toggle" 
+                  checked={isItemsMode} 
+                  onCheckedChange={(val) => {
+                    setIsItemsMode(val);
+                    setCategoryFilter(""); // Reset category when switching
+                  }}
+                  className="data-[state=checked]:bg-[#E5383B]"
+                />
+                <Label htmlFor="mode-toggle" className="text-[10px] font-bold uppercase tracking-wider text-[#660708] cursor-pointer">
+                  {isItemsMode ? "Rental Items" : "Properties Mode"}
+                </Label>
+              </div>
+            )}
+          </div>
           <p className="text-lg text-[#660708]/70 max-w-lg mx-auto">
-            Discover verified rentals from trusted owners near you
+            {isItemsMode 
+              ? "Discover verified rentals from trusted owners near you" 
+              : "Find perfect PG, Rooms, Flats and more from trusted owners"}
           </p>
           <div className="w-16 h-1 mx-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full" />
         </div>
@@ -510,7 +613,7 @@ const Listings = () => {
           setPinCodeFilter={setPinCodeFilter}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
-          categories={categories}
+          categories={categoryConfig}
           nearbyEnabled={nearbyEnabled}
           setNearbyEnabled={setNearbyEnabled}
           requestLocation={requestLocation}
@@ -526,6 +629,45 @@ const Listings = () => {
           sortBy={sortBy}
           setSortBy={setSortBy}
         />
+
+        {/* Category Quick Filters */}
+        <div className="mb-10 animate-fade-in overflow-hidden">
+          <div className="flex items-center justify-start md:justify-center gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:display-none">
+            {categoryConfig.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = categoryFilter === cat.value;
+              
+              return (
+                <button
+                  key={cat.label}
+                  onClick={() => setCategoryFilter(cat.value)}
+                  className={`flex flex-col items-center gap-2 min-w-[80px] group transition-all duration-300 ${
+                    isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <div className={`p-4 rounded-2xl transition-all duration-300 ${
+                    isActive 
+                      ? 'bg-gradient-to-br from-[#E5383B] to-[#BA181B] text-white shadow-lg scale-110' 
+                      : 'bg-white border border-[#E5E5E5] text-[#660708] group-hover:border-[#E5383B]/30 group-hover:shadow-md group-hover:-translate-y-1'
+                  }`}>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                  </div>
+                  <span className={`text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                    isActive ? 'text-[#E5383B]' : 'text-[#660708]/70 group-hover:text-[#660708]'
+                  }`}>
+                    {cat.label}
+                  </span>
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeCategory"
+                      className="w-1.5 h-1.5 rounded-full bg-[#E5383B]" 
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <GoogleAd slot="7233876092" />
 
@@ -662,21 +804,17 @@ const Listings = () => {
                 </p>
               </div>
 
-              {/* Pinterest Masonry Grid */}
-              <div className="masonry-grid">
-                {paginatedListings.map((listing, index) => {
-                  // Vary heights for Pinterest effect
-                  const heightVariants = [200, 260, 300, 240, 280, 220];
-                  const imageHeight = heightVariants[index % heightVariants.length];
-
+              {/* Uniform Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                {paginatedListings.map((listing) => {
                   return (
-                    <div key={listing.id} className="masonry-item">
+                    <div key={listing.id} className="h-full">
                       <div
                         onClick={() => handleViewListing(listing)}
                         className="group relative bg-white border border-[#E5E5E5] rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:border-[#E5383B]/40 hover:shadow-[0_15px_40px_-10px_rgba(229,56,59,0.2)] hover:-translate-y-1"
                       >
-                        {/* Image Section */}
-                        <div className="relative overflow-hidden" style={{ height: imageHeight }}>
+                        {/* Image Section - Fixed Aspect Ratio */}
+                        <div className="relative aspect-[4/3] overflow-hidden">
                           {listing.images?.length > 0 ? (
                             <>
                               <img
@@ -872,6 +1010,38 @@ const Listings = () => {
       }
       `}</style>
       <Footer />
+      
+      <AlertDialog open={showNoResultsDialog} onOpenChange={setShowNoResultsDialog}>
+        <AlertDialogContent className="bg-white rounded-2xl border-none shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-serif font-bold text-[#161A1D] flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-[#E5383B]" />
+              No Listings Nearby
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-[#660708]/70 pt-2">
+              We couldn't find any rentals within 10km of your location. 
+              <br />
+              <span className="font-bold text-[#161A1D]">{closestListingInfo}</span>
+              <div className="mt-4 p-4 bg-[#F5F3F4] rounded-xl text-sm space-y-2">
+                <p>💡 **Tips to find more items:**</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>Increase the search radius in Smart Filters.</li>
+                  <li>Use the "By City" or "By Area" display modes.</li>
+                  <li>Try different keywords or clear your search.</li>
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowNoResultsDialog(false)}
+              className="bg-[#E5383B] hover:bg-[#BA181B] text-white rounded-full px-8 py-2 font-bold"
+            >
+              Got it!
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

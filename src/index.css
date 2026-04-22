@@ -312,8 +312,20 @@
 
 /* Pinterest Masonry Grid */
 .masonry-grid {
-  column-count: 3;
+  column-count: 4;
   column-gap: 1.5rem;
+}
+
+@media (min-width: 1536px) {
+  .masonry-grid {
+    column-count: 5;
+  }
+}
+
+@media (max-width: 1280px) {
+  .masonry-grid {
+    column-count: 3;
+  }
 }
 
 @media (max-width: 1024px) {

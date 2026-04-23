@@ -196,10 +196,8 @@ const Listings = () => {
     );
   };
 
-  // Auto-fetch location on mount
-  useEffect(() => {
-    requestLocation();
-  }, []);
+  // Auto-fetch location removed as per user request
+  // Location is now handled only via manual button click
 
   const handleViewListing = (listing: any) => {
     incrementViews(listing.id);
@@ -600,7 +598,21 @@ const Listings = () => {
               ? "Discover verified rentals from trusted owners near you" 
               : "Find perfect PG, Rooms, Flats and more from trusted owners"}
           </p>
-          <div className="w-16 h-1 mx-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full" />
+
+          <div className="pt-2">
+            <Button
+              onClick={requestLocation}
+              className={`group relative overflow-hidden bg-white border border-[#E5383B]/30 text-[#E5383B] hover:text-white font-semibold rounded-full px-6 sm:px-8 py-4 sm:py-6 shadow-md transition-all duration-300 hover:scale-105 active:scale-95 ${nearbyEnabled ? 'bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white border-none' : ''}`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B] to-[#BA181B] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative flex items-center gap-2 text-sm sm:text-base">
+                <MapPin className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:animate-bounce ${nearbyEnabled ? 'fill-white text-white' : ''}`} />
+                {nearbyEnabled ? "Location Enabled" : "Enable Near Me"}
+              </span>
+            </Button>
+          </div>
+
+          <div className="w-16 h-1 mx-auto bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full mt-6" />
         </div>
 
         <BannerCarousel />
@@ -804,8 +816,8 @@ const Listings = () => {
                 </p>
               </div>
 
-              {/* Uniform Responsive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {/* Uniform Responsive Grid - Optimized for 4 items on desktop and 2 on mobile */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {paginatedListings.map((listing) => {
                   return (
                     <div key={listing.id} className="h-full">
@@ -884,32 +896,34 @@ const Listings = () => {
                         </div>
 
                         {/* Content Section */}
-                        <div className="p-4">
-                          <h3 className="font-serif font-semibold text-[15px] text-[#161A1D] group-hover:text-[#E5383B] transition-colors line-clamp-2 leading-tight mb-2">
+                        <div className="p-3 sm:p-4">
+                          <h3 className="font-serif font-semibold text-[13px] sm:text-[15px] text-[#161A1D] group-hover:text-[#E5383B] transition-colors line-clamp-1 leading-tight mb-1 sm:mb-2">
                             {listing.product_name}
                           </h3>
 
-                          <p className="text-xs text-[#660708]/60 line-clamp-2 leading-relaxed mb-3">
+                          <p className="text-[10px] sm:text-xs text-[#660708]/60 line-clamp-1 leading-relaxed mb-2 sm:mb-3">
                             {listing.description}
                           </p>
 
                           {/* Footer Stats */}
-                          <div className="flex items-center justify-between pt-3 border-t border-[#F5F3F4]">
-                            <div className="flex items-center gap-1 text-[#660708]/50">
-                              <MapPin className="w-3.5 h-3.5" />
-                              <span className="text-xs truncate max-w-[70px]">
-                                {listing.city || listing.pin_code || 'India'}
+                          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-[#F5F3F4]">
+                            <div className="flex items-center gap-1 text-[#660708]/50 overflow-hidden">
+                              <MapPin className="w-3 sm:w-3.5 h-3 sm:h-3.5 flex-shrink-0" />
+                              <span className="text-[9px] sm:text-xs truncate">
+                                {listing.city ? listing.city : (listing.pin_code || "Remote")}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
                               <div className="flex items-center gap-1 text-[#660708]/40">
-                                <Eye className="w-3.5 h-3.5" />
-                                <span className="text-xs">{listing.views || 0}</span>
+                                <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                                <span className="text-[9px] sm:text-xs">{listing.views || 0}</span>
                               </div>
                               <div className="flex items-center gap-0.5 text-[#E5383B]">
-                                <Star className="w-3.5 h-3.5 fill-current" />
-                                <span className="text-xs font-semibold">{listing.rating?.toFixed(1) || "5.0"}</span>
+                                <Star className={`w-3 sm:w-3.5 h-3 sm:h-3.5 ${listing.rating ? 'fill-[#E5383B]' : 'text-[#E5383B] opacity-40'}`} />
+                                <span className="text-[9px] sm:text-xs font-semibold">
+                                  {(listing.rating || 0).toFixed(1)}
+                                </span>
                               </div>
                             </div>
                           </div>

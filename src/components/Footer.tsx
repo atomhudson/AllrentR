@@ -4,13 +4,13 @@ import GoogleAd from "./GoogleAd";
 const Footer = () => {
   return (
     <>
-      <GoogleAd slot="2733876092" />
       <footer className="bg-[#161A1D] text-[#F5F3F4] py-16 relative overflow-hidden">
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/5 to-[#BA181B]/5" />
+        <GoogleAd slot="2733876092" className="mb-12" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/5 to-[#BA181B]/5" />
 
-      {/* Main container */}
-      <div className="container mx-auto px-4 relative z-10">
+        {/* Main container */}
+        <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-12">
           {/* Brand Info */}
           <div>

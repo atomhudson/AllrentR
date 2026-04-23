@@ -137,7 +137,7 @@ const Landing = () => {
         </div>
       )}
 
-      <section className="py-32 relative overflow-hidden">
+      <section className="pt-32 pb-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B] via-[#BA181B] to-[#660708]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(245,243,244,0.1),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(245,243,244,0.08),transparent_50%)]" />

@@ -56,6 +56,7 @@ interface ProfileMap {
 interface RatingCardProps {
   listingId: string;
   currentUserId?: string;
+  onRatingUpdated?: () => void;
 }
 
 // Rating category configuration with Lucide icons
@@ -124,7 +125,7 @@ const MediaLightbox = ({
   );
 };
 
-export const RatingCard = ({ listingId, currentUserId }: RatingCardProps) => {
+export const RatingCard = ({ listingId, currentUserId, onRatingUpdated }: RatingCardProps) => {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [profiles, setProfiles] = useState<ProfileMap>({});
   const [loading, setLoading] = useState(false);
@@ -268,6 +269,10 @@ export const RatingCard = ({ listingId, currentUserId }: RatingCardProps) => {
       if (error) throw error;
 
       toast({ title: 'Review Submitted!', description: 'Thank you for sharing your experience' });
+
+      if (onRatingUpdated) {
+        onRatingUpdated();
+      }
 
       setRatingCondition(0);
       setRatingCommunication(0);

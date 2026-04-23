@@ -195,23 +195,23 @@ export default function StartupHeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B090A]/80 via-transparent to-transparent" />
 
                 <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-3 sm:left-4 md:left-6 right-3 sm:right-4 md:right-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 md:gap-4">
+                  <div className="flex flex-col md:flex-row items-stretch justify-between gap-2 sm:gap-3 md:gap-4">
                     <motion.div
-                      className="flex-1 w-full sm:w-auto glass-card-strong rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-white/20 backdrop-blur-xl shadow-xl bg-gradient-to-br from-[#161A1D]/60 to-[#0B090A]/40 hover:from-[#E5383B]/10 hover:to-[#BA181B]/10 transition-all duration-300 group"
+                      className="flex-1 glass-card-strong rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20 backdrop-blur-xl shadow-xl bg-gradient-to-br from-[#161A1D]/60 to-[#0B090A]/40 hover:from-[#E5383B]/10 hover:to-[#BA181B]/10 transition-all duration-300 group"
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.05, rotate: -1 }}
+                      whileHover={{ scale: 1.02, rotate: -1 }}
                       transition={{ duration: 0.4 }}
                     >
                       <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#E5383B] to-[#BA181B] flex items-center justify-center shadow-lg group-hover:shadow-[#E5383B]/40 transition-all flex-shrink-0">
-                          <Zap className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" fill="white" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#E5383B] to-[#BA181B] flex items-center justify-center shadow-lg group-hover:shadow-[#E5383B]/40 transition-all flex-shrink-0">
+                          <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="white" />
                         </div>
                         <div className="min-w-0">
                           <div className="text-[#F5F3F4] font-semibold text-sm sm:text-base md:text-lg truncate">
                             Instant Connect
                           </div>
-                          <div className="text-[#ffffffb3] text-xs sm:text-sm tracking-wide truncate">
+                          <div className="text-[#ffffffb3] text-xs sm:text-sm tracking-wide">
                             Match with renters nearby
                           </div>
                         </div>
@@ -219,21 +219,21 @@ export default function StartupHeroSection() {
                     </motion.div>
 
                     <motion.div
-                      className="flex-1 w-full sm:w-auto glass-card-strong rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border border-white/20 backdrop-blur-xl shadow-xl bg-gradient-to-br from-[#161A1D]/60 to-[#0B090A]/40 hover:from-[#BA181B]/10 hover:to-[#660708]/10 transition-all duration-300 group"
+                      className="flex-1 glass-card-strong rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20 backdrop-blur-xl shadow-xl bg-gradient-to-br from-[#161A1D]/60 to-[#0B090A]/40 hover:from-[#BA181B]/10 hover:to-[#660708]/10 transition-all duration-300 group"
                       initial={{ opacity: 0, y: 30 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.05, rotate: 1 }}
+                      whileHover={{ scale: 1.02, rotate: 1 }}
                       transition={{ duration: 0.5, delay: 0.2 }}
                     >
                       <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#BA181B] to-[#660708] flex items-center justify-center shadow-lg group-hover:shadow-[#BA181B]/40 transition-all flex-shrink-0">
-                          <Package className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#BA181B] to-[#660708] flex items-center justify-center shadow-lg group-hover:shadow-[#BA181B]/40 transition-all flex-shrink-0">
+                          <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
                         <div className="min-w-0">
                           <div className="text-[#F5F3F4] font-semibold text-sm sm:text-base md:text-lg truncate">
                             Smart Pricing
                           </div>
-                          <div className="text-[#ffffffb3] text-xs sm:text-sm tracking-wide truncate">
+                          <div className="text-[#ffffffb3] text-xs sm:text-sm tracking-wide">
                             AI-powered recommendations
                           </div>
                         </div>

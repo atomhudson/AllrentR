@@ -45,15 +45,15 @@ export const useListings = (status?: string, userId?: string, enabled: boolean =
       let error: any = null;
       
       if (isPublicApprovedQuery) {
-        // Query approved listings directly (view not available)
-        const result = await supabase.from('listings').select('*')
+        // Query approved listings with their ratings
+        const result = await supabase.from('listings').select('*, ratings(rating)')
           .eq('listing_status', 'approved')
           .order('created_at', { ascending: false });
         data = result.data;
         error = result.error;
       } else {
         // Use direct table for owner's own listings or admin queries
-        let query = supabase.from('listings').select('*');
+        let query = supabase.from('listings').select('*, ratings(rating)');
         
         if (status) {
           query = query.eq('listing_status', status);
@@ -70,7 +70,19 @@ export const useListings = (status?: string, userId?: string, enabled: boolean =
       
       if (error) throw error;
       
-      setListings((data || []) as Listing[]);
+      // Calculate average ratings if ratings were joined
+      const processedData = (data || []).map(listing => {
+        if (listing.ratings && Array.isArray(listing.ratings) && listing.ratings.length > 0) {
+          const sum = listing.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0);
+          return {
+            ...listing,
+            rating: sum / listing.ratings.length
+          };
+        }
+        return listing;
+      });
+      
+      setListings(processedData as Listing[]);
     } catch (error) {
       console.error('Error fetching listings:', error);
     } finally {

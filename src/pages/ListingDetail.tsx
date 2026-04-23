@@ -193,6 +193,36 @@ const ListingDetail = () => {
         fetchListing();
     }, [displayIdFromUrl, navigate]);
 
+    const refreshRating = async () => {
+        if (!listing?.id) return;
+        
+        // Fetch updated listing to get synced rating column from DB trigger
+        const { data: updatedListing } = await supabase
+            .from('listings')
+            .select('*')
+            .eq('id', listing.id)
+            .single();
+            
+        if (updatedListing) {
+            setListing(updatedListing);
+        }
+        
+        // Also refresh real-time aggregate stats
+        const { data: listingRatings, error } = await supabase
+            .from('ratings')
+            .select('rating')
+            .eq('listing_id', listing.id);
+        
+        if (!error && listingRatings && listingRatings.length > 0) {
+            const sum = listingRatings.reduce((acc, curr) => acc + curr.rating, 0);
+            setAvgRating(sum / listingRatings.length);
+            setNumReviews(listingRatings.length);
+        } else {
+            setAvgRating(null);
+            setNumReviews(0);
+        }
+    };
+
     // Initialize edit form and verification enabled when listing loads
     useEffect(() => {
         if (listing) {
@@ -510,9 +540,9 @@ const ListingDetail = () => {
                                 <p className="text-[10px] sm:text-xs text-gray-500">Views</p>
                             </div>
                             <div className="p-2 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm text-center group hover:border-amber-100 transition-colors">
-                                <Star className={`w-4 sm:w-5 h-4 sm:h-5 mx-auto mb-1 ${(avgRating || 0) > 0 ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
+                                <Star className={`w-4 sm:w-5 h-4 sm:h-5 mx-auto mb-1 ${avgRating ? 'text-amber-500 fill-amber-500' : 'text-amber-500 opacity-40'}`} />
                                 <p className="text-base sm:text-lg font-bold text-gray-800">
-                                    {(avgRating || 0) > 0 ? avgRating?.toFixed(1) : "New"}
+                                    {(avgRating || 0).toFixed(1)}
                                 </p>
                                 <p className="text-[10px] sm:text-xs text-gray-500">
                                     {numReviews > 0 ? `${numReviews} Reviews` : "Rating"}
@@ -713,7 +743,11 @@ const ListingDetail = () => {
 
                 {/* Reviews Section */}
                 <div className="mt-8">
-                    <RatingCard listingId={listing.id} currentUserId={user?.id} />
+                    <RatingCard 
+                        listingId={listing.id} 
+                        currentUserId={user?.id} 
+                        onRatingUpdated={refreshRating}
+                    />
                 </div>
             </div>
 

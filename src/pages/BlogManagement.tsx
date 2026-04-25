@@ -157,6 +157,7 @@ const BlogManagement = () => {
 
   const handleEdit = (blog: Blog) => {
     setEditingBlog(blog);
+
     setFormData({
       title: blog.title,
       description: blog.description,

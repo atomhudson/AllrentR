@@ -14,7 +14,8 @@ import GoogleAd from "@/components/GoogleAd";
 import Footer from "@/components/Footer";
 
 // Helper function to calculate reading time
-const calculateReadingTime = (content: string): number => {
+const calculateReadingTime = (content: string | undefined | null): number => {
+  if (!content) return 0;
   const wordsPerMinute = 200;
   const words = content.trim().split(/\s+/).length;
   return Math.ceil(words / wordsPerMinute);
@@ -25,6 +26,81 @@ const decodeHtml = (html: string): string => {
   const txt = document.createElement("textarea");
   txt.innerHTML = html;
   return txt.value;
+};
+
+// Parse content and replace shortcodes with styled HTML
+const parseContent = (html: string): string => {
+  if (!html) return "";
+  let parsed = decodeHtml(html);
+  
+  // Clean up potential surrounding tags injected by rich text editor around shortcodes
+  // We strip <p> and </p> if the paragraph ONLY contains shortcodes and whitespace
+  // This ensures inline-block horizontal STAT elements actually flow horizontally next to each other!
+  parsed = parsed.replace(/<p>((?:\s|&nbsp;)*(?:\[\[(?:STAT|FAQ|TIMELINE)\|\|\|[\s\S]*?\]\](?:\s|&nbsp;)*)+)<\/p>/g, '$1');
+
+  // Parse FAQ: [[FAQ|||Question|||Answer]]
+  parsed = parsed.replace(/\[\[FAQ\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\]\]/g, (match, q, a) => {
+    return `
+      <details class="group border border-[#D3D3D3]/50 rounded-lg my-4 bg-[#F5F3F4] overflow-hidden">
+        <summary class="font-bold text-lg cursor-pointer p-5 hover:text-[#E5383B] transition-colors list-none flex justify-between items-center">
+          ${q}
+          <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </summary>
+        <div class="p-5 pt-0 text-[#161A1D]/80 leading-relaxed text-base font-medium">
+          ${a}
+        </div>
+      </details>
+    `;
+  });
+
+  // Pass 1: Convert STAT shortcodes to temporary markers
+  parsed = parsed.replace(/\[\[STAT\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)(?:\|\|\|([\s\S]*?))?\]\]/g, (match, title, value, subtitle, color, layout) => {
+    return `<stat-card>${title}~~~${value}~~~${subtitle}~~~${color}~~~${layout || 'horizontal'}</stat-card>`;
+  });
+
+  // Pass 2: Group consecutive markers into a Grid
+  parsed = parsed.replace(/(?:<stat-card>[\s\S]*?<\/stat-card>\s*)+/g, (match) => {
+    let innerHtml = '';
+    let isVertical = false;
+    
+    match.replace(/<stat-card>([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)<\/stat-card>/g, (m, title, value, subtitle, color, layout) => {
+      if (layout === "vertical") isVertical = true;
+      
+      const isRed = color === "red";
+      const isGreen = color === "green";
+      const isBlue = color === "blue";
+      // Match the dark theme colors from the screenshot
+      const colorClass = isRed ? "text-[#E5383B]" : isGreen ? "text-[#10B981]" : isBlue ? "text-[#3B82F6]" : "text-white";
+      
+      innerHtml += `
+        <div class="p-5 rounded-xl border border-white/10 bg-[#222222] shadow-sm hover:border-white/20 transition-all h-full flex flex-col justify-center">
+          <div class="text-[11px] font-semibold tracking-wider text-white/60 uppercase mb-2">${title}</div>
+          <div class="text-3xl font-bold mb-1 ${colorClass}">${value}</div>
+          <div class="text-sm text-white/50 font-medium">${subtitle}</div>
+        </div>
+      `;
+      return m;
+    });
+
+    if (isVertical) {
+      return `<div class="flex flex-col gap-4 my-6">${innerHtml}</div>`;
+    } else {
+      return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">${innerHtml}</div>`;
+    }
+  });
+
+  // Parse TIMELINE: [[TIMELINE|||Year|||Event]]
+  parsed = parsed.replace(/\[\[TIMELINE\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\]\]/g, (match, year, event) => {
+    return `
+      <div class="relative border-l-2 border-[#E5383B]/30 pl-8 py-6 ml-4">
+        <div class="absolute -left-[11px] top-8 w-5 h-5 rounded-full border-4 border-white bg-[#E5383B] shadow-sm"></div>
+        <div class="text-[#E5383B] font-bold text-lg mb-2">${year}</div>
+        <p class="text-[#161A1D]/80 leading-relaxed font-medium m-0">${event}</p>
+      </div>
+    `;
+  });
+
+  return parsed;
 };
 
 const BlogPost = () => {
@@ -84,7 +160,7 @@ const BlogPost = () => {
   const seoTitle = blog?.seo_title || blog?.title || '';
   const seoDescription = blog?.meta_description || blog?.description || '';
   const seoImage = blog?.og_image || blog?.image_url || '';
-  const seoKeywords = blog?.meta_keywords || (blog?.tags ? blog.tags.join(', ') : '');
+  const seoKeywords = blog?.meta_keywords || (Array.isArray(blog?.tags) ? blog.tags.join(', ') : '');
 
   if (loading) {
     return (
@@ -135,7 +211,7 @@ const BlogPost = () => {
           publishedTime={blog.created_at}
           modifiedTime={blog.updated_at}
           section={blog.category}
-          tags={blog.tags || []}
+          tags={Array.isArray(blog.tags) ? blog.tags : []}
           keywords={seoKeywords}
           canonicalUrl={blogUrl}
         />
@@ -231,7 +307,7 @@ const BlogPost = () => {
             <div
               className="text-[#161A1D]/90 leading-relaxed"
               style={{ fontSize: '1.125rem', lineHeight: '1.75' }}
-              dangerouslySetInnerHTML={{ __html: decodeHtml(blog.content) }}
+              dangerouslySetInnerHTML={{ __html: parseContent(blog.content) }}
             />
           </article>
 
@@ -256,7 +332,7 @@ const BlogPost = () => {
           )}
 
           {/* Tags */}
-          {blog.tags && blog.tags.length > 0 && (
+          {Array.isArray(blog.tags) && blog.tags.length > 0 && (
             <div className="mt-8">
               <h3 className="text-sm font-semibold text-[#161A1D] mb-3">Tags:</h3>
               <div className="flex flex-wrap gap-2">

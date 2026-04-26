@@ -643,8 +643,8 @@ const Listings = () => {
         />
 
         {/* Category Quick Filters */}
-        <div className="mb-10 animate-fade-in overflow-hidden">
-          <div className="flex items-center justify-start md:justify-center gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:display-none">
+        <div className="mb-10 animate-fade-in">
+          <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:display-none">
             {categoryConfig.map((cat) => {
               const Icon = cat.icon;
               const isActive = categoryFilter === cat.value;
@@ -653,7 +653,7 @@ const Listings = () => {
                 <button
                   key={cat.label}
                   onClick={() => setCategoryFilter(cat.value)}
-                  className={`flex flex-col items-center gap-2 min-w-[80px] group transition-all duration-300 ${
+                  className={`flex flex-col items-center gap-3 min-w-max flex-shrink-0 group transition-all duration-300 ${
                     isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'
                   }`}
                 >

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useListings, approveListing, rejectListing } from '@/hooks/useListings';
+import { useListings, approveListing, rejectListing, parseListing } from '@/hooks/useListings';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell, Tag, Activity, BarChart3, Package, Flag, AlertTriangle, ToggleLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -166,7 +166,8 @@ const AdminDashboard = () => {
         details: { timestamp: new Date().toISOString() }
       });
 
-      const { data: listings } = await supabase.from('listings').select('*');
+      const { data: listingsRaw } = await supabase.from('listings').select('*');
+      const listings = (listingsRaw || []).map(l => parseListing(l));
       const { data: profiles } = await supabase.from('profiles').select('*');
 
       let csv = 'RENTKARO ADMIN REPORT\n\n';
@@ -179,9 +180,9 @@ const AdminDashboard = () => {
       csv += `Total Revenue,₹${stats.totalRevenue}\n\n`;
 
       csv += 'ALL LISTINGS\n';
-      csv += 'ID,Product Name,Description,Rent Price,Pin Code,Status,Created At\n';
+      csv += 'ID,Product Name,Category,Description,Rent Price,Pin Code,Status,Created At\n';
       listings?.forEach(l => {
-        csv += `"${l.id}","${l.product_name}","${l.description}",${l.rent_price},"${l.pin_code}","${l.listing_status}","${l.created_at}"\n`;
+        csv += `"${l.id}","${l.product_name}","${l.category}","${l.description}",${l.rent_price},"${l.pin_code}","${l.listing_status}","${l.created_at}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });

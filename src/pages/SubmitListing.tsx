@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, Tag, Bot, PenTool } from 'lucide-react';
+import { Loader2, CheckCircle, Tag, Bot, PenTool, Package, Home } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -41,6 +41,7 @@ const SubmitListing = () => {
   const [discount, setDiscount] = useState(0);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string>('');
+  const [listingGroup, setListingGroup] = useState<'item' | 'property' | ''>('');
   const { packages } = usePackages();
 
   useEffect(() => {
@@ -149,12 +150,14 @@ const SubmitListing = () => {
   // ✅ Step Completion Validation
   const isStepComplete = () => {
     if (currentStep === 1)
-      return formData.product_name && formData.description && formData.category && formData.product_type;
+      return listingGroup !== '';
     if (currentStep === 2)
-      return formData.rent_price && formData.pin_code && formData.address;
+      return formData.product_name && formData.description && formData.category && formData.product_type;
     if (currentStep === 3)
-      return formData.images.length >= 1 && formData.phone;
+      return formData.rent_price && formData.pin_code && formData.address;
     if (currentStep === 4)
+      return formData.images.length >= 1 && formData.phone;
+    if (currentStep === 5)
       return listingType === 'free' || listingType === 'paid';
     return false;
   };
@@ -164,7 +167,7 @@ const SubmitListing = () => {
       e.preventDefault();
       e.stopPropagation();
     }
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep(prev => Math.min(prev + 1, 5));
   };
 
   const prevStep = (e?: React.MouseEvent) => {
@@ -176,7 +179,7 @@ const SubmitListing = () => {
   };
 
   // ✅ Dynamic Price Label
-  const getPriceLabel = () => formData.product_type === 'sale' ? 'Price (₹)' : 'Price (₹/Day)';
+  const getPriceLabel = () => formData.product_type === 'sale' ? 'Price (₹)' : 'Price (₹/Month or ₹/Day)';
 
   // ✅ Coupon Logic
   const handleApplyCoupon = async () => {
@@ -209,10 +212,10 @@ const SubmitListing = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prevent any submission if not on step 4
-    if (currentStep !== 4) {
+    // Prevent any submission if not on step 5
+    if (currentStep !== 5) {
       e.stopPropagation();
-      console.log('Form submission prevented - not on step 4');
+      console.log('Form submission prevented - not on step 5');
       return;
     }
 
@@ -261,9 +264,12 @@ const SubmitListing = () => {
 
     const gh = geo ? ngeohash.encode(geo.lat, geo.lon, 9) : null;
 
+    const isProperty = listingGroup === 'property';
     const listingData = {
       owner_user_id: user.id,
       ...formData,
+      category: isProperty ? 'other' : formData.category,
+      description: isProperty ? `__cat:${formData.category}__${formData.description}` : formData.description,
       rent_price: Number(formData.rent_price),
       payment_transaction: 'FREE_LISTING',
       listing_type: 'free',
@@ -343,9 +349,12 @@ const SubmitListing = () => {
           }
           const gh = ngeohash.encode(geo.lat, geo.lon, 9);
 
+          const isProperty = listingGroup === 'property';
           const { error } = await supabase.from('listings').insert([{
             owner_user_id: user.id,
             ...formData,
+            category: isProperty ? 'other' : formData.category,
+            description: isProperty ? `__cat:${formData.category}__${formData.description}` : formData.description,
             rent_price: Number(formData.rent_price),
             listing_type: 'paid',
             listing_status: 'pending',
@@ -397,7 +406,7 @@ const SubmitListing = () => {
     razorpay.open();
   };
 
-  const steps = ['Basic Info', 'Pricing & Location', 'Media & Contact', 'Listing Type'];
+  const steps = ['Listing Category', 'Basic Info', 'Pricing & Location', 'Media & Contact', 'Listing Type'];
 
   return (
     <div className="min-h-screen bg-background">
@@ -411,10 +420,10 @@ const SubmitListing = () => {
             className="text-center mb-12"
           >
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">
-              List Your Item
+              List Your {listingGroup === 'property' ? 'Property' : 'Item'}
             </h1>
             <p className="text-base md:text-lg text-muted-foreground">
-              Step {currentStep} of 4 — {steps[currentStep - 1]}
+              Step {currentStep} of 5 — {steps[currentStep - 1]}
             </p>
           </motion.div>
 
@@ -429,14 +438,14 @@ const SubmitListing = () => {
                     }`}>
                     {currentStep > idx + 1 ? '✓' : idx + 1}
                   </div>
-                  <span className="text-xs mt-2 text-muted-foreground hidden md:block">{step}</span>
+                  <span className="text-xs mt-2 text-muted-foreground hidden md:block text-center px-1">{step}</span>
                 </div>
               ))}
             </div>
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
               <div
                 className="h-full bg-primary transition-all duration-500"
-                style={{ width: `${(currentStep / 4) * 100}%` }}
+                style={{ width: `${(currentStep / 5) * 100}%` }}
               />
             </div>
           </div>
@@ -445,6 +454,57 @@ const SubmitListing = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
+                  <motion.div key="step0" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
+                    <Label className="text-foreground font-medium mb-4 block text-lg">What would you like to list?</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div
+                        onClick={() => {
+                          setListingGroup('item');
+                          if (formData.category && !['electronics', 'vehicles', 'furniture', 'tools', 'sports', 'books', 'clothing', 'other'].includes(formData.category)) {
+                            setFormData(prev => ({ ...prev, category: '' }));
+                          }
+                        }}
+                        className={`flex flex-col items-center p-8 border-2 rounded-xl cursor-pointer transition-all ${
+                          listingGroup === 'item' 
+                            ? 'border-primary bg-primary/5 shadow-md' 
+                            : 'border-border hover:border-primary/50 hover:bg-secondary/50'
+                        }`}
+                      >
+                        <div className={`p-4 rounded-full mb-4 ${listingGroup === 'item' ? 'bg-primary/20' : 'bg-secondary'}`}>
+                          <Package className={`w-10 h-10 ${listingGroup === 'item' ? 'text-primary' : 'text-foreground'}`} />
+                        </div>
+                        <h3 className="font-semibold text-xl mb-2">Rental Item</h3>
+                        <p className="text-sm text-muted-foreground text-center">
+                          List electronics, furniture, vehicles, tools, or other items.
+                        </p>
+                      </div>
+
+                      <div
+                        onClick={() => {
+                          setListingGroup('property');
+                          if (formData.category && !['pg', 'room', 'flat', 'house', 'office', 'shop', 'warehouse'].includes(formData.category)) {
+                            setFormData(prev => ({ ...prev, category: '' }));
+                          }
+                        }}
+                        className={`flex flex-col items-center p-8 border-2 rounded-xl cursor-pointer transition-all ${
+                          listingGroup === 'property' 
+                            ? 'border-primary bg-primary/5 shadow-md' 
+                            : 'border-border hover:border-primary/50 hover:bg-secondary/50'
+                        }`}
+                      >
+                        <div className={`p-4 rounded-full mb-4 ${listingGroup === 'property' ? 'bg-primary/20' : 'bg-secondary'}`}>
+                          <Home className={`w-10 h-10 ${listingGroup === 'property' ? 'text-primary' : 'text-foreground'}`} />
+                        </div>
+                        <h3 className="font-semibold text-xl mb-2">Property</h3>
+                        <p className="text-sm text-muted-foreground text-center">
+                          List a PG, room, flat, house, or commercial space.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 2 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
                       <Label className="text-foreground font-medium mb-2 block">Product Name</Label>
@@ -479,14 +539,28 @@ const SubmitListing = () => {
                         required
                       >
                         <option value="">Select a category</option>
-                        <option value="electronics">Electronics</option>
-                        <option value="vehicles">Vehicles</option>
-                        <option value="furniture">Furniture</option>
-                        <option value="tools">Tools</option>
-                        <option value="sports">Sports</option>
-                        <option value="books">Books</option>
-                        <option value="clothing">Clothing</option>
-                        <option value="other">Other</option>
+                        {listingGroup === 'item' ? (
+                          <>
+                            <option value="electronics">Electronics</option>
+                            <option value="vehicles">Vehicles</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="tools">Tools</option>
+                            <option value="sports">Sports</option>
+                            <option value="books">Books</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="other">Other</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="pg">PG / Hostel</option>
+                            <option value="room">Single Room</option>
+                            <option value="flat">Flat / Apartment</option>
+                            <option value="house">Independent House</option>
+                            <option value="office">Office Space</option>
+                            <option value="shop">Shop</option>
+                            <option value="warehouse">Warehouse</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div>
@@ -506,7 +580,7 @@ const SubmitListing = () => {
                   </motion.div>
                 )}
 
-                {currentStep === 2 && (
+                {currentStep === 3 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
                       <Label className="text-foreground font-medium mb-2 block">{getPriceLabel()}</Label>
@@ -548,7 +622,7 @@ const SubmitListing = () => {
                   </motion.div>
                 )}
 
-                {currentStep === 3 && (
+                {currentStep === 4 && (
                   <motion.div key="step3" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <div>
                       <Label className="text-foreground font-medium mb-2 block">Product Images</Label>
@@ -568,7 +642,7 @@ const SubmitListing = () => {
                   </motion.div>
                 )}
 
-                {currentStep === 4 && (
+                {currentStep === 5 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className="space-y-6">
                     <Label className="text-foreground font-medium mb-4 block">Listing Type</Label>
                     <RadioGroup value={listingType} onValueChange={(v: 'free' | 'paid') => {
@@ -715,7 +789,7 @@ const SubmitListing = () => {
                     Back
                   </Button>
                 )}
-                {currentStep < 4 ? (
+                {currentStep < 5 ? (
                   <Button
                     type="button"
                     onClick={(e) => {

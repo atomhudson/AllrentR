@@ -28,6 +28,26 @@ export interface Listing {
   final_price?: number;
 }
 
+export const parseListing = (listing: any): Listing => {
+  let finalListing = { ...listing };
+  
+  // Handle embedded category trick: __cat:category__description
+  if (finalListing.description && finalListing.description.startsWith('__cat:')) {
+    const match = finalListing.description.match(/^__cat:([^__]+)__(.*)/);
+    if (match) {
+      finalListing.category = match[1];
+      finalListing.description = match[2];
+    }
+  }
+
+  if (finalListing.ratings && Array.isArray(finalListing.ratings) && finalListing.ratings.length > 0) {
+    const sum = finalListing.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0);
+    finalListing.rating = sum / finalListing.ratings.length;
+  }
+  
+  return finalListing as Listing;
+};
+
 export const useListings = (status?: string, userId?: string, enabled: boolean = true) => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,19 +90,10 @@ export const useListings = (status?: string, userId?: string, enabled: boolean =
       
       if (error) throw error;
       
-      // Calculate average ratings if ratings were joined
-      const processedData = (data || []).map(listing => {
-        if (listing.ratings && Array.isArray(listing.ratings) && listing.ratings.length > 0) {
-          const sum = listing.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0);
-          return {
-            ...listing,
-            rating: sum / listing.ratings.length
-          };
-        }
-        return listing;
-      });
+      // Calculate average ratings if ratings were joined and parse embedded categories
+      const processedData = (data || []).map(listing => parseListing(listing));
       
-      setListings(processedData as Listing[]);
+      setListings(processedData);
     } catch (error) {
       console.error('Error fetching listings:', error);
     } finally {

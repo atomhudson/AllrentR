@@ -13,6 +13,7 @@ import { ChatWindow } from "@/components/ChatWindow";
 import { ItemVerificationModal } from "@/components/ItemVerificationModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChat } from "@/hooks/useChat";
+import { parseListing } from "@/hooks/useListings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import GoogleAd from "@/components/GoogleAd";
@@ -152,11 +153,11 @@ const ListingDetail = () => {
                         navigate('/listings');
                         return;
                     }
-                    fetchedListing = altData;
-                    setListing(altData);
+                    fetchedListing = parseListing(altData);
+                    setListing(fetchedListing);
                 } else {
-                    fetchedListing = data;
-                    setListing(data);
+                    fetchedListing = parseListing(data);
+                    setListing(fetchedListing);
                 }
 
                 if (fetchedListing?.id) {
@@ -204,7 +205,7 @@ const ListingDetail = () => {
             .single();
             
         if (updatedListing) {
-            setListing(updatedListing);
+            setListing(parseListing(updatedListing));
         }
         
         // Also refresh real-time aggregate stats
@@ -327,11 +328,13 @@ const ListingDetail = () => {
 
         setEditLoading(true);
         try {
+            const isProperty = ['pg', 'room', 'flat', 'house', 'office', 'shop', 'warehouse'].includes(listing.category);
             const { error } = await supabase
                 .from('listings')
                 .update({
                     product_name: editForm.product_name,
-                    description: editForm.description,
+                    description: isProperty ? `__cat:${listing.category}__${editForm.description}` : editForm.description,
+                    category: isProperty ? 'other' : listing.category,
                     rent_price: editForm.rent_price,
                     original_price: editForm.original_price,
                     product_type: editForm.product_type as "rent" | "sale" | "both",

@@ -79,27 +79,57 @@ export const useChat = () => {
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptRef = useRef(0);
   const maxReconnectAttempts = 10;
+  const intentionalCloseRef = useRef(false);
+  const isConnectingRef = useRef(false);
   const typingTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const currentConversationRef = useRef<string | null>(null);
 
+  // Cleanup helper — close socket + cancel pending reconnect
+  const cleanup = useCallback(() => {
+    intentionalCloseRef.current = true;
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    isConnectingRef.current = false;
+  }, []);
+
   // Connect to WebSocket
   const connect = useCallback(() => {
     if (!user || !session) return;
+    // Prevent duplicate connections
+    if (isConnectingRef.current) return;
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return;
+
+    isConnectingRef.current = true;
+    intentionalCloseRef.current = false;
+
+    // Close any leftover socket before creating a new one
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch {}
+      wsRef.current = null;
+    }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
 
     const token = session.access_token;
-    // Build URL without logging the token - never log the full URL
     const wsUrl = `${WS_URL}?token=${encodeURIComponent(token)}`;
     
-    // Create WebSocket without exposing URL in any logs
     const websocket = new WebSocket(wsUrl);
     wsRef.current = websocket;
 
     websocket.onopen = () => {
-      // Silent connection - no logging to avoid exposing tokens
       setIsConnected(true);
-      reconnectAttemptRef.current = 0; // Reset backoff on success
+      isConnectingRef.current = false;
+      reconnectAttemptRef.current = 0;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
@@ -111,7 +141,6 @@ export const useChat = () => {
         const data = JSON.parse(event.data);
         handleWebSocketMessage(data);
       } catch (error) {
-        // Only log error type, not the message content
         if (import.meta.env.DEV) {
           console.error('Error parsing WebSocket message');
         }
@@ -119,16 +148,15 @@ export const useChat = () => {
     };
 
     websocket.onerror = () => {
-      // Silent error handling - don't log anything that might expose tokens
-      // The error event itself doesn't contain useful info anyway
       setIsConnected(false);
+      isConnectingRef.current = false;
     };
 
     websocket.onclose = () => {
-      // Silent disconnection - no logging
       setIsConnected(false);
-      // Reconnect with exponential backoff (3s, 6s, 12s, ... max 60s)
-      if (reconnectAttemptRef.current < maxReconnectAttempts) {
+      isConnectingRef.current = false;
+      // Only reconnect if the close was NOT intentional (cleanup/unmount)
+      if (!intentionalCloseRef.current && reconnectAttemptRef.current < maxReconnectAttempts) {
         const delay = Math.min(3000 * Math.pow(2, reconnectAttemptRef.current), 60000);
         reconnectAttemptRef.current += 1;
         reconnectTimeoutRef.current = setTimeout(() => {
@@ -762,22 +790,20 @@ export const useChat = () => {
   // Initialize
   useEffect(() => {
     if (user && session) {
-      connect();
+      // Only connect if not already connected / connecting
+      if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+        connect();
+      }
       loadConversations();
     }
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
+      cleanup();
       Object.values(typingTimeoutRef.current).forEach(timeout => {
         clearTimeout(timeout);
       });
     };
-  }, [user, session, connect, loadConversations]);
+  }, [user, session, connect, loadConversations, cleanup]);
 
   // Request notification permission on mount
   useEffect(() => {

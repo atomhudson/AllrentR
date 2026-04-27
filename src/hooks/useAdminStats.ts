@@ -35,7 +35,7 @@ export const useAdminStats = () => {
       // Get listing counts by status
       const { data: listings } = await supabase
         .from('listings')
-        .select('listing_status, payment_verified, created_at');
+        .select('listing_status, payment_verified, created_at, final_price');
 
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -50,21 +50,32 @@ export const useAdminStats = () => {
       const weekCount = listings?.filter(l => new Date(l.created_at) >= weekAgo).length || 0;
       const monthCount = listings?.filter(l => new Date(l.created_at) >= monthAgo).length || 0;
 
-      // Get user count
-      const { count: userCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      // Get user count — use admin RPC for accurate count (includes auth users without profiles)
+      let userCount = 0;
+      try {
+        const { data: allUsers } = await (supabase.rpc as any)('admin_get_all_users');
+        userCount = Array.isArray(allUsers) ? allUsers.length : 0;
+      } catch {
+        // Fallback to profiles count if RPC fails
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        userCount = count || 0;
+      }
 
-      // Calculate revenue (₹10 per listing)
-      const verifiedCount = listings?.filter(l => l.payment_verified).length || 0;
+      // Calculate revenue: sum of final_price for payment-verified listings
+      const verifiedListings = listings?.filter(l => l.payment_verified) || [];
+      const totalRevenue = verifiedListings.reduce((sum, l) => sum + (Number(l.final_price) || 0), 0);
+      const pendingRevenue = (listings?.filter(l => l.listing_status === 'pending') || [])
+        .reduce((sum, l) => sum + (Number(l.final_price) || 0), 0);
 
       setStats({
         totalListings: listings?.length || 0,
         pendingListings: pending,
         approvedListings: approved,
         rejectedListings: rejected,
-        totalRevenue: verifiedCount * 10,
-        pendingRevenue: pending * 10,
+        totalRevenue,
+        pendingRevenue,
         totalUsers: userCount || 0,
         todayListings: todayCount,
         weeklyListings: weekCount,

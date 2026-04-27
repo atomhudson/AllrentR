@@ -618,11 +618,53 @@ async function handleUserOnline(userId) {
   });
 }
 
+// ── Keep-Alive Self-Ping (every 4 minutes) ──────────────────────────
+const KEEP_ALIVE_INTERVAL = 4 * 60 * 1000; // 4 minutes
+const KEEP_ALIVE_URL = process.env.KEEP_ALIVE_URL || 'https://allrentr-1egs.onrender.com';
+
+async function keepAlivePing() {
+  const start = Date.now();
+  let statusCode = null;
+  let success = false;
+  let errorMessage = null;
+
+  try {
+    const response = await fetch(KEEP_ALIVE_URL);
+    statusCode = response.status;
+    success = response.ok;
+  } catch (err) {
+    errorMessage = err.message || 'Network error';
+    success = false;
+  }
+
+  const responseTimeMs = Date.now() - start;
+  console.log(`[Keep-Alive] ${success ? '✓' : '✗'} ${KEEP_ALIVE_URL} — ${statusCode || 'ERR'} in ${responseTimeMs}ms${errorMessage ? ' — ' + errorMessage : ''}`);
+
+  // Log to Supabase
+  try {
+    await supabase.from('keep_alive_logs').insert({
+      url: KEEP_ALIVE_URL,
+      status_code: statusCode,
+      response_time_ms: responseTimeMs,
+      success,
+      error_message: errorMessage,
+    });
+  } catch (dbErr) {
+    // Table may not exist yet — ignore silently
+    console.warn('[Keep-Alive] Could not log to DB:', dbErr.message);
+  }
+}
+
 const PORT = process.env.PORT || process.env.WS_PORT || 8080;
 server.listen(PORT, () => {
   console.log(`WebSocket server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Redis: ${redis ? 'Connected (Upstash)' : 'Not configured'}`);
   console.log(`Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
+
+  // Start keep-alive ping loop
+  console.log(`[Keep-Alive] Pinging ${KEEP_ALIVE_URL} every ${KEEP_ALIVE_INTERVAL / 1000}s`);
+  keepAlivePing(); // immediate first ping
+  setInterval(keepAlivePing, KEEP_ALIVE_INTERVAL);
 });
 

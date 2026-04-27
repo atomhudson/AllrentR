@@ -77,6 +77,8 @@ export const useChat = () => {
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const maxReconnectAttempts = 10;
   const typingTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -97,6 +99,7 @@ export const useChat = () => {
     websocket.onopen = () => {
       // Silent connection - no logging to avoid exposing tokens
       setIsConnected(true);
+      reconnectAttemptRef.current = 0; // Reset backoff on success
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
@@ -124,10 +127,14 @@ export const useChat = () => {
     websocket.onclose = () => {
       // Silent disconnection - no logging
       setIsConnected(false);
-      // Reconnect after 3 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        connect();
-      }, 3000);
+      // Reconnect with exponential backoff (3s, 6s, 12s, ... max 60s)
+      if (reconnectAttemptRef.current < maxReconnectAttempts) {
+        const delay = Math.min(3000 * Math.pow(2, reconnectAttemptRef.current), 60000);
+        reconnectAttemptRef.current += 1;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connect();
+        }, delay);
+      }
     };
 
     setWs(websocket);

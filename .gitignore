@@ -16,6 +16,8 @@ node_modules
 dist
 dist-ssr
 chat-bot
+docs
+antigravity-brain
 *.local
 
 # Editor directories and files
@@ -28,4 +30,3 @@ chat-bot
 *.njsproj
 *.sln
 *.sw?
-docs

@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListings, approveListing, rejectListing, parseListing } from '@/hooks/useListings';
 import { useAdminStats } from '@/hooks/useAdminStats';
-import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell, Tag, Activity, BarChart3, Package, Flag, AlertTriangle, ToggleLeft } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, IndianRupee, Users, TrendingUp, Download, FileSpreadsheet, FileText, ScrollText, Trophy, Bell, Tag, Activity, BarChart3, Package, Flag, AlertTriangle, ToggleLeft, Wifi, WifiOff, List, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAllSectionVisibility } from '@/hooks/useSectionVisibility';
+import { useKeepAlive } from '@/hooks/useKeepAlive';
 
 interface ActivityLog {
   id: string;
@@ -34,6 +35,7 @@ const AdminDashboard = () => {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [flaggedReviews, setFlaggedReviews] = useState<any[]>([]);
   const { sections, isLoading: visibilityLoading, toggleVisibility } = useAllSectionVisibility();
+  const { logs: pingLogs, isRunning: keepAliveRunning, lastPing, isPinging, pingNow } = useKeepAlive(!!user && !!isAdmin);
 
   const featureLabels: Record<string, { label: string; description: string }> = {
     ai_listing: { label: 'AI Listing', description: 'AI-powered listing creation page' },
@@ -410,7 +412,126 @@ const AdminDashboard = () => {
               <TrendingUp className="w-6 h-6" />
               <span className="text-sm font-medium">Boost Pkg</span>
             </Button>
+            <Button onClick={() => navigate('/admin/listings')} variant="outline" className="h-24 flex-col gap-2 border-primary/40 bg-primary/5 hover:bg-primary/10">
+              <List className="w-6 h-6 text-primary" />
+              <span className="text-sm font-medium">All Listings</span>
+            </Button>
           </div>
+        </div>
+
+        {/* Keep-Alive Monitor */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <Wifi className="w-6 h-6 text-primary" />
+            Keep-Alive Monitor
+          </h2>
+          <Card className="p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${keepAliveRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                <div>
+                  <p className="font-semibold text-sm">
+                    {keepAliveRunning ? 'Server is auto-pinging every 4 minutes' : 'Waiting for server pings...'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Target: allrentr-1egs.onrender.com · Logs refresh every 60s
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {lastPing && (
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                    lastPing.success ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                  }`}>
+                    {lastPing.success ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                    {lastPing.success ? `OK · ${lastPing.response_time_ms}ms` : 'Failed'}
+                  </div>
+                )}
+                <Button onClick={pingNow} disabled={isPinging} size="sm" variant="outline" className="gap-1.5">
+                  <Zap className={`w-4 h-4 ${isPinging ? 'animate-spin' : ''}`} />
+                  Ping Now
+                </Button>
+              </div>
+            </div>
+
+            {pingLogs.length === 0 ? (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
+                <p className="font-semibold text-sm text-amber-600 mb-2">⚡ Setup Required</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  The keep-alive system pings your Render server every 4 minutes to prevent it from sleeping.
+                  Two steps are needed:
+                </p>
+                <div className="space-y-2 text-xs">
+                  <div className="flex gap-2">
+                    <span className="font-bold text-amber-600 shrink-0">Step 1:</span>
+                    <span className="text-muted-foreground">
+                      Create the <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-[11px]">keep_alive_logs</code> table
+                      in your <strong>Supabase SQL Editor</strong>:
+                    </span>
+                  </div>
+                  <pre className="bg-muted/50 border rounded-lg p-3 text-[11px] overflow-x-auto font-mono leading-relaxed">
+{`CREATE TABLE IF NOT EXISTS keep_alive_logs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  url text NOT NULL,
+  status_code int,
+  response_time_ms int,
+  success boolean DEFAULT false,
+  error_message text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE keep_alive_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for keep_alive_logs"
+  ON keep_alive_logs FOR ALL
+  USING (true) WITH CHECK (true);`}
+                  </pre>
+                  <div className="flex gap-2 mt-2">
+                    <span className="font-bold text-amber-600 shrink-0">Step 2:</span>
+                    <span className="text-muted-foreground">
+                      Redeploy the <strong>chat server</strong> on Render — it now auto-pings every 4 min.
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground mt-3">
+                    You can also click <strong>"Ping Now"</strong> above to test a manual ping right away.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="border rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 text-left">
+                      <th className="px-4 py-2.5 font-medium text-xs text-muted-foreground">Time</th>
+                      <th className="px-4 py-2.5 font-medium text-xs text-muted-foreground">Status</th>
+                      <th className="px-4 py-2.5 font-medium text-xs text-muted-foreground">Response</th>
+                      <th className="px-4 py-2.5 font-medium text-xs text-muted-foreground">Error</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pingLogs.slice(0, 15).map((log) => (
+                      <tr key={log.id} className="border-t border-border/50">
+                        <td className="px-4 py-2 text-xs text-muted-foreground">
+                          {new Date(log.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className={`inline-flex items-center gap-1 text-xs font-medium ${
+                            log.success ? 'text-green-600' : 'text-red-500'
+                          }`}>
+                            {log.success ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                            {log.success ? 'OK' : 'Fail'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-xs">{log.response_time_ms}ms</td>
+                        <td className="px-4 py-2 text-xs text-red-400 max-w-[200px] truncate">
+                          {log.error_message || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
         </div>
 
         <Tabs defaultValue="listings" className="space-y-6">

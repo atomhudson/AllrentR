@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { AdPopup } from "@/components/AdPopup";
 import BannerCarousel from "@/components/BannerCarousel";
 import FilterSection from "@/components/FilterSection";
-import { useListings, incrementViews } from "@/hooks/useListings";
+import { useListings, incrementViews, parseListing } from "@/hooks/useListings";
 import { useSectionVisibility } from "@/hooks/useSectionVisibility";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleAd from "@/components/GoogleAd";
@@ -367,7 +367,7 @@ const Listings = () => {
           // Preserve RPC order by distance
           const orderIndex: Record<string, number> = {};
           ids.forEach((id: string, i: number) => { orderIndex[id] = i; });
-          const ordered = (fullRows || []).slice().sort((a: any, b: any) => orderIndex[a.id] - orderIndex[b.id]);
+          const ordered = (fullRows || []).map((l: any) => parseListing(l)).sort((a: any, b: any) => orderIndex[a.id] - orderIndex[b.id]);
           setNearbyListings(ordered);
           console.log('Nearby listings set from RPC:', ordered.length);
           setNearbyLoading(false);

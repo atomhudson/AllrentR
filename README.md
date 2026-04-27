@@ -22,8 +22,28 @@ Built using **React**, **TypeScript**, and **Supabase**, AllRentr delivers a **f
 | 💼**Packages & Subscriptions**  | Unlock exclusive features through flexible membership plans.                                |
 | 🤝**Influencer Collaborations** | Partner program for creators to promote their listings and grow with the platform.          |
 | 📍**Location-based Search**     | Geo-aware discovery system to find rentals closest to you using geohashing.                 |
-| 💳**Secure Payments**           | Fully integrated with**Razorpay**for safe and smooth transactions.                          |
+| 💳**Secure Payments**           | Fully integrated with **Razorpay** for safe and smooth transactions.                       |
 | 🔐**Social Authentication**     | Sign up and log in easily using Google and other OAuth providers.                           |
+
+---
+
+## 🛡️ **Admin Dashboard**
+
+AllRentr includes a comprehensive admin panel at `/admin` for platform management:
+
+| Feature                     | Description                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| 📊 **Dashboard Stats**      | Real-time counts for pending/approved/rejected listings, total users, and revenue.   |
+| 👥 **User Management**      | View all users, manage roles, search by email, bulk actions, CSV export.             |
+| 📦 **Listing Management**   | View all listings with owner info (name + email), filter/sort/search, approve/reject/deactivate/delete, bulk actions. |
+| 📰 **Blog Management**      | Create, edit, and manage blog posts with a rich text editor.                         |
+| 🎟️ **Coupon Management**   | Create and manage discount coupons.                                                  |
+| 🚀 **Boost Packages**       | Manage listing boost packages for premium visibility.                                |
+| 🏆 **Leaderboard Mgmt**     | Configure and manage the user leaderboard.                                           |
+| 🤝 **Influencer Partners**  | Manage influencer/partner collaborations.                                            |
+| 🔔 **Notifications**        | Send and manage platform-wide notifications.                                         |
+| ⚙️ **Feature Toggles**      | Enable/disable platform sections (AI Listing, Blog, Leaderboard, etc.) on the fly.  |
+| 📡 **Keep-Alive Monitor**   | Server-side auto-ping (every 4 min) keeps the Render instance alive; logs visible in dashboard. |
 
 ---
 
@@ -55,16 +75,28 @@ Built using **React**, **TypeScript**, and **Supabase**, AllRentr delivers a **f
 | **RLS (Row Level Security)** | Fine-grained access control and policies |
 | **Supabase Auth**            | Authentication and authorization layer   |
 | **Supabase Storage**         | File uploads and CDN for media assets    |
+| **Supabase RPCs**            | Server-side functions for admin operations (e.g., `admin_get_all_users`) |
 
 ---
 
 ### ⚡ **Real-time & Caching**
 
 
-| Service                      | Role                                          |
-| ---------------------------- | --------------------------------------------- |
-| **Node.js WebSocket Server** | Enables live chat and instant updates         |
-| **Upstash Redis**            | Manages caching, sessions, and message queues |
+| Service                      | Role                                                             |
+| ---------------------------- | ---------------------------------------------------------------- |
+| **Node.js WebSocket Server** | Live chat, typing indicators, online status, and instant updates |
+| **Upstash Redis**            | Manages caching, sessions, and message queues                    |
+
+---
+
+### 📡 **Keep-Alive System**
+
+The chat server includes a built-in **keep-alive mechanism** to prevent Render's free-tier instances from sleeping:
+
+- The server pings its own URL every **4 minutes** via `setInterval`
+- Ping results (status, response time, errors) are logged to the `keep_alive_logs` Supabase table
+- The admin dashboard displays a **Keep-Alive Monitor** with live status and ping history
+- **Runs 24/7** server-side — no browser or admin login required
 
 ---
 
@@ -97,7 +129,7 @@ Before starting, make sure you have:
 
    ```bash
    git clone <YOUR_GIT_URL>
-   cd <YOUR_PROJECT_NAME>
+   cd AllrentR
    ```
 2. **Install dependencies**
 
@@ -119,7 +151,7 @@ Before starting, make sure you have:
    npm run dev
    ```
 
-   App runs at → [http://localhost:8080](http://localhost:8080/)
+   App runs at → [http://localhost:5173](http://localhost:5173/)
 
 ---
 
@@ -141,7 +173,8 @@ Before starting, make sure you have:
    ```env
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   WS_PORT=8081
+   WS_PORT=8080
+   KEEP_ALIVE_URL=https://your-render-url.onrender.com   # Optional: defaults to allrentr-1egs.onrender.com
    ```
 4. **Run the chat server**
 
@@ -154,6 +187,29 @@ Before starting, make sure you have:
    ```bash
    npm run dev
    ```
+
+---
+
+### 🗄️ Supabase Tables (Optional)
+
+For the keep-alive monitor to log results, create this table in your **Supabase SQL Editor**:
+
+```sql
+CREATE TABLE IF NOT EXISTS keep_alive_logs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  url text NOT NULL,
+  status_code int,
+  response_time_ms int,
+  success boolean DEFAULT false,
+  error_message text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE keep_alive_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for keep_alive_logs"
+  ON keep_alive_logs FOR ALL
+  USING (true) WITH CHECK (true);
+```
 
 ---
 
@@ -180,6 +236,46 @@ Before starting, make sure you have:
 
 ---
 
+## 📁 **Project Structure**
+
+```
+AllrentR/
+├── public/                     # Static assets
+├── server/
+│   ├── chat-server.js          # WebSocket server + keep-alive ping
+│   └── package.json
+├── src/
+│   ├── components/             # Reusable UI components (Navbar, ChatWindow, etc.)
+│   ├── contexts/               # React contexts (AuthContext)
+│   ├── hooks/                  # Custom hooks
+│   │   ├── useChat.ts          # WebSocket chat with exponential backoff reconnect
+│   │   ├── useKeepAlive.ts     # Keep-alive monitor (reads server ping logs)
+│   │   ├── useAdminStats.ts    # Admin dashboard statistics
+│   │   ├── useListings.ts      # Listing CRUD operations
+│   │   └── ...
+│   ├── integrations/
+│   │   └── supabase/           # Supabase client & generated types
+│   ├── pages/
+│   │   ├── AdminDashboard.tsx  # Admin panel with stats, feature toggles, keep-alive monitor
+│   │   ├── UserManagement.tsx  # Admin user management
+│   │   ├── ListingManagement.tsx # Admin listing management (all listings + controls)
+│   │   ├── Landing.tsx         # Homepage
+│   │   ├── Listings.tsx        # Browse listings
+│   │   ├── ListingDetail.tsx   # Individual listing page
+│   │   ├── Inbox.tsx           # Chat inbox
+│   │   ├── Profile.tsx         # User profile
+│   │   └── ...
+│   ├── App.tsx                 # Root component with routing
+│   └── main.tsx                # Entry point
+├── .env                        # Environment variables
+├── vite.config.ts
+├── tailwind.config.ts
+├── vercel.json                 # Vercel deployment config
+└── package.json
+```
+
+---
+
 ## ☁️ **Deployment**
 
 ### 🌍 Frontend (Vercel)
@@ -196,21 +292,20 @@ Before starting, make sure you have:
 
 ---
 
-### 🧠 Chat Server Hosting
+### 🧠 Chat Server (Render)
 
-Deploy the server on your preferred **Node.js hosting platform**:
+The WebSocket chat server is deployed on **Render**:
 
+1. Connect the `server/` directory to a **Render Web Service**
+2. Set environment variables:
+   ```env
+   SUPABASE_URL
+   SUPABASE_SERVICE_ROLE_KEY
+   KEEP_ALIVE_URL    # Your Render service URL
+   ```
+3. The server automatically starts pinging itself every 4 minutes to stay alive on Render's free tier.
 
-| Platform              | Notes                         |
-| --------------------- | ----------------------------- |
-| **Render**            | Simple and free-tier friendly |
-| **Railway**           | Easy deployment from GitHub   |
-| **Heroku**            | Rapid prototyping             |
-| **DigitalOcean Apps** | Scalable production option    |
-
-Be sure to configure `.env` variables in your hosting dashboard.
-
-Note: We use **Render** to deploye our chat server
+> **Note:** Free Render instances spin down after inactivity. The built-in keep-alive ping prevents this by hitting the server's health endpoint every 4 minutes.
 
 ---
 
@@ -223,6 +318,7 @@ Note: We use **Render** to deploye our chat server
 3. Enable Google or OAuth providers under **Auth → Providers**
 4. Create storage buckets for images and thumbnails
 5. Define Row Level Security (RLS) policies for user isolation
+6. *(Optional)* Create the `keep_alive_logs` table for the keep-alive monitor
 
 ---
 
@@ -243,6 +339,7 @@ VITE_RAZORPAY_KEY_ID=rzp_test_...
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 WS_PORT=8080
+KEEP_ALIVE_URL=https://your-render-url.onrender.com
 ```
 
 ---
@@ -273,7 +370,7 @@ This project is **private and proprietary** — © AllRentr.
 
 ## 💬 **Support**
 
-Need help? Reach us at: 📧 **[support@allrentr.com](mailto:support@allrentr.com)** or join our **Discord community***(link coming soon)*
+Need help? Reach us at: 📧 **[allrentr15@gmail.com](mailto:allrentr15@gmail.com)** or join our **Discord community** *(link coming soon)*
 
 ---
 
@@ -283,4 +380,4 @@ Need help? Reach us at: 📧 **[support@allrentr.com](mailto:support@allrentr.co
 | Resource                | Link                                          |
 | ----------------------- | --------------------------------------------- |
 | 🌐**Website**           | [https://allrentr.com](https://allrentr.com/) |
-| 📘**API Documentation** | Available in Supabase Dashboard               |
+| 📘**API Documentation** | Available in Supabase 

@@ -1,107 +1,124 @@
-import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, ArrowLeft, ExternalLink, Clock } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, ArrowLeft, ExternalLink, Share2, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
-import { Blog } from "@/hooks/useBlogs";
-import { BlogComments } from "@/components/BlogComments";
 import GoogleAd from "@/components/GoogleAd";
-import Footer from "@/components/Footer";
+import { BlogComments } from "@/components/BlogComments";
 
-// Helper function to calculate reading time
-const calculateReadingTime = (content: string | undefined | null): number => {
-  if (!content) return 0;
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  return Math.ceil(words / wordsPerMinute);
-};
+interface Blog {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+  published: boolean;
+  author_name: string | null;
+  reading_time: number | null;
+  tags: string[] | null;
+  seo_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  og_image: string | null;
+  reference_url: string | null;
+}
 
-// Helper function to decode HTML entities (fixes issue where tags show as text)
-const decodeHtml = (html: string): string => {
+const decodeHtml = (html: string) => {
   const txt = document.createElement("textarea");
   txt.innerHTML = html;
   return txt.value;
 };
 
-// Parse content and replace shortcodes with styled HTML
-const parseContent = (html: string): string => {
-  if (!html) return "";
+const parseContent = (html: string) => {
   let parsed = decodeHtml(html);
   
   // Clean up potential surrounding tags injected by rich text editor around shortcodes
-  // We strip <p> and </p> if the paragraph ONLY contains shortcodes and whitespace
-  // This ensures inline-block horizontal STAT elements actually flow horizontally next to each other!
   parsed = parsed.replace(/<p>((?:\s|&nbsp;)*(?:\[\[(?:STAT|FAQ|TIMELINE)\|\|\|[\s\S]*?\]\](?:\s|&nbsp;)*)+)<\/p>/g, '$1');
 
   // Parse FAQ: [[FAQ|||Question|||Answer]]
-  parsed = parsed.replace(/\[\[FAQ\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\]\]/g, (match, q, a) => {
+  let faqCount = 0;
+  parsed = parsed.replace(/\[\[FAQ\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, question, answer) => {
+    faqCount++;
+    const heading = faqCount === 1 ? `
+      <div class="mt-12 mb-8 flex items-center gap-4">
+        <h2 class="text-3xl font-black text-[#161A1D] m-0 p-0 border-0">Frequently Asked Questions</h2>
+        <div class="flex-grow h-[2px] bg-gradient-to-r from-[#E5383B] to-transparent"></div>
+      </div>
+    ` : '';
+    
     return `
-      <details class="group border border-[#D3D3D3]/50 rounded-lg my-4 bg-[#F5F3F4] overflow-hidden">
-        <summary class="font-bold text-lg cursor-pointer p-5 hover:text-[#E5383B] transition-colors list-none flex justify-between items-center">
-          ${q}
-          <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </summary>
-        <div class="p-5 pt-0 text-[#161A1D]/80 leading-relaxed text-base font-medium">
-          ${a}
+      ${heading}
+      <div class="my-6 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md border-l-4 border-l-[#E5383B]">
+        <h4 class="text-lg font-bold text-[#161A1D] mb-3 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-[#E5383B]/10 text-[#E5383B] flex items-center justify-center text-sm font-bold shrink-0">?</span>
+          ${question}
+        </h4>
+        <div class="text-[#161A1D]/80 leading-relaxed pl-11">
+          ${answer}
         </div>
-      </details>
+      </div>
     `;
   });
 
-  // Pass 1: Convert STAT shortcodes to temporary markers
-  parsed = parsed.replace(/\[\[STAT\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)(?:\|\|\|([\s\S]*?))?\]\]/g, (match, title, value, subtitle, color, layout) => {
-    return `<stat-card>${title}~~~${value}~~~${subtitle}~~~${color}~~~${layout || 'horizontal'}</stat-card>`;
-  });
-
-  // Pass 2: Group consecutive markers into a Grid
-  parsed = parsed.replace(/(?:<stat-card>[\s\S]*?<\/stat-card>\s*)+/g, (match) => {
-    let innerHtml = '';
-    let isVertical = false;
-    
-    match.replace(/<stat-card>([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)~~~([\s\S]*?)<\/stat-card>/g, (m, title, value, subtitle, color, layout) => {
-      if (layout === "vertical") isVertical = true;
-      
-      const isRed = color === "red";
-      const isGreen = color === "green";
-      const isBlue = color === "blue";
-      // Match the dark theme colors from the screenshot
-      const colorClass = isRed ? "text-[#E5383B]" : isGreen ? "text-[#10B981]" : isBlue ? "text-[#3B82F6]" : "text-white";
-      
-      innerHtml += `
-        <div class="p-5 rounded-xl border border-white/10 bg-[#222222] shadow-sm hover:border-white/20 transition-all h-full flex flex-col justify-center">
-          <div class="text-[11px] font-semibold tracking-wider text-white/60 uppercase mb-2">${title}</div>
-          <div class="text-3xl font-bold mb-1 ${colorClass}">${value}</div>
-          <div class="text-sm text-white/50 font-medium">${subtitle}</div>
+  // Parse STAT: [[STAT|||Title|||Value|||Subtitle|||Color|||Layout]]
+  parsed = parsed.replace(/\[\[STAT\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, title, value, subtitle, color, layout) => {
+    return `
+      <div class="stat-card inline-flex flex-col justify-between w-[calc(33.33%-12px)] aspect-square m-1 p-5 rounded-[28px] bg-[#1a1a1a] shadow-xl border border-white/5 transition-transform hover:scale-[1.02]">
+        <div class="flex flex-col h-full justify-between">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-4 leading-tight !text-gray-400">${title}</p>
+            <p class="text-3xl font-black text-white tracking-tighter leading-none !text-white">${value}</p>
+          </div>
+          ${subtitle ? `<p class="text-[11px] font-medium text-gray-500 leading-snug !text-gray-500">${subtitle}</p>` : ''}
         </div>
-      `;
-      return m;
-    });
-
-    if (isVertical) {
-      return `<div class="flex flex-col gap-4 my-6">${innerHtml}</div>`;
-    } else {
-      return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">${innerHtml}</div>`;
-    }
+      </div>
+    `;
   });
 
   // Parse TIMELINE: [[TIMELINE|||Year|||Event]]
-  parsed = parsed.replace(/\[\[TIMELINE\|\|\|([\s\S]*?)\|\|\|([\s\S]*?)\]\]/g, (match, year, event) => {
+  parsed = parsed.replace(/\[\[TIMELINE\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, year, event) => {
     return `
-      <div class="relative border-l-2 border-[#E5383B]/30 pl-8 py-6 ml-4">
-        <div class="absolute -left-[11px] top-8 w-5 h-5 rounded-full border-4 border-white bg-[#E5383B] shadow-sm"></div>
-        <div class="text-[#E5383B] font-bold text-lg mb-2">${year}</div>
-        <p class="text-[#161A1D]/80 leading-relaxed font-medium m-0">${event}</p>
+      <div class="my-6 flex gap-4 items-start">
+        <div class="flex-shrink-0 w-16 pt-1 text-right">
+          <span class="text-sm font-bold text-[#E5383B] bg-[#E5383B]/10 px-2 py-1 rounded">${year}</span>
+        </div>
+        <div class="flex-grow pb-6 border-l-2 border-[#E5383B]/20 pl-6 relative">
+          <div class="absolute w-3 h-3 bg-[#E5383B] rounded-full -left-[7px] top-2 shadow-[0_0_0_4px_rgba(229,56,59,0.1)]"></div>
+          <p class="text-[#161A1D]/90 leading-relaxed">${event}</p>
+        </div>
       </div>
     `;
   });
 
   return parsed;
 };
+
+// Styles to ensure rich text content looks good
+const blogStyles = `
+  .blog-content-rendered h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem; margin-top: 2rem; color: #161A1D; line-height: 1.2; }
+  .blog-content-rendered h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.25rem; margin-top: 1.75rem; color: #161A1D; border-left: 4px solid #E5383B; padding-left: 1rem; }
+  .blog-content-rendered h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; margin-top: 1.5rem; color: #161A1D; }
+  .blog-content-rendered p { margin-bottom: 1.25rem; line-height: 1.8; color: #161A1D; font-size: 1.125rem; }
+  .blog-content-rendered ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1.25rem; }
+  .blog-content-rendered ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 1.25rem; }
+  .blog-content-rendered li { margin-bottom: 0.5rem; color: #161A1D; }
+  .blog-content-rendered strong { font-weight: 700; color: #E5383B; }
+  .blog-content-rendered img { border-radius: 1rem; margin-top: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+  .blog-content-rendered blockquote { border-left: 4px solid #E5383B; padding-left: 1.5rem; font-style: italic; margin: 2rem 0; color: #660708; }
+  
+  /* Grid container for stats */
+  .blog-content-rendered {
+    display: flow-root;
+  }
+`;
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -125,7 +142,7 @@ const BlogPost = () => {
         if (error) throw error;
         setBlog(data);
 
-        // Fetch suggested blogs (same category, excluding current)
+        // Fetch suggested blogs
         const { data: suggested } = await supabase
           .from('blogs')
           .select('*')
@@ -145,265 +162,207 @@ const BlogPost = () => {
     fetchBlog();
   }, [id]);
 
-  // Calculate reading time
   const readingTime = useMemo(() => {
     if (!blog) return null;
-    if (blog.reading_time) return blog.reading_time;
-    return calculateReadingTime(blog.content);
+    const wordsPerMinute = 200;
+    const wordCount = blog.content.split(/\s+/g).length;
+    return Math.ceil(wordCount / wordsPerMinute);
   }, [blog]);
-
-  // Get base URL for canonical and OG URLs
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://allrent-r.vercel.app';
-  const blogUrl = blog ? `${baseUrl}/blog/${blog.id}` : '';
-
-  // Prepare SEO data
-  const seoTitle = blog?.seo_title || blog?.title || '';
-  const seoDescription = blog?.meta_description || blog?.description || '';
-  const seoImage = blog?.og_image || blog?.image_url || '';
-  const seoKeywords = blog?.meta_keywords || (Array.isArray(blog?.tags) ? blog.tags.join(', ') : '');
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white">
-        <Navbar />
-        <div className="container mx-auto px-4 pt-32 pb-20">
-          <div className="max-w-4xl mx-auto animate-pulse">
-            <div className="h-96 bg-[#D3D3D3] rounded-3xl mb-8" />
-            <div className="h-8 bg-[#D3D3D3] rounded w-3/4 mb-4" />
-            <div className="h-4 bg-[#D3D3D3] rounded w-1/2 mb-8" />
-            <div className="space-y-3">
-              <div className="h-4 bg-[#D3D3D3] rounded" />
-              <div className="h-4 bg-[#D3D3D3] rounded" />
-              <div className="h-4 bg-[#D3D3D3] rounded w-5/6" />
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E5383B]"></div>
       </div>
     );
   }
 
   if (!blog) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white">
-        <Navbar />
-        <div className="container mx-auto px-4 pt-32 pb-20 text-center">
-          <h1 className="text-3xl font-bold text-[#161A1D] mb-4">Blog not found</h1>
-          <Button onClick={() => navigate('/blog')} className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] hover:from-[#BA181B] hover:to-[#660708]">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Blogs
-          </Button>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <h1 className="text-2xl font-bold mb-4">Blog post not found</h1>
+        <Button onClick={() => navigate('/blog')}>Back to Blogs</Button>
       </div>
     );
   }
 
+  const blogUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const seoTitle = blog.seo_title || blog.title;
+  const seoDescription = blog.meta_description || blog.description;
+  const seoImage = blog.og_image || blog.image_url || '';
+  const seoKeywords = blog.meta_keywords || (Array.isArray(blog.tags) ? blog.tags.join(', ') : '');
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: blog.title,
+          text: blog.description,
+          url: blogUrl,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(blogUrl);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
+  const scrollToComments = () => {
+    const element = document.getElementById('blog-comments-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F3F4] to-white">
-      {blog && (
-        <SEOHead
-          title={seoTitle}
-          description={seoDescription}
-          image={seoImage}
-          url={blogUrl}
-          type="article"
-          siteName="AllRentr - P2P Rental Marketplace India"
-          author={blog.author_name || undefined}
-          publishedTime={blog.created_at}
-          modifiedTime={blog.updated_at}
-          section={blog.category}
-          tags={Array.isArray(blog.tags) ? blog.tags : []}
-          keywords={seoKeywords}
-          canonicalUrl={blogUrl}
-        />
-      )}
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        url={blogUrl}
+        type="article"
+        siteName="AllRentr - P2P Rental Marketplace India"
+        author={blog.author_name || undefined}
+        publishedTime={blog.created_at}
+        modifiedTime={blog.updated_at}
+        section={blog.category}
+        tags={Array.isArray(blog.tags) ? blog.tags : []}
+        keywords={seoKeywords}
+        canonicalUrl={blogUrl}
+      />
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative pt-24 pb-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#E5383B]/5 via-transparent to-[#BA181B]/5" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+      <main className="container mx-auto px-4 pt-24 pb-20">
+        <article className="max-w-4xl mx-auto">
+          {/* Back Button */}
+          <Button
+            onClick={() => navigate('/blog')}
+            variant="ghost"
+            className="mb-8 text-[#660708] hover:text-[#E5383B] hover:bg-[#E5383B]/10"
           >
-            <Button
-              onClick={() => navigate('/blog')}
-              variant="ghost"
-              className="mb-8 text-[#660708] hover:text-[#E5383B] hover:bg-[#E5383B]/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to all blogs
-            </Button>
-          </motion.div>
-        </div>
-      </div>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to all blogs
+          </Button>
 
-      {/* Blog Content */}
-      <div className="container mx-auto px-4 pb-20">
-        <motion.article
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="max-w-4xl mx-auto"
-        >
           {/* Featured Image */}
           {blog.image_url && (
-            <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-8 shadow-[0_8px_30px_rgba(229,56,59,0.15)]">
+            <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-8 shadow-2xl">
               <img
                 src={blog.image_url}
                 alt={blog.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B090A]/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             </div>
           )}
 
-          {/* Meta Info */}
-          <div className="flex items-center gap-4 mb-6 flex-wrap">
-            <Badge className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white border-0">
+          {/* Meta */}
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <Badge className="bg-[#E5383B] text-white hover:bg-[#BA181B] border-0 px-3 py-1">
               {blog.category}
             </Badge>
-            <div className="flex items-center gap-2 text-[#660708]/70">
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
               <Calendar className="w-4 h-4" />
-              <time className="text-sm" dateTime={blog.created_at}>
-                {new Date(blog.created_at).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </time>
+              {new Date(blog.created_at).toLocaleDateString("en-US", {
+                month: "long", day: "numeric", year: "numeric"
+              })}
             </div>
-            {readingTime && (
-              <div className="flex items-center gap-2 text-[#660708]/70">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">{readingTime} min read</span>
-              </div>
-            )}
-            {blog.author_name && (
-              <div className="text-sm text-[#660708]/70">
-                By <span className="font-semibold">{blog.author_name}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <Clock className="w-4 h-4" />
+              {readingTime} min read
+            </div>
           </div>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-[#161A1D] mb-6 leading-tight">
+          <h1 className="text-4xl md:text-6xl font-black text-[#161A1D] mb-8 leading-tight">
             {blog.title}
           </h1>
 
-          {/* Description */}
-          <p className="text-xl text-[#660708]/80 leading-relaxed mb-8 font-medium">
+          <p className="text-xl text-gray-600 mb-12 leading-relaxed border-l-4 border-[#E5383B] pl-6 font-medium italic">
             {blog.description}
           </p>
 
           <GoogleAd slot="1807793922" layout="in-article" format="fluid" />
 
-          {/* Divider */}
-          <div className="w-20 h-1 bg-gradient-to-r from-[#E5383B] to-[#BA181B] rounded-full mb-8" />
-
-          {/* Content */}
-          <article className="prose prose-lg max-w-none">
-            <div
-              className="text-[#161A1D]/90 leading-relaxed"
-              style={{ fontSize: '1.125rem', lineHeight: '1.75' }}
-              dangerouslySetInnerHTML={{ __html: parseContent(blog.content) }}
-            />
-          </article>
+          {/* Render Content with Styles */}
+          <style>{blogStyles}</style>
+          <div
+            className="blog-content-rendered"
+            dangerouslySetInnerHTML={{ __html: parseContent(blog.content) }}
+          />
 
           <GoogleAd slot="7233876092" />
 
-          {/* Reference Link */}
-          {blog.reference_url && (
-            <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-[#E5383B]/5 to-[#BA181B]/5 border border-[#E5383B]/20">
-              <p className="text-sm font-semibold text-[#161A1D] mb-3">
-                📚 Additional Resources
-              </p>
-              <a
-                href={blog.reference_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[#E5383B] hover:text-[#BA181B] transition-colors font-medium group"
-              >
-                Read more at source
-                <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-          )}
-
           {/* Tags */}
-          {Array.isArray(blog.tags) && blog.tags.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-sm font-semibold text-[#161A1D] mb-3">Tags:</h3>
+          {blog.tags && blog.tags.length > 0 && (
+            <div className="mt-12 pt-8 border-t border-gray-100">
               <div className="flex flex-wrap gap-2">
-                {blog.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="bg-[#F5F3F4] text-[#660708] border-[#E5383B]/20"
-                  >
-                    {tag}
+                {blog.tags.map((tag, i) => (
+                  <Badge key={i} variant="outline" className="text-xs bg-gray-50 border-gray-200">
+                    #{tag}
                   </Badge>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Suggested Blogs */}
-          {suggestedBlogs.length > 0 && (
-            <div className="mt-16 pt-8 border-t border-[#D3D3D3]">
-              <h2 className="text-2xl font-bold text-[#161A1D] mb-6">
-                More from {blog.category}
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {suggestedBlogs.map((suggestedBlog) => (
-                  <Card
-                    key={suggestedBlog.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => navigate(`/blog/${suggestedBlog.id}`)}
-                  >
-                    {suggestedBlog.image_url && (
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={suggestedBlog.image_url}
-                          alt={suggestedBlog.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform"
-                        />
-                      </div>
-                    )}
-                    <div className="p-4">
-                      <Badge className="mb-2 bg-gradient-to-r from-[#E5383B] to-[#BA181B] text-white border-0">
-                        {suggestedBlog.category}
-                      </Badge>
-                      <h3 className="font-bold text-[#161A1D] line-clamp-2 mb-2">
-                        {suggestedBlog.title}
-                      </h3>
-                      <p className="text-sm text-[#660708]/70 line-clamp-2">
-                        {suggestedBlog.description}
-                      </p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+          {/* Share & Support */}
+          <div className="mt-12 p-8 rounded-3xl bg-gradient-to-br from-[#161A1D] to-[#660708] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Enjoyed this article?</h3>
+              <p className="text-gray-300">Share it with your friends or join the discussion below.</p>
             </div>
-          )}
+            <div className="flex gap-4">
+              <Button 
+                onClick={handleShare}
+                variant="outline" 
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <Share2 className="w-4 h-4 mr-2" /> Share
+              </Button>
+              <Button 
+                onClick={scrollToComments}
+                className="bg-[#E5383B] hover:bg-[#BA181B] text-white"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" /> Discuss
+              </Button>
+            </div>
+          </div>
 
           {/* Comments Section */}
-          <BlogComments blogId={blog.id} />
-
-          {/* Back Button */}
-          <div className="mt-12 pt-8 border-t border-[#D3D3D3]">
-            <Button
-              onClick={() => navigate('/blog')}
-              className="bg-gradient-to-r from-[#E5383B] to-[#BA181B] hover:from-[#BA181B] hover:to-[#660708] text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to all blogs
-            </Button>
+          <div id="blog-comments-section" className="mt-16">
+            <BlogComments blogId={blog.id} />
           </div>
-        </motion.article>
-      </div>
-      <Footer />
+        </article>
+
+        {/* Suggested Blogs */}
+        {suggestedBlogs.length > 0 && (
+          <div className="max-w-6xl mx-auto mt-24">
+            <h2 className="text-3xl font-bold mb-8 text-[#161A1D]">Suggested Reads</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {suggestedBlogs.map((item) => (
+                <motion.div
+                  key={item.id}
+                  whileHover={{ y: -10 }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 cursor-pointer"
+                  onClick={() => navigate(`/blog/${item.id}`)}
+                >
+                  <div className="h-48 relative">
+                    <img src={item.image_url || ''} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="p-6">
+                    <Badge className="mb-3 bg-gray-100 text-gray-700 hover:bg-gray-200 border-0">{item.category}</Badge>
+                    <h3 className="font-bold text-lg line-clamp-2 mb-2">{item.title}</h3>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };

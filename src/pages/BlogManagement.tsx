@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { calculateReadingTime } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -19,8 +20,10 @@ import {
   uploadBlogImage,
   Blog,
 } from "@/hooks/useBlogs";
-import { useState } from "react";
-import { Pencil, Trash2, Plus, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Pencil, Trash2, Plus, Image as ImageIcon, Wand2, Sparkles, LayoutPanelLeft, TrendingUp as TrendIcon, RefreshCw, Send, ExternalLink, Copy } from "lucide-react";
+import { generateAIImage } from "@/lib/gemini";
+import { generateBlogContent, improveSEO, getTrendingTopics } from "@/lib/openrouter";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +64,157 @@ const BlogManagement = () => {
   const [tagInput, setTagInput] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [trendingTopics, setTrendingTopics] = useState<{title: string, category: string}[]>([]);
+  const [isFetchingTrends, setIsFetchingTrends] = useState(false);
+
+  const fetchTrends = async () => {
+    setIsFetchingTrends(true);
+    try {
+      const trends = await getTrendingTopics();
+      setTrendingTopics(trends);
+      toast.success("Current trending topics fetched!");
+    } catch (error: any) {
+      toast.error("Failed to fetch trends");
+    } finally {
+      setIsFetchingTrends(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      console.log("Dialog opened, fetching trends...");
+      fetchTrends();
+    }
+  }, [isDialogOpen]);
+
+  const handleGenerateBlog = async () => {
+    if (!formData.title || !formData.category) {
+      toast.error("Please enter a Title and Category first to guide the AI");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const aiData = await generateBlogContent(formData.title, formData.category);
+      
+      // Update form data with AI results
+      setFormData(prev => ({
+        ...prev,
+        title: aiData.title || prev.title,
+        description: aiData.description || "",
+        content: aiData.content || "",
+        tags: aiData.tags || [],
+        seo_title: aiData.seo_title || "",
+        meta_description: aiData.meta_description || "",
+        meta_keywords: aiData.meta_keywords || "",
+        og_image: aiData.og_image || generateAIImage(aiData.title || formData.title),
+        reading_time: aiData.reading_time || null,
+      }));
+
+      // Generate AI Image if no image is present
+      if (!formData.image_url) {
+        const imageUrl = generateAIImage(`${formData.title} ${formData.category} professional blog header`);
+        setFormData(prev => ({ ...prev, image_url: imageUrl }));
+      }
+
+      toast.success("Blog content generated successfully!");
+      return aiData; // Return for auto-publish flow
+    } catch (error: any) {
+      console.error("AI Generation error:", error);
+      toast.error(error.message || "Failed to generate blog content");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateAndPublish = async () => {
+    const aiData = await handleGenerateBlog();
+    if (aiData) {
+      const finalData = {
+        ...formData,
+        ...aiData,
+        published: true,
+        reading_time: aiData.reading_time || calculateReadingTime(aiData.content),
+      };
+      await createBlog.mutateAsync(finalData);
+      setIsDialogOpen(false);
+      resetForm();
+    }
+  };
+
+  const handleOpenClaude = () => {
+    if (!formData.title) {
+      toast.error("Please select or enter a topic first");
+      return;
+    }
+
+    const expertPrompt = `Act as an expert SEO strategist, content writer, and Google ranking specialist. Your goal is to create a HIGH-RANKING BLOG POST using EEAT (Experience, Expertise, Authority, Trust), AEO (Answer Engine Optimization), GRO (Generative Result Optimization), and SEO best practices. 
+Topic: ${formData.title}
+Target Audience: INTERMEDIATE
+Primary Keyword: ${formData.title}
+Secondary Keywords: [ADD 5-10 KEYWORDS] 
+
+Requirements: 
+1. Write a SHORT DESCRIPTION (max 500 characters) that is highly engaging, click-worthy, and SEO optimized. 
+2. Create the MAIN BLOG CONTENT with: 
+- Strong Hook Introduction (problem + emotion) 
+- Clear headings (H1, H2, H3) 
+- Answer-first structure (AEO optimized – direct answers at top) 
+- Human-like storytelling (experience-based tone) 
+- Include real-life examples or case studies 
+- Add statistics or facts (to improve trust) 
+- Use simple Hinglish tone (easy to read) 
+
+3. EEAT Optimization: 
+- Show expertise (deep explanation) 
+- Show experience (real-life scenario or example) 
+- Build authority (mention best practices) 
+- Build trust (clear, honest, no fake claims) 
+
+4. SEO Optimization: 
+- Use primary keyword in title, intro, and headings 
+- Add internal linking suggestions 
+- Add meta title & meta description 
+- Add FAQ section (5 questions) 
+
+5. AEO Optimization: 
+- Add direct answers in 40-60 words for featured snippet 
+- Use bullet points & structured answers 
+
+6. GRO Optimization: 
+- Make content AI-search friendly (ChatGPT, Google SGE) 
+- Use clear explanations + summaries 
+
+7. Add: 
+- Conclusion with CTA 
+- 5 viral blog title options 
+- 3 social media captions 
+
+Tone: Engaging, smart, slightly emotional, and practical. Output should be clean, structured, and ready to publish.`;
+
+    navigator.clipboard.writeText(expertPrompt);
+    toast.success("Expert Prompt copied to clipboard!");
+    window.open("https://claude.ai/new", "_blank");
+  };
+
+  const handleImproveSEO = async () => {
+    if (!formData.content) {
+      toast.error("No content to optimize");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const optimizedContent = await improveSEO(formData.content);
+      setFormData(prev => ({ ...prev, content: optimizedContent }));
+      toast.success("SEO Optimization complete!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to optimize SEO");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,14 +236,19 @@ const BlogManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const finalFormData = {
+      ...formData,
+      reading_time: formData.reading_time || calculateReadingTime(formData.content),
+    };
+
     try {
       // Validate form data
-      blogSchema.parse(formData);
+      blogSchema.parse(finalFormData);
 
       if (editingBlog) {
-        await updateBlog.mutateAsync({ id: editingBlog.id, ...formData });
+        await updateBlog.mutateAsync({ id: editingBlog.id, ...finalFormData });
       } else {
-        await createBlog.mutateAsync(formData);
+        await createBlog.mutateAsync(finalFormData);
       }
 
       setIsDialogOpen(false);
@@ -225,6 +384,110 @@ const BlogManagement = () => {
                   </DialogDescription>
                 </DialogHeader>
 
+                <div className="flex flex-wrap gap-2 mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="w-full mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Sparkles className="w-4 h-4" /> AI Blog Automation
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="default" 
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-none"
+                    onClick={handleGenerateBlog}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <div className="animate-spin mr-2">⏳</div>
+                    ) : (
+                      <Wand2 className="w-4 h-4 mr-2" />
+                    )}
+                    Generate Full Blog
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="default" 
+                    className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white border-none"
+                    onClick={handleGenerateAndPublish}
+                    disabled={isGenerating || createBlog.isPending}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Generate & Publish
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={handleImproveSEO}
+                    disabled={isGenerating}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" /> Improve SEO
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    className="w-full mt-2 bg-[#F5F3F4] border border-[#D3D3D3] hover:bg-[#D3D3D3] transition-all"
+                    onClick={handleOpenClaude}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Claude Style: Copy Expert Prompt & Open Claude
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2">
+                      <TrendIcon className="w-4 h-4 text-orange-500" />
+                      Trending Right Now (Google Trends/Reddit)
+                    </Label>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs" 
+                      onClick={fetchTrends}
+                      disabled={isFetchingTrends}
+                    >
+                      <RefreshCw className={`w-3 h-3 mr-1 ${isFetchingTrends ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                  </div>
+                  
+                  {isFetchingTrends ? (
+                    <div className="flex items-center justify-center p-6 border border-dashed rounded-md bg-orange-50/30">
+                      <div className="animate-spin mr-2 text-orange-500">⏳</div>
+                      <span className="text-sm text-orange-600 font-medium">Scanning Google Trends & Reddit...</span>
+                    </div>
+                  ) : trendingTopics.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {trendingTopics.map((trend, idx) => (
+                        <Button
+                          key={idx}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-orange-200 hover:bg-orange-50 hover:border-orange-500 transition-all shadow-sm"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              title: trend.title,
+                              category: trend.category
+                            }));
+                            toast.info(`Topic selected: ${trend.title}`);
+                          }}
+                        >
+                          {trend.title}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div 
+                      className="text-xs text-muted-foreground border border-dashed rounded-md p-3 cursor-pointer hover:bg-secondary/50 text-center"
+                      onClick={fetchTrends}
+                    >
+                      No trends found. Click to try again.
+                    </div>
+                  )}
+                </div>
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="title">Title</Label>
@@ -278,6 +541,7 @@ const BlogManagement = () => {
                     <div className="mt-2">
                       <RichTextEditor
                         value={formData.content}
+                        topic={formData.title}
                         onChange={(content) =>
                           setFormData((prev) => ({
                             ...prev,

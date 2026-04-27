@@ -9,15 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
-import { LayoutTemplate, PlusCircle, MessageCircleQuestion, CalendarDays, TrendingUp } from 'lucide-react';
+import { LayoutTemplate, PlusCircle, MessageCircleQuestion, CalendarDays, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { generateComponentContent } from '@/lib/openrouter';
 
 interface RichTextEditorProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    topic?: string;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder, topic }) => {
     const quillRef = useRef<ReactQuill>(null);
     
     // Dialog states
@@ -35,6 +37,36 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
     const [timelineOpen, setTimelineOpen] = useState(false);
     const [timelineYear, setTimelineYear] = useState("");
     const [timelineEvent, setTimelineEvent] = useState("");
+
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleAutoInsert = async (type: 'FAQ' | 'STAT' | 'TIMELINE') => {
+        if (!topic) return toast.error("Please enter a blog title first");
+        
+        setIsGenerating(true);
+        try {
+            const data = await generateComponentContent(type, topic);
+            if (type === 'FAQ') {
+                const q = data.question || data.Question || data.q || "No question found";
+                const a = data.answer || data.Answer || data.a || "No answer found";
+                insertText(`[[FAQ|||${q}|||${a}]]`);
+            } else if (type === 'STAT') {
+                const t = data.title || data.Title || data.t || "Statistic";
+                const v = data.value || data.Value || data.v || "0";
+                const s = data.subtitle || data.Subtitle || data.s || '';
+                insertText(`[[STAT|||${t}|||${v}|||${s}|||default|||horizontal]]`);
+            } else if (type === 'TIMELINE') {
+                const y = data.year || data.Year || data.y || "Year";
+                const e = data.event || data.Event || data.e || "Event details";
+                insertText(`[[TIMELINE|||${y}|||${e}]]`);
+            }
+            toast.success(`AI ${type} inserted!`);
+        } catch (error: any) {
+            toast.error("AI Generation failed");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     const insertText = (text: string) => {
         const quill = quillRef.current?.getEditor();
@@ -154,6 +186,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
                     </DialogContent>
                 </Dialog>
 
+                <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-primary hover:text-primary hover:bg-primary/10 border border-primary/20"
+                    onClick={() => handleAutoInsert('FAQ')}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Sparkles className="w-3 h-3 mr-2" />}
+                    FAQ Auto
+                </Button>
+
                 {/* Stat Dialog */}
                 <Dialog open={statOpen} onOpenChange={setStatOpen}>
                     <DialogTrigger asChild>
@@ -205,6 +249,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
                     </DialogContent>
                 </Dialog>
 
+                <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-primary hover:text-primary hover:bg-primary/10 border border-primary/20"
+                    onClick={() => handleAutoInsert('STAT')}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Sparkles className="w-3 h-3 mr-2" />}
+                    Stat Auto
+                </Button>
+
                 {/* Timeline Dialog */}
                 <Dialog open={timelineOpen} onOpenChange={setTimelineOpen}>
                     <DialogTrigger asChild>
@@ -229,6 +285,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-primary hover:text-primary hover:bg-primary/10 border border-primary/20"
+                    onClick={() => handleAutoInsert('TIMELINE')}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Sparkles className="w-3 h-3 mr-2" />}
+                    Timeline Auto
+                </Button>
             </div>
 
             <div className="bg-white text-black rounded-md border border-input" style={{ position: 'relative' }}>

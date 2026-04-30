@@ -1,3 +1,7 @@
+// @ts-nocheck
+// @ts-ignore: Deno is a global in the Supabase Edge Function environment
+declare const Deno: any;
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2/cors";
 
@@ -35,7 +39,7 @@ Return your response in this JSON format (do not use markdown code blocks, just 
 IMPORTANT: 'rent_price' must be a number (e.g. 500). Do not include currency symbols or text.
 `;
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }

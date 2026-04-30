@@ -19,7 +19,6 @@ export interface Blog {
   seo_title?: string | null;
   meta_description?: string | null;
   meta_keywords?: string | null;
-  og_image?: string | null;
   author_name?: string | null;
   reading_time?: number | null;
 }
@@ -29,22 +28,20 @@ const cleanupOldBlogs = async () => {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   
   try {
-    const { data: oldBlogs } = await supabase
+    const { data: oldBlogs, error } = await supabase
       .from('blogs')
-      .select('id, image_url, og_image')
+      .select('id, image_url')
       .lt('created_at', sevenDaysAgo.toISOString());
       
-    if (oldBlogs && oldBlogs.length > 0) {
+    if (error) throw error;
+
+    if (oldBlogs && Array.isArray(oldBlogs) && oldBlogs.length > 0) {
       // 1. Delete associated media from Supabase Storage first to save storage limits
       const filesToRemove: string[] = [];
       oldBlogs.forEach((blog) => {
         if (blog.image_url) {
           const path = blog.image_url.split('/').pop();
           if (path) filesToRemove.push(path);
-        }
-        if (blog.og_image) {
-          const path = blog.og_image.split('/').pop();
-          if (path && !filesToRemove.includes(path)) filesToRemove.push(path);
         }
       });
       

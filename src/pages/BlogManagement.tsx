@@ -21,9 +21,9 @@ import {
   Blog,
 } from "@/hooks/useBlogs";
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Plus, Image as ImageIcon, Wand2, Sparkles, LayoutPanelLeft, TrendingUp as TrendIcon, RefreshCw, Send, ExternalLink, Copy } from "lucide-react";
+import { Pencil, Trash2, Plus, Image as ImageIcon, Wand2, Sparkles, LayoutPanelLeft, TrendingUp as TrendIcon, RefreshCw, Send, ExternalLink, Copy, FileText, Search, Link } from "lucide-react";
 import { generateAIImage } from "@/lib/gemini";
-import { generateBlogContent, improveSEO, getTrendingTopics } from "@/lib/openrouter";
+import { generateBlogContent, improveSEO, getTrendingTopics, importBlogFromText, findResourcesForBlog } from "@/lib/openrouter";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +57,6 @@ const BlogManagement = () => {
     seo_title: "",
     meta_description: "",
     meta_keywords: "",
-    og_image: "",
     author_name: "",
     reading_time: null as number | null,
   });
@@ -65,8 +64,19 @@ const BlogManagement = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [trendingTopics, setTrendingTopics] = useState<{title: string, category: string}[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<{ title: string, category: string }[]>([]);
   const [isFetchingTrends, setIsFetchingTrends] = useState(false);
+  
+  // New States for Import and Resources
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [rawPastedBlog, setRawPastedBlog] = useState("");
+  const [isResourcesDialogOpen, setIsResourcesDialogOpen] = useState(false);
+  const [resourceResults, setResourceResults] = useState<{
+    reference_links: { title: string; url: string }[];
+    image_suggestions: { description: string; search_term: string }[];
+    additional_resources: string[];
+  } | null>(null);
+  const [isFindingResources, setIsFindingResources] = useState(false);
 
   const fetchTrends = async () => {
     setIsFetchingTrends(true);
@@ -97,7 +107,7 @@ const BlogManagement = () => {
     setIsGenerating(true);
     try {
       const aiData = await generateBlogContent(formData.title, formData.category);
-      
+
       // Update form data with AI results
       setFormData(prev => ({
         ...prev,
@@ -108,7 +118,6 @@ const BlogManagement = () => {
         seo_title: aiData.seo_title || "",
         meta_description: aiData.meta_description || "",
         meta_keywords: aiData.meta_keywords || "",
-        og_image: aiData.og_image || generateAIImage(aiData.title || formData.title),
         reading_time: aiData.reading_time || null,
       }));
 
@@ -159,39 +168,20 @@ Requirements:
 1. Write a SHORT DESCRIPTION (max 500 characters) that is highly engaging, click-worthy, and SEO optimized. 
 2. Create the MAIN BLOG CONTENT with: 
 - Strong Hook Introduction (problem + emotion) 
-- Clear headings (H1, H2, H3) 
-- Answer-first structure (AEO optimized – direct answers at top) 
-- Human-like storytelling (experience-based tone) 
-- Include real-life examples or case studies 
-- Add statistics or facts (to improve trust) 
-- Use simple Hinglish tone (easy to read) 
+- Clear headings (H2, H3) 
+- Answer-first structure (AEO optimized) 
+- Add premium shortcodes: [[STAT|||Title|||Value|||Subtitle]] for data or [[STAT|||Long insight text]] for facts.
+- Use SEPARATE FAQ shortcodes at the end: [[FAQ|||Question 1 line|||Answer 2-3 lines]].
 
 3. EEAT Optimization: 
-- Show expertise (deep explanation) 
-- Show experience (real-life scenario or example) 
-- Build authority (mention best practices) 
-- Build trust (clear, honest, no fake claims) 
+- Show expertise, experience, and build authority/trust.
 
 4. SEO Optimization: 
-- Use primary keyword in title, intro, and headings 
-- Add internal linking suggestions 
+- Primary keyword in title, intro, and headings 
 - Add meta title & meta description 
-- Add FAQ section (5 questions) 
+- Add 5 SEPARATE FAQ shortcodes.
 
-5. AEO Optimization: 
-- Add direct answers in 40-60 words for featured snippet 
-- Use bullet points & structured answers 
-
-6. GRO Optimization: 
-- Make content AI-search friendly (ChatGPT, Google SGE) 
-- Use clear explanations + summaries 
-
-7. Add: 
-- Conclusion with CTA 
-- 5 viral blog title options 
-- 3 social media captions 
-
-Tone: Engaging, smart, slightly emotional, and practical. Output should be clean, structured, and ready to publish.`;
+Tone: Professional, smart, authoritative, and engaging English.`;
 
     navigator.clipboard.writeText(expertPrompt);
     toast.success("Expert Prompt copied to clipboard!");
@@ -213,6 +203,54 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
       toast.error(error.message || "Failed to optimize SEO");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleImportAndOptimize = async () => {
+    if (!rawPastedBlog.trim()) {
+      toast.error("Please paste some content first");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const aiData = await importBlogFromText(rawPastedBlog);
+      setFormData(prev => ({
+        ...prev,
+        title: aiData.title || prev.title,
+        description: aiData.description || "",
+        content: aiData.content || "",
+        tags: aiData.tags || [],
+        seo_title: aiData.seo_title || "",
+        meta_description: aiData.meta_description || "",
+        meta_keywords: aiData.meta_keywords || "",
+        reading_time: aiData.reading_time || null,
+      }));
+      setIsImportDialogOpen(false);
+      setRawPastedBlog("");
+      toast.success("Blog imported and optimized!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to process text");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleFindResources = async () => {
+    if (!formData.title && !formData.content) {
+      toast.error("Please enter a title or content first");
+      return;
+    }
+
+    setIsFindingResources(true);
+    try {
+      const results = await findResourcesForBlog(formData.title, formData.content);
+      setResourceResults(results);
+      setIsResourcesDialogOpen(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to find resources");
+    } finally {
+      setIsFindingResources(false);
     }
   };
 
@@ -299,7 +337,6 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
       seo_title: "",
       meta_description: "",
       meta_keywords: "",
-      og_image: "",
       author_name: "",
       reading_time: null,
     });
@@ -330,7 +367,6 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
       seo_title: blog.seo_title || "",
       meta_description: blog.meta_description || "",
       meta_keywords: blog.meta_keywords || "",
-      og_image: blog.og_image || "",
       author_name: blog.author_name || "",
       reading_time: blog.reading_time || null,
     });
@@ -388,9 +424,9 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                   <div className="w-full mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                     <Sparkles className="w-4 h-4" /> AI Blog Automation
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="default" 
+                  <Button
+                    type="button"
+                    variant="default"
                     className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-none"
                     onClick={handleGenerateBlog}
                     disabled={isGenerating}
@@ -402,9 +438,9 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                     )}
                     Generate Full Blog
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="default" 
+                  <Button
+                    type="button"
+                    variant="default"
                     className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white border-none"
                     onClick={handleGenerateAndPublish}
                     disabled={isGenerating || createBlog.isPending}
@@ -412,18 +448,49 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                     <Send className="w-4 h-4 mr-2" />
                     Generate & Publish
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
                     onClick={handleImproveSEO}
                     disabled={isGenerating}
                   >
                     <Sparkles className="w-4 h-4 mr-2" /> Improve SEO
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="secondary" 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => setIsImportDialogOpen(true)}
+                  >
+                    <FileText className="w-4 h-4 mr-2" /> Import & Optimize From Text
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={handleFindResources}
+                    disabled={isFindingResources}
+                  >
+                    {isFindingResources ? (
+                      <div className="animate-spin mr-2 text-primary">⏳</div>
+                    ) : (
+                      <Search className="w-4 h-4 mr-2" />
+                    )}
+                    Find Related Resources & Links
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full mt-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
+                    onClick={() => window.open("https://trends.google.com/trending?geo=IN", "_blank")}
+                  >
+                    <TrendIcon className="w-4 h-4 mr-2" />
+                    Check Google Trends (India)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
                     className="w-full mt-2 bg-[#F5F3F4] border border-[#D3D3D3] hover:bg-[#D3D3D3] transition-all"
                     onClick={handleOpenClaude}
                   >
@@ -432,17 +499,158 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                   </Button>
                 </div>
 
+                {/* Import Blog Dialog */}
+                <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+                  <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                      <DialogTitle>Paste Your Raw Blog Content</DialogTitle>
+                      <DialogDescription>
+                        Paste your draft, notes, or an existing article. AI will structure it with headings, metadata, and premium shortcodes.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Textarea
+                      placeholder="Paste your content here..."
+                      className="min-h-[300px]"
+                      value={rawPastedBlog}
+                      onChange={(e) => setRawPastedBlog(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
+                      <Button onClick={handleImportAndOptimize} disabled={isGenerating}>
+                        {isGenerating ? "Processing..." : "Process & Import Content"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Resource Finder Dialog */}
+                <Dialog open={isResourcesDialogOpen} onOpenChange={setIsResourcesDialogOpen}>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>AI Resource Finder: {formData.title}</DialogTitle>
+                      <DialogDescription>
+                        Suggested high-quality references, image ideas, and additional materials for your blog.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    {resourceResults && (
+                      <div className="space-y-6">
+                        <div>
+                          <h4 className="font-bold flex items-center gap-2 text-primary mb-3">
+                            <Link className="w-4 h-4" /> Reference Links
+                          </h4>
+                          <div className="grid gap-2">
+                            {resourceResults.reference_links.map((link, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-secondary">
+                                <div className="truncate flex-1">
+                                  <p className="font-medium text-sm truncate">{link.title}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{link.url}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-8 text-xs bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+                                    onClick={() => {
+                                      setFormData(prev => ({ ...prev, reference_url: link.url }));
+                                      toast.success("Set as Reference URL!");
+                                    }}
+                                  >
+                                    <Link className="w-3 h-3 mr-1" /> Set as Reference
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-8 text-xs bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                                    onClick={() => {
+                                      const linkHtml = `<p><br><strong>Reference:</strong> <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.title}</a></p>`;
+                                      setFormData(prev => ({ ...prev, content: prev.content + linkHtml }));
+                                      toast.success("Added to blog content!");
+                                    }}
+                                  >
+                                    <Plus className="w-3 h-3 mr-1" /> Add to Blog
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => window.open(link.url, '_blank')}>
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-bold flex items-center gap-2 text-primary mb-3">
+                            <ImageIcon className="w-4 h-4" /> Image Suggestions
+                          </h4>
+                          <div className="grid gap-3">
+                            {resourceResults.image_suggestions.map((img, idx) => (
+                              <div key={idx} className="p-3 bg-secondary/30 rounded-lg border border-secondary">
+                                <p className="text-sm font-medium mb-2">{img.description}</p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => window.open(`https://unsplash.com/s/photos/${encodeURIComponent(img.search_term)}`, '_blank')}>
+                                    <Search className="w-3 h-3 mr-1" /> Search Unsplash
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-8 w-8 p-0" 
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(img.search_term);
+                                      toast.success("Search term copied!");
+                                    }}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-bold flex items-center gap-2 text-primary mb-3">
+                            <Plus className="w-4 h-4" /> Additional Key Points
+                          </h4>
+                          <div className="space-y-2">
+                            {resourceResults.additional_resources.map((res, idx) => (
+                              <div key={idx} className="flex items-start justify-between gap-3 p-2 hover:bg-secondary/20 rounded-md transition-colors group">
+                                <p className="text-sm text-muted-foreground flex-1">• {res}</p>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-7 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => {
+                                    setFormData(prev => ({ ...prev, content: prev.content + `<p>• ${res}</p>` }));
+                                    toast.success("Point added to blog!");
+                                  }}
+                                >
+                                  <Plus className="w-3 h-3 mr-1" /> Add
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end">
+                      <Button onClick={() => setIsResourcesDialogOpen(false)}>Close</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label className="flex items-center gap-2">
                       <TrendIcon className="w-4 h-4 text-orange-500" />
                       Trending Right Now (Google Trends/Reddit)
                     </Label>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 text-xs" 
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
                       onClick={fetchTrends}
                       disabled={isFetchingTrends}
                     >
@@ -450,7 +658,7 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                       Refresh
                     </Button>
                   </div>
-                  
+
                   {isFetchingTrends ? (
                     <div className="flex items-center justify-center p-6 border border-dashed rounded-md bg-orange-50/30">
                       <div className="animate-spin mr-2 text-orange-500">⏳</div>
@@ -479,7 +687,7 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                       ))}
                     </div>
                   ) : (
-                    <div 
+                    <div
                       className="text-xs text-muted-foreground border border-dashed rounded-md p-3 cursor-pointer hover:bg-secondary/50 text-center"
                       onClick={fetchTrends}
                     >
@@ -731,29 +939,7 @@ Tone: Engaging, smart, slightly emotional, and practical. Output should be clean
                         </p>
                       </div>
 
-                      <div>
-                        <Label htmlFor="og_image">
-                          Open Graph Image URL (Optional)
-                          <span className="text-xs text-muted-foreground ml-2">
-                            - Defaults to featured image if empty
-                          </span>
-                        </Label>
-                        <Input
-                          id="og_image"
-                          type="url"
-                          value={formData.og_image}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              og_image: e.target.value,
-                            }))
-                          }
-                          placeholder="https://example.com/og-image.jpg"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Recommended size: 1200x630px. Used for social media sharing.
-                        </p>
-                      </div>
+
 
                       <div>
                         <Label htmlFor="author_name">Author Name (Optional)</Label>

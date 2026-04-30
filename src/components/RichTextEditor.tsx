@@ -34,13 +34,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
     const [statColor, setStatColor] = useState("default");
     const [statLayout, setStatLayout] = useState("horizontal");
 
-    const [timelineOpen, setTimelineOpen] = useState(false);
-    const [timelineYear, setTimelineYear] = useState("");
-    const [timelineEvent, setTimelineEvent] = useState("");
-
     const [isGenerating, setIsGenerating] = useState(false);
 
-    const handleAutoInsert = async (type: 'FAQ' | 'STAT' | 'TIMELINE') => {
+    const handleAutoInsert = async (type: 'FAQ' | 'STAT') => {
         if (!topic) return toast.error("Please enter a blog title first");
         
         setIsGenerating(true);
@@ -49,18 +45,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
             if (type === 'FAQ') {
                 const q = data.question || data.Question || data.q || "No question found";
                 const a = data.answer || data.Answer || data.a || "No answer found";
-                insertText(`[[FAQ|||${q}|||${a}]]`);
+                // For FAQ, always append at the end as requested
+                const quill = quillRef.current?.getEditor();
+                if (quill) {
+                    const length = quill.getLength();
+                    quill.insertText(length, `\n[[FAQ|||${q}|||${a}]]\n`);
+                    toast.success(`AI FAQ appended to end!`);
+                }
             } else if (type === 'STAT') {
                 const t = data.title || data.Title || data.t || "Statistic";
                 const v = data.value || data.Value || data.v || "0";
                 const s = data.subtitle || data.Subtitle || data.s || '';
                 insertText(`[[STAT|||${t}|||${v}|||${s}|||default|||horizontal]]`);
-            } else if (type === 'TIMELINE') {
-                const y = data.year || data.Year || data.y || "Year";
-                const e = data.event || data.Event || data.e || "Event details";
-                insertText(`[[TIMELINE|||${y}|||${e}]]`);
+                toast.success(`AI STAT inserted!`);
             }
-            toast.success(`AI ${type} inserted!`);
         } catch (error: any) {
             toast.error("AI Generation failed");
         } finally {
@@ -98,13 +96,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
         setStatLayout("horizontal");
     };
 
-    const handleInsertTimeline = () => {
-        if (!timelineYear || !timelineEvent) return toast.error("Please fill all fields");
-        insertText(`[[TIMELINE|||${timelineYear}|||${timelineEvent}]]`);
-        setTimelineOpen(false);
-        setTimelineYear("");
-        setTimelineEvent("");
-    };
+
 
     const imageHandler = () => {
         const input = document.createElement('input');
@@ -261,42 +253,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
                     Stat Auto
                 </Button>
 
-                {/* Timeline Dialog */}
-                <Dialog open={timelineOpen} onOpenChange={setTimelineOpen}>
-                    <DialogTrigger asChild>
-                        <Button type="button" variant="outline" size="sm" className="h-8">
-                            <CalendarDays className="w-3 h-3 mr-2" /> Timeline
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Insert Timeline Event</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div>
-                                <Label>Year / Period</Label>
-                                <Input value={timelineYear} onChange={e => setTimelineYear(e.target.value)} placeholder="2026" />
-                            </div>
-                            <div>
-                                <Label>Event Description</Label>
-                                <Textarea value={timelineEvent} onChange={e => setTimelineEvent(e.target.value)} placeholder="Company founded..." rows={2} />
-                            </div>
-                            <Button type="button" onClick={handleInsertTimeline} className="w-full">Insert Timeline Shortcode</Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
 
-                <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 text-primary hover:text-primary hover:bg-primary/10 border border-primary/20"
-                    onClick={() => handleAutoInsert('TIMELINE')}
-                    disabled={isGenerating}
-                >
-                    {isGenerating ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Sparkles className="w-3 h-3 mr-2" />}
-                    Timeline Auto
-                </Button>
             </div>
 
             <div className="bg-white text-black rounded-md border border-input" style={{ position: 'relative' }}>

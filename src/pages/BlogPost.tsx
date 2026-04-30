@@ -21,13 +21,12 @@ interface Blog {
   created_at: string;
   updated_at: string;
   published: boolean;
-  author_name: string | null;
-  reading_time: number | null;
-  tags: string[] | null;
-  seo_title: string | null;
-  meta_description: string | null;
-  meta_keywords: string | null;
-  og_image: string | null;
+  author_name?: string | null;
+  reading_time?: number | null;
+  tags?: string[] | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  meta_keywords?: string | null;
   reference_url: string | null;
 }
 
@@ -37,39 +36,71 @@ const decodeHtml = (html: string) => {
   return txt.value;
 };
 
-const parseContent = (html: string) => {
-  let parsed = decodeHtml(html);
+const parseContent = (html: string | null | undefined) => {
+  if (!html) return "";
   
-  // Clean up potential surrounding tags injected by rich text editor around shortcodes
-  parsed = parsed.replace(/<p>((?:\s|&nbsp;)*(?:\[\[(?:STAT|FAQ|TIMELINE)\|\|\|[\s\S]*?\]\](?:\s|&nbsp;)*)+)<\/p>/g, '$1');
+  const decodeHtmlString = (str: string) => {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = str;
+    return txt.value;
+  };
+  
+  let parsed = decodeHtmlString(html);
+  
+  // 1. Normalize shortcodes: handle spaces, case, and remove inner HTML tags
+  parsed = parsed.replace(/\[\[\s*(FAQ|STAT|CONCLUSION)\s*\|\|\|\s*([\s\S]*?)\s*\]\]/gi, (match, type, content) => {
+    const cleanType = type.toUpperCase();
+    const cleanContent = content.replace(/<\/?[^>]+(>|$)/g, "").trim();
+    return `[[${cleanType}|||${cleanContent}]]`;
+  });
 
-  // Parse FAQ: [[FAQ|||Question|||Answer]]
-  let faqCount = 0;
-  parsed = parsed.replace(/\[\[FAQ\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, question, answer) => {
-    faqCount++;
-    const heading = faqCount === 1 ? `
-      <div class="mt-12 mb-8 flex items-center gap-4">
-        <h2 class="text-3xl font-black text-[#161A1D] m-0 p-0 border-0">Frequently Asked Questions</h2>
-        <div class="flex-grow h-[2px] bg-gradient-to-r from-[#E5383B] to-transparent"></div>
-      </div>
-    ` : '';
-    
+  // 2. Remove P tags wrapping shortcodes
+  parsed = parsed.replace(/<p>\s*((?:\[\[(?:CONCLUSION|STAT|FAQ)\|\|\|[\s\S]*?\]\]\s*)+)\s*<\/p>/gi, '$1');
+
+  // 3. Parse CONCLUSION
+  parsed = parsed.replace(/\[\[CONCLUSION\|\|\|([\s\S]*?)\]\]/gi, (match, content) => {
     return `
-      ${heading}
-      <div class="my-6 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md border-l-4 border-l-[#E5383B]">
-        <h4 class="text-lg font-bold text-[#161A1D] mb-3 flex items-center gap-3">
-          <span class="w-8 h-8 rounded-full bg-[#E5383B]/10 text-[#E5383B] flex items-center justify-center text-sm font-bold shrink-0">?</span>
-          ${question}
-        </h4>
-        <div class="text-[#161A1D]/80 leading-relaxed pl-11">
-          ${answer}
+      <div class="blog-conclusion mt-16 mb-12 p-8 md:p-12 rounded-[40px] bg-gradient-to-br from-[#161A1D] to-[#660708] text-white shadow-2xl relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div class="relative z-10">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-1 bg-[#E5383B] rounded-full"></div>
+            <span class="text-xs font-black uppercase tracking-[0.3em] text-[#E5383B]">Final Thoughts</span>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-black mb-6 leading-tight !text-white border-0 p-0 m-0">Conclusion</h2>
+          <div class="text-lg md:text-xl text-gray-300 leading-relaxed font-medium italic border-0 p-0">
+            ${content}
+          </div>
         </div>
       </div>
     `;
   });
 
-  // Parse STAT: [[STAT|||Title|||Value|||Subtitle|||Color|||Layout]]
-  parsed = parsed.replace(/\[\[STAT\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, title, value, subtitle, color, layout) => {
+  // 4. Parse STAT
+  parsed = parsed.replace(/\[\[STAT\|\|\|([\s\S]*?)\]\]/gi, (match, content) => {
+    const parts = content.split('|||').map(p => p.trim());
+    if (parts.length <= 2) {
+      const text = parts[0] || "";
+      const sub = parts[1] || "";
+      return `
+        <div class="stat-card-full w-full my-8 p-8 rounded-[32px] bg-[#1a1a1a] shadow-2xl border border-white/5 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-[#E5383B]/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div class="flex items-start gap-6 relative z-10">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E5383B] to-[#BA181B] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#E5383B]/20 transition-transform group-hover:scale-110">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div class="flex-grow">
+              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#E5383B] mb-2">Key Statistic & Insight</p>
+              <p class="text-xl md:text-2xl font-extrabold text-white leading-tight !text-white">${text}</p>
+              ${sub ? `<p class="mt-3 text-sm font-medium text-gray-400 !text-gray-400">${sub}</p>` : ""}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    const title = parts[0] || "STAT";
+    const value = parts[1] || "0";
+    const subtitle = parts[2] || "";
     return `
       <div class="stat-card inline-flex flex-col justify-between w-[calc(33.33%-12px)] aspect-square m-1 p-5 rounded-[28px] bg-[#1a1a1a] shadow-xl border border-white/5 transition-transform hover:scale-[1.02]">
         <div class="flex flex-col h-full justify-between">
@@ -83,20 +114,67 @@ const parseContent = (html: string) => {
     `;
   });
 
-  // Parse TIMELINE: [[TIMELINE|||Year|||Event]]
-  parsed = parsed.replace(/\[\[TIMELINE\|\|\|(.*?)\|\|\|(.*?)\]\]/g, (match, year, event) => {
-    return `
-      <div class="my-6 flex gap-4 items-start">
-        <div class="flex-shrink-0 w-16 pt-1 text-right">
-          <span class="text-sm font-bold text-[#E5383B] bg-[#E5383B]/10 px-2 py-1 rounded">${year}</span>
-        </div>
-        <div class="flex-grow pb-6 border-l-2 border-[#E5383B]/20 pl-6 relative">
-          <div class="absolute w-3 h-3 bg-[#E5383B] rounded-full -left-[7px] top-2 shadow-[0_0_0_4px_rgba(229,56,59,0.1)]"></div>
-          <p class="text-[#161A1D]/90 leading-relaxed">${event}</p>
-        </div>
+  // 5. Parse FAQ: Collect all items to move them to the end
+  let faqCount = 0;
+  const faqItems: string[] = [];
+  
+  parsed = parsed.replace(/\[\[FAQ\|\|\|([\s\S]*?)\]\]/gi, (match, content) => {
+    faqCount++;
+    const parts = content.split('|||').map(p => p.trim());
+    let question = parts[0] || "";
+    let answer = parts[1] || "";
+
+    if (!answer && question.includes('?')) {
+      const qIndex = question.indexOf('?');
+      answer = question.substring(qIndex + 1).trim();
+      question = question.substring(0, qIndex + 1);
+    }
+
+    if (!question || !answer) return "";
+
+    const cleanQuestion = question.replace(/^(Q\d+:|Question:|Q:)\s*/i, "").trim();
+    const cleanAnswer = answer.replace(/^(A\d+:|Answer:|A:)\s*/i, "").trim();
+
+    faqItems.push(`
+      <div class="faq-item my-5 group w-full">
+        <details class="group rounded-[32px] bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-[#E5383B]/20 overflow-hidden" ${faqCount === 1 ? 'open' : ''}>
+          <summary class="flex items-center gap-5 p-7 cursor-pointer list-none outline-none select-none">
+            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-[#161A1D] to-[#660708] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-black/10 group-open:from-[#E5383B] group-open:to-[#BA181B] transition-all duration-500">
+              ?
+            </div>
+            <h3 class="text-xl md:text-2xl font-extrabold text-[#161A1D] transition-colors leading-snug pr-8 relative flex-grow faq-question-text !m-0 !p-0 border-0">
+              ${cleanQuestion}
+              <span class="absolute right-0 top-1/2 -translate-y-1/2 transition-transform duration-300 group-open:rotate-180 text-gray-400 group-hover:text-[#E5383B]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </h3>
+          </summary>
+          <div class="px-7 pb-8 pt-0 text-[#161A1D]/70 leading-relaxed text-lg pl-1 md:pl-[88px] font-medium border-t border-gray-50/50 mt-2">
+            <div class="pt-7 faq-answer-text border-0">
+              ${cleanAnswer}
+            </div>
+          </div>
+        </details>
+      </div>
+    `);
+    
+    return ""; // Remove from original position
+  });
+
+  // 6. Append FAQ section to the end if items exist
+  if (faqItems.length > 0) {
+    const faqSection = `
+      <div class="mt-20 mb-12 flex flex-col items-center text-center w-full">
+        <span class="px-5 py-2 rounded-full bg-[#E5383B]/10 text-[#E5383B] text-xs font-black uppercase tracking-[0.25em] mb-4 shadow-sm border border-[#E5383B]/5">Support & FAQ</span>
+        <h2 class="text-4xl md:text-5xl font-black text-[#161A1D] m-0 p-0 border-0 leading-tight">Frequently Asked Questions</h2>
+        <div class="w-24 h-1.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] mt-8 rounded-full shadow-lg shadow-[#E5383B]/20"></div>
+      </div>
+      <div class="faq-container w-full">
+        ${faqItems.join('')}
       </div>
     `;
-  });
+    parsed += faqSection;
+  }
 
   return parsed;
 };
@@ -117,6 +195,23 @@ const blogStyles = `
   /* Grid container for stats */
   .blog-content-rendered {
     display: flow-root;
+  }
+  
+  .faq-question-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3 !important;
+  }
+  
+  .faq-answer-text {
+    color: rgba(22, 26, 29, 0.7);
+    line-height: 1.7 !important;
+  }
+
+  .stat-card-full p {
+    margin: 0 !important;
   }
 `;
 
@@ -189,7 +284,7 @@ const BlogPost = () => {
   const blogUrl = typeof window !== 'undefined' ? window.location.href : '';
   const seoTitle = blog.seo_title || blog.title;
   const seoDescription = blog.meta_description || blog.description;
-  const seoImage = blog.og_image || blog.image_url || '';
+  const seoImage = blog.image_url || '';
   const seoKeywords = blog.meta_keywords || (Array.isArray(blog.tags) ? blog.tags.join(', ') : '');
 
   const handleShare = async () => {
@@ -316,14 +411,14 @@ const BlogPost = () => {
               <p className="text-gray-300">Share it with your friends or join the discussion below.</p>
             </div>
             <div className="flex gap-4">
-              <Button 
+              <Button
                 onClick={handleShare}
-                variant="outline" 
+                variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
                 <Share2 className="w-4 h-4 mr-2" /> Share
               </Button>
-              <Button 
+              <Button
                 onClick={scrollToComments}
                 className="bg-[#E5383B] hover:bg-[#BA181B] text-white"
               >

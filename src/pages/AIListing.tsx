@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Send, Bot, CheckCircle } from 'lucide-react';
+import { Loader2, Send, Bot, CheckCircle, Package, Home } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { motion } from 'framer-motion';
@@ -83,6 +83,7 @@ const AIListing = () => {
   const [currentInput, setCurrentInput] = useState('');
   const [extractedData, setExtractedData] = useState<any>({});
   const [isComplete, setIsComplete] = useState(false);
+  const [listingGroup, setListingGroup] = useState<'item' | 'property' | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,6 +146,7 @@ const AIListing = () => {
           description: initialDescription,
           imageBase64: base64Data,
           imageMimeType: mimeType,
+          listingGroup: listingGroup,
         }
       });
 
@@ -190,6 +192,7 @@ const AIListing = () => {
           mode: 'chat',
           currentInput,
           extractedData,
+          listingGroup: listingGroup,
         }
       });
 
@@ -295,13 +298,45 @@ const AIListing = () => {
               AI Smart Listing
             </h1>
             <p className="text-muted-foreground">
-              Upload a photo and let our AI handle the details.
+              {listingGroup === null 
+                ? "Select what you want to list to begin."
+                : `Listing a ${listingGroup === 'property' ? 'Property' : 'Rental Item'} with AI.`}
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column: Upload & Chat */}
-            <div className="space-y-6">
+          {listingGroup === null ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+              <Card 
+                className="p-8 flex flex-col items-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => setListingGroup('item')}
+              >
+                <div className="p-4 bg-secondary rounded-full mb-4 group-hover:bg-primary/10">
+                  <Package className="w-10 h-10 text-foreground group-hover:text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Rental Item</h3>
+                <p className="text-sm text-muted-foreground text-center">Electronics, Vehicles, Furniture, etc.</p>
+              </Card>
+
+              <Card 
+                className="p-8 flex flex-col items-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => setListingGroup('property')}
+              >
+                <div className="p-4 bg-secondary rounded-full mb-4 group-hover:bg-primary/10">
+                  <Home className="w-10 h-10 text-foreground group-hover:text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Property</h3>
+                <p className="text-sm text-muted-foreground text-center">PG, Rooms, Flats, Office, etc.</p>
+              </Card>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column: Upload & Chat */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center mb-2">
+                  <Button variant="ghost" size="sm" onClick={() => setListingGroup(null)}>
+                    ← Change Type
+                  </Button>
+                </div>
               <Card className="p-6">
                 <h2 className="font-semibold mb-4">1. Upload Product Image</h2>
                 <ImageUpload
@@ -446,7 +481,8 @@ const AIListing = () => {
                 </div>
               </Card>
             </div>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

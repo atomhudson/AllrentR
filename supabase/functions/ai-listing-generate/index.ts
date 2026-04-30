@@ -5,38 +5,39 @@ declare const Deno: any;
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2/cors";
 
-const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY") || "";
+const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY") || Deno.env.get("VITE_OPENROUTER_API_KEY") || "";
 
 const systemPrompt = `
-You are an AI assistant helping a user list an item for rent or sale on a marketplace.
-Your goal is to extract the following information to populate a listing form:
-- product_name (string)
-- description (string, enhanced version of user input)
-- category (one of: electronics, vehicles, furniture, tools, sports, books, clothing, other)
+You are a professional marketplace expert. Your goal is to help users create high-quality listings by analyzing their images and descriptions.
+
+When an image is provided:
+1. Carefully analyze the image to identify the brand, model, color, condition, and key features of the product.
+2. Generate an attractive, professional, and detailed "description" (at least 3-4 sentences). 
+3. Highlight the selling points (e.g., "Sleek design," "Highly durable," "Professional grade").
+4. If the image is a property (PG, Room, Flat), describe its ambiance, lighting, and possible amenities visible.
+
+Extract and return the following fields:
+- product_name (string: Catchy and concise)
+- description (string: Professional and enhanced version based on image + user input)
+- category: 
+    - If property: (pg, room, flat, house, office, shop, warehouse)
+    - If item: (electronics, vehicles, furniture, tools, sports, books, clothing, other)
 - product_type (one of: rent, sale, both)
-- rent_price (number, the price amount. If rent, per day. If sale, total price)
-- pin_code (string, 6 digits)
-- address (string)
-- phone (string)
+- rent_price (number: Extract amount, ignore currency)
+- pin_code (string: 6 digits)
+- address (string: Specific location if mentioned)
+- phone (string: Contact number)
 
-If any critical information is missing (especially price, location/pin_code, phone, product type), ask the user for it in a conversational way.
+The user is listing a: {{LISTING_GROUP}}
 
-Return your response in this JSON format (do not use markdown code blocks, just raw JSON):
+If any critical info is missing, ask for it politely.
+
+Return raw JSON only:
 {
-  "extracted_data": {
-    "product_name": "...",
-    "description": "...",
-    "category": "one of: electronics, vehicles, furniture, tools, sports, books, clothing, other",
-    "product_type": "one of: rent, sale, both",
-    "rent_price": 0,
-    "pin_code": "...",
-    "address": "...",
-    "phone": "..."
-  },
-  "next_question": "Your question here if info is missing, else null",
-  "is_complete": boolean (true if all necessary info is gathered)
+  "extracted_data": { ... },
+  "next_question": "...",
+  "is_complete": boolean
 }
-IMPORTANT: 'rent_price' must be a number (e.g. 500). Do not include currency symbols or text.
 `;
 
 Deno.serve(async (req: Request) => {
@@ -68,15 +69,17 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!GROQ_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI service not configured" }), {
+    if (!OPENROUTER_API_KEY) {
+      return new Response(JSON.stringify({ error: "AI service not configured (OPENROUTER_API_KEY missing)" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const body = await req.json();
-    const { mode, description, imageBase64, imageMimeType, currentInput, extractedData } = body;
+    const { mode, description, imageBase64, imageMimeType, currentInput, extractedData, listingGroup } = body;
+
+    const dynamicSystemPrompt = systemPrompt.replace("{{LISTING_GROUP}}", listingGroup || "item");
 
     if (!mode || (mode !== "initial" && mode !== "chat")) {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
@@ -86,7 +89,7 @@ Deno.serve(async (req: Request) => {
     }
 
     let messages: any[] = [];
-    let model = "llama-3.3-70b-versatile";
+    let model = "google/gemini-2.0-flash-001";
     let useJsonFormat = true;
 
     if (mode === "initial") {
@@ -97,25 +100,25 @@ Deno.serve(async (req: Request) => {
         });
       }
 
-      // Try vision model first if image provided
-      if (imageBase64 && imageMimeType) {
-        model = "llama-3.2-90b-vision-preview";
-        useJsonFormat = false;
-        messages = [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: systemPrompt + `\nUser Description: "${description}"` },
-              { type: "image_url", image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
-            ],
-          },
-        ];
-      } else {
-        messages = [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `User Description: "${description}"` },
-        ];
-      }
+        // Try vision model if image provided
+        if (imageBase64 && imageMimeType) {
+          model = "google/gemini-2.0-flash-001"; // Good vision support
+          useJsonFormat = false; // JSON mode sometimes tricky with vision in initial prompt
+          messages = [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: dynamicSystemPrompt + `\nUser Description: "${description}"` },
+                { type: "image_url", image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
+              ],
+            },
+          ];
+        } else {
+          messages = [
+            { role: "system", content: dynamicSystemPrompt },
+            { role: "user", content: `User Description: "${description}"` },
+          ];
+        }
     } else {
       // Chat mode
       if (!currentInput) {
@@ -143,56 +146,58 @@ Deno.serve(async (req: Request) => {
       messages = [{ role: "user", content: prompt }];
     }
 
-    const groqBody: any = {
+    const openRouterBody: any = {
       messages,
       model,
       temperature: 0.5,
       max_tokens: 1024,
     };
     if (useJsonFormat) {
-      groqBody.response_format = { type: "json_object" };
+      openRouterBody.response_format = { type: "json_object" };
     }
 
-    let groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    let aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://allrentr.com", // Optional, for OpenRouter analytics
+        "X-Title": "AllrentR AI Listing",
       },
-      body: JSON.stringify(groqBody),
+      body: JSON.stringify(openRouterBody),
     });
 
     // Fallback to text-only if vision fails
-    if (!groqResponse.ok && mode === "initial" && imageBase64) {
+    if (!aiResponse.ok && mode === "initial" && imageBase64) {
       messages = [
         { role: "system", content: systemPrompt },
         { role: "user", content: `User Description: "${description}"` },
       ];
-      groqBody.messages = messages;
-      groqBody.model = "llama-3.3-70b-versatile";
-      groqBody.response_format = { type: "json_object" };
+      openRouterBody.messages = messages;
+      openRouterBody.model = "google/gemini-2.0-flash-001";
+      openRouterBody.response_format = { type: "json_object" };
 
-      groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(groqBody),
+        body: JSON.stringify(openRouterBody),
       });
     }
 
-    if (!groqResponse.ok) {
-      const errText = await groqResponse.text();
-      console.error("Groq API error:", errText);
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error("OpenRouter API error:", errText);
       return new Response(JSON.stringify({ error: "AI service error" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const groqData = await groqResponse.json();
-    const text = groqData.choices?.[0]?.message?.content || "";
+    const aiData = await aiResponse.json();
+    const text = aiData.choices?.[0]?.message?.content || "";
 
     return new Response(JSON.stringify({ result: text }), {
       status: 200,

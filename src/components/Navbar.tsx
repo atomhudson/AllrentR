@@ -42,6 +42,12 @@ export const Navbar = () => {
         </Button>
       </Link>
 
+      <Link to="/contact" onClick={() => setOpen(false)}>
+        <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
+          Contact Us
+        </Button>
+      </Link>
+
       <Link to="/leaderboard" onClick={() => setOpen(false)}>
         <Button variant="ghost" className="font-medium w-full justify-start text-[#161A1D] hover:text-[#E5383B] hover:bg-[#E5383B]/5 transition-all duration-200">
           🏆 Leaderboard
@@ -125,7 +131,7 @@ export const Navbar = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-[#E5383B]/0 via-[#E5383B]/20 to-[#E5383B]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-xl"></div>
             </div>
             <span className="text-[#000000] font-bold text-lg tracking-wide group-hover:text-[#E5383B] transition-all">
-              AllRentR
+              AllRentr
             </span>
           </Link>
 
@@ -148,6 +154,13 @@ export const Navbar = () => {
               <Link to="/blog" className="relative group px-4 py-2">
                 <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
                   Blog
+                </span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
+              </Link>
+
+              <Link to="/contact" className="relative group px-4 py-2">
+                <span className="text-[#161A1D] group-hover:text-[#E5383B] font-medium transition-colors duration-200">
+                  Contact
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#E5383B] to-[#BA181B] group-hover:w-full transition-all duration-300"></span>
               </Link>

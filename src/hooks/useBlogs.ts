@@ -23,55 +23,13 @@ export interface Blog {
   reading_time?: number | null;
 }
 
-const cleanupOldBlogs = async () => {
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
-  try {
-    const { data: oldBlogs, error } = await supabase
-      .from('blogs')
-      .select('id, image_url')
-      .lt('created_at', sevenDaysAgo.toISOString());
-      
-    if (error) throw error;
-
-    if (oldBlogs && Array.isArray(oldBlogs) && oldBlogs.length > 0) {
-      // 1. Delete associated media from Supabase Storage first to save storage limits
-      const filesToRemove: string[] = [];
-      oldBlogs.forEach((blog) => {
-        if (blog.image_url) {
-          const path = blog.image_url.split('/').pop();
-          if (path) filesToRemove.push(path);
-        }
-      });
-      
-      if (filesToRemove.length > 0) {
-        await supabase.storage.from('blog-images').remove(filesToRemove);
-      }
-      
-      // 2. Delete the actual blog records from postgres
-      const ids = oldBlogs.map(b => b.id);
-      await supabase.from('blogs').delete().in('id', ids);
-    }
-  } catch (error) {
-    console.error('Error auto-cleaning old blogs:', error);
-  }
-};
-
 export const useBlogs = () => {
   return useQuery({
     queryKey: ['blogs'],
     queryFn: async () => {
-      // Run cleanup in background
-      cleanupOldBlogs();
-
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
       const { data, error } = await supabase
         .from('blogs')
         .select('*')
-        .gte('created_at', sevenDaysAgo.toISOString())
         .eq('published', true)
         .order('created_at', { ascending: false });
 
@@ -85,16 +43,9 @@ export const useAdminBlogs = () => {
   return useQuery({
     queryKey: ['admin-blogs'],
     queryFn: async () => {
-      // Run cleanup in background
-      cleanupOldBlogs();
-
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
       const { data, error } = await supabase
         .from('blogs')
         .select('*')
-        .gte('created_at', sevenDaysAgo.toISOString())
         .order('created_at', { ascending: false });
 
       if (error) throw error;

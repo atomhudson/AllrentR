@@ -60,6 +60,14 @@ const Footer = () => {
                   Blog
                 </a>
               </li>
+              <li>
+                <a
+                  href="/contact"
+                  className="hover:text-[#E5383B] transition-colors"
+                >
+                  Contact Us
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -73,15 +81,10 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/terms-and-conditions" className="hover:text-[#E5383B] transition-colors">
+                <a href="/privacy-policy" className="hover:text-[#E5383B] transition-colors">
                   Privacy Policy
                 </a>
               </li>
-              {/* <li>
-                <a href="#" className="hover:text-[#E5383B] transition-colors">
-                  Refund Policy
-                </a>
-              </li> */}
               <li>
                 <a href="/terms-and-conditions" className="hover:text-[#E5383B] transition-colors">
                   Community Guidelines

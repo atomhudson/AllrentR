@@ -30,3 +30,6 @@ antigravity-brain
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase
+supabase/.temp/

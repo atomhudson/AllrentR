@@ -9,6 +9,7 @@ import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useSectionVisibility } from "@/hooks/useSectionVisibility";
+import { SEOHead } from "@/components/SEOHead";
 const TopProfilesSection = lazy(() => import("@/components/TopProfilesSection"));
 const InfluencerPartnersSection = lazy(() => import("@/components/InfluencerPartnersSection"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
@@ -37,6 +38,11 @@ const Landing = () => {
     description: "Turn your unused items into income. Track your earnings with detailed analytics."
   }];
   return <div className="min-h-screen bg-[#F5F3F4] overflow-hidden">
+      <SEOHead 
+        title="Rent Anything Near You | P2P Rental Marketplace India"
+        description="Turn your unused items into income. Rent or list items in your neighborhood with verified users. India's most trusted peer-to-peer rental platform."
+        type="website"
+      />
       <LoginNavbar />
 
       <HeroSection />

@@ -1,27 +1,32 @@
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/ChatGPT Image Nov 3, 2025, 07_38_40 PM.png";
 import { Navbar } from "@/components/Navbar";
+import { SEOHead } from "@/components/SEOHead";
 
 
 const AboutPage = () => {
   return (
     
     <div className="w-full bg-background text-foreground">
-         <Navbar />
+      <SEOHead 
+        title="About Us | Our Mission to Connect Communities"
+        description="Learn more about AllRentR, India's leading peer-to-peer rental marketplace. Our mission is to make sharing and renting easy for everyone."
+      />
+      <Navbar />
       {/* ===== HERO SECTION ===== */}
       <section className="w-full bg-background pt-24 sm:pt-28 lg:pt-24">
         <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-16">
           <div className="flex flex-col items-center gap-6 sm:gap-8">
             <div className="w-full text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-4 sm:mb-6">
-                Find Your Tribe,
+                Rent Anything,
                 <br />
-                Build Your Network.
+                Earn Instantly.
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-foreground/70 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-                Connect with like-minded students for fun,
+                India's most trusted peer-to-peer rental marketplace.
                 <br className="hidden sm:block" />
-                friendships, and future opportunities.
+                List items in minutes and start earning today.
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
                 <Button size="lg" className="min-w-[140px] sm:min-w-[160px] w-full sm:w-auto">

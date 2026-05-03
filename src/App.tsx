@@ -40,6 +40,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const BoostPackageManagement = lazy(() => import("./pages/BoostPackageManagement"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const ListingManagement = lazy(() => import("./pages/ListingManagement"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen w-full bg-background">
@@ -92,6 +94,8 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
 
               <Route path="/terms-and-conditions" element={<TermsAndConditionPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/auth/callback" element={<OAuthCallback />} />
               <Route path="*" element={<NotFound />} />

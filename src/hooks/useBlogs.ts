@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { DEFAULT_BLOGS } from '@/data/defaultBlogs';
 
 export interface Blog {
   id: string;
@@ -27,14 +28,26 @@ export const useBlogs = () => {
   return useQuery({
     queryKey: ['blogs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('published', true)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('published', true)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Blog[];
+        if (error) {
+          console.warn('Could not fetch remote blogs, using default editorial blogs:', error);
+          return DEFAULT_BLOGS;
+        }
+
+        const remoteBlogs = (data as Blog[]) || [];
+        const remoteIds = new Set(remoteBlogs.map((b) => b.id));
+        const merged = [...remoteBlogs, ...DEFAULT_BLOGS.filter((b) => !remoteIds.has(b.id))];
+        return merged;
+      } catch (err) {
+        console.warn('Error fetching blogs, using default editorial blogs:', err);
+        return DEFAULT_BLOGS;
+      }
     },
   });
 };

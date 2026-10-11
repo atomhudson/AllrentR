@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { SEOHead } from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
@@ -56,7 +58,11 @@ const Blog = () => {
       : filteredBlogs.filter((b) => !featuredIds.has(b.id));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col justify-between">
+      <SEOHead 
+        title="Rental Insights & Gear Sharing Blog | AllrentR"
+        description="Explore expert tips, equipment guides, cost breakdowns, and passive income strategies in the peer-to-peer rental and gear sharing economy."
+      />
       <Navbar />
 
       <section className="relative pt-28 md:pt-36 pb-12 md:pb-20 overflow-hidden">
@@ -245,6 +251,7 @@ const Blog = () => {
           </div>
         )}
       </section>
+      <Footer />
     </div>
   );
 };

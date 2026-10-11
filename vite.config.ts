@@ -11,14 +11,20 @@ export default defineConfig(({ mode }) => {
     ...(process.env as Record<string, string | undefined>),
   };
 
-  const projectId = env.VITE_SUPABASE_PROJECT_ID;
+  const FALLBACK_PROJECT_ID = "rodhcrqwunhzgxcopcqk";
+  const FALLBACK_URL = `https://${FALLBACK_PROJECT_ID}.supabase.co`;
+  const FALLBACK_PUBLISHABLE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvZGhjcnF3dW5oemd4Y29wY3FrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MDEwNzMsImV4cCI6MjA3NjA3NzA3M30.oAxbzh0ZHBV48DyBUQKX9EX09UOeV4J1tmsboEZnKAg";
+
+  const projectId = env.VITE_SUPABASE_PROJECT_ID || FALLBACK_PROJECT_ID;
   const supabaseUrl =
-    env.VITE_SUPABASE_URL || env.SUPABASE_URL || (projectId ? `https://${projectId}.supabase.co` : undefined);
+    env.VITE_SUPABASE_URL || env.SUPABASE_URL || (projectId ? `https://${projectId}.supabase.co` : FALLBACK_URL);
   const supabaseKey =
     env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     env.VITE_SUPABASE_ANON_KEY ||
     env.SUPABASE_PUBLISHABLE_KEY ||
-    env.SUPABASE_ANON_KEY;
+    env.SUPABASE_ANON_KEY ||
+    FALLBACK_PUBLISHABLE_KEY;
 
   return {
     server: {

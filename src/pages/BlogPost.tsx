@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import GoogleAd from "@/components/GoogleAd";
 import { BlogComments } from "@/components/BlogComments";
+import { DEFAULT_BLOGS } from "@/data/defaultBlogs";
 
 interface Blog {
   id: string;
@@ -234,7 +236,18 @@ const BlogPost = () => {
           .eq('published', true)
           .single();
 
-        if (error) throw error;
+        if (error || !data) {
+          const defaultBlog = DEFAULT_BLOGS.find((b) => b.id === id);
+          if (defaultBlog) {
+            setBlog(defaultBlog);
+            setSuggestedBlogs(
+              DEFAULT_BLOGS.filter((b) => b.id !== id && (b.category === defaultBlog.category || true)).slice(0, 3)
+            );
+            return;
+          }
+          throw error;
+        }
+
         setBlog(data);
 
         // Fetch suggested blogs
@@ -246,9 +259,15 @@ const BlogPost = () => {
           .neq('id', id)
           .limit(3);
 
-        setSuggestedBlogs(suggested || []);
+        setSuggestedBlogs(suggested || DEFAULT_BLOGS.filter((b) => b.id !== id).slice(0, 3));
       } catch (error) {
-        console.error('Error fetching blog:', error);
+        const defaultBlog = DEFAULT_BLOGS.find((b) => b.id === id);
+        if (defaultBlog) {
+          setBlog(defaultBlog);
+          setSuggestedBlogs(DEFAULT_BLOGS.filter((b) => b.id !== id).slice(0, 3));
+        } else {
+          console.error('Error fetching blog:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -458,6 +477,7 @@ const BlogPost = () => {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 };
